@@ -25,12 +25,12 @@ export default function ProfileScreen() {
 
             {/* Actions */}
             <RowView className="px-4 gap-2">
-                <Card className="flex-1 h-12 justify-center items-center">
+                <Card className="flex-1 h-12 justify-center items-center p-0">
                     <Text className="text-sm text-foreground">
                         Edit Profile
                     </Text>
                 </Card>
-                <Card className="flex-1 h-12 justify-center items-center">
+                <Card className="flex-1 h-12 justify-center items-center p-0">
                     <Text className="text-sm text-foreground">Settings</Text>
                 </Card>
             </RowView>

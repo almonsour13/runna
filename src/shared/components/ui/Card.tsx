@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "@/shared/utils/cn";
 import { View, ViewProps } from "react-native";
 
 interface Props extends ViewProps {
@@ -8,8 +8,8 @@ interface Props extends ViewProps {
 export default function Card({ className, children, ...props }: Props) {
     return (
         <View
-            className={clsx(
-                "bg-card border border-border rounded-2xl",
+            className={cn(
+                "p-4 bg-card border border-border rounded-2xl",
                 className,
             )}
             {...props}
