@@ -9,7 +9,7 @@ export default function Card({ className, children, ...props }: Props) {
     return (
         <View
             className={clsx(
-                "p-4 bg-card border border-border rounded-2xl",
+                "bg-card border border-border rounded-2xl",
                 className,
             )}
             {...props}
