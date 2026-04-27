@@ -1,4 +1,5 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Card from "@/shared/components/ui/Card";
 import { Dimensions, FlatList, ScrollView, Text, View } from "react-native";
 
 const { width } = Dimensions.get("window");
@@ -13,7 +14,7 @@ export default function ExploreScreen() {
                     </Text>
                 </View>
                 <View className="px-4">
-                    <View className="h-14 w-full rounded-2xl bg-card border border-border" />
+                    <Card className="h-14 w-full" />
                 </View>
 
                 {/* Categories */}
@@ -36,9 +37,7 @@ export default function ExploreScreen() {
                             paddingHorizontal: 16,
                             gap: 8,
                         }}
-                        renderItem={() => (
-                            <View className="h-24 w-24 rounded-2xl bg-card border border-border" />
-                        )}
+                        renderItem={() => <Card className="h-24 w-24" />}
                     />
                 </ColView>
 
@@ -55,11 +54,7 @@ export default function ExploreScreen() {
 
                     <ColView className="px-4 gap-2">
                         {Array.from({ length: 8 }).map((_, i) => (
-                            <View
-                                key={i}
-                                className="h-32 rounded-2xl bg-card border border-border"
-                                style={{ width: width - 32 }}
-                            />
+                            <Card key={i} className="h-32" />
                         ))}
                     </ColView>
                 </ColView>

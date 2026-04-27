@@ -1,4 +1,5 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Card from "@/shared/components/ui/Card";
 import { Dimensions, FlatList, ScrollView, Text, View } from "react-native";
 
 const { width } = Dimensions.get("window");
@@ -12,7 +13,7 @@ export default function HomeScreen() {
                     </Text>
                 </View>
                 <View className="px-4">
-                    <View className="h-48 rounded-2xl bg-card border border-border" />
+                    <Card className="h-48" />
                 </View>
 
                 <ColView className="gap-2">
@@ -26,10 +27,7 @@ export default function HomeScreen() {
                     </RowView>
                     <RowView className="px-4 gap-2">
                         {Array.from({ length: 4 }).map((_, i) => (
-                            <View
-                                key={i}
-                                className="h-24 flex-1 rounded-2xl bg-card border border-border"
-                            />
+                            <Card key={i} className="h-24 flex-1" />
                         ))}
                     </RowView>
                 </ColView>
@@ -53,8 +51,8 @@ export default function HomeScreen() {
                         }}
                         className=""
                         renderItem={() => (
-                            <View
-                                className="h-40 w-full rounded-2xl bg-card border border-border"
+                            <Card
+                                className="h-40 w-full"
                                 style={{ width: width - 32 }}
                             />
                         )}
@@ -71,10 +69,7 @@ export default function HomeScreen() {
                     </RowView>
                     <ColView className="px-4 gap-2 ">
                         {Array.from({ length: 4 }).map((_, i) => (
-                            <View
-                                key={i}
-                                className="h-24 rounded-2xl bg-card border border-border"
-                            />
+                            <Card key={i} className="h-24" />
                         ))}
                     </ColView>
                 </ColView>

@@ -1,4 +1,5 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Card from "@/shared/components/ui/Card";
 import { Dimensions, FlatList, Text, View } from "react-native";
 
 const { width } = Dimensions.get("window");
@@ -13,7 +14,7 @@ export default function ProfileScreen() {
             </View>
             {/* User Info */}
             <RowView className="px-4 items-center gap-4">
-                <View className="h-20 w-20 rounded-full bg-card border border-border" />
+                <Card className="h-20 w-20 rounded-full" />
                 <ColView>
                     <Text className="text-base text-foreground">Username</Text>
                     <Text className="text-sm text-muted-foreground">
@@ -24,14 +25,14 @@ export default function ProfileScreen() {
 
             {/* Actions */}
             <RowView className="px-4 gap-2">
-                <View className="flex-1 h-12 rounded-2xl bg-card border border-border justify-center items-center">
+                <Card className="flex-1 h-12 justify-center items-center">
                     <Text className="text-sm text-foreground">
                         Edit Profile
                     </Text>
-                </View>
-                <View className="flex-1 h-12 rounded-2xl bg-card border border-border justify-center items-center">
+                </Card>
+                <Card className="flex-1 h-12 justify-center items-center">
                     <Text className="text-sm text-foreground">Settings</Text>
-                </View>
+                </Card>
             </RowView>
 
             {/* Activity */}
@@ -55,10 +56,7 @@ export default function ProfileScreen() {
                         gap: 8,
                     }}
                     renderItem={() => (
-                        <View
-                            className="h-24 rounded-2xl bg-card border border-border"
-                            style={{ width: width - 32 }}
-                        />
+                        <Card className="h-24" style={{ width: width - 32 }} />
                     )}
                 />
             </ColView>
