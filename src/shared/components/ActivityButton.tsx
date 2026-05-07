@@ -10,7 +10,7 @@ export default function ActivityButton() {
         <TouchableOpacity activeOpacity={0.9}>
             <Card
                 className={cn(
-                    "relative bg-primary h-20 aspect-square justify-center items-center ",
+                    "relative bg-primary h-16 aspect-square justify-center items-center ",
                 )}
             >
                 <View className="absolute justify-between items-center">

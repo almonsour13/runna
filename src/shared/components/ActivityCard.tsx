@@ -51,7 +51,7 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
                                 / {goalKm.toFixed(1)} km
                             </Text>
                         </Text>
-                        <Text className="text-sm text-primary font-medium">
+                        <Text className="text-sm font-medium">
                             {pct.toFixed(0)}%
                         </Text>
                     </RowView>
