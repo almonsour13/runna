@@ -23,7 +23,14 @@ export default function RootNavigator() {
     }
     return (
         <NavigationContainer>
-            <Stack.Navigator>
+            <Stack.Navigator
+                screenOptions={{
+                    headerShown: false,
+                    contentStyle: {
+                        backgroundColor: "transparent",
+                    },
+                }}
+            >
                 <Stack.Screen name="Main" component={MainNavigator} />
             </Stack.Navigator>
         </NavigationContainer>

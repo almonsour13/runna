@@ -6,7 +6,14 @@ const Tab = createBottomTabNavigator();
 
 export default function MainNavigator() {
     return (
-        <Tab.Navigator>
+        <Tab.Navigator
+            screenOptions={{
+                headerShown: false,
+                sceneStyle: {
+                    backgroundColor: "transparent",
+                },
+            }}
+        >
             <Tab.Screen name="Home" component={HomeScreen} />
         </Tab.Navigator>
     );
