@@ -8,20 +8,7 @@ import { computeTotalDistance, convertMtoKm } from "../utils/distance";
 import { capitalize } from "../utils/utils";
 import RouteMap from "./RouteMap";
 
-const TYPE_CONFIG = {
-    run: {
-        label: "Run",
-        color: "#185FA5",
-        bg: "#E6F1FB",
-    },
-    walk: {
-        label: "Walk",
-        color: "#0F6E56",
-        bg: "#E1F5EE",
-    },
-} as const;
 export default function ActivityCard({ activity }: { activity: Activity }) {
-    const config = TYPE_CONFIG[activity.type];
     const date = isToday(activity.startTime)
         ? "Today"
         : isYesterday(activity.startTime)
@@ -32,7 +19,7 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
         date,
         format(activity.startTime, "p"),
         format(activity.endTime, "p"),
-    ].join(" - ");
+    ].join(" • ");
 
     const distanceKm = convertMtoKm(computeTotalDistance(activity.coordinates));
     const goalKm = convertMtoKm(activity.goal);
@@ -40,12 +27,12 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
     return (
         <Card key={activity.id}>
             <RowView className="gap-4 ">
-                <View className="h-16 aspect-square justify-center items-center rounded">
+                <View className="h-18 aspect-square justify-center items-center rounded">
                     <RouteMap
                         coordinates={activity.coordinates}
                         type={activity.type}
-                        size={128}
-                        color={TYPE_CONFIG[activity.type].color}
+                        strokeWidth={2}
+                        size={136}
                     />
                 </View>
                 <ColView className="flex-1">
@@ -53,20 +40,15 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
                         <Text className="text-xs text-muted-foreground">
                             {timeRange}
                         </Text>
-                        <Text
-                            className="text-xs fotn-medium"
-                            style={{
-                                color: config.color,
-                            }}
-                        >
+                        <Text className="text-xs font-medium text-primary">
                             {capitalize(activity.type)}
                         </Text>
                     </RowView>
                     <RowView className="justify-between items-end">
                         <Text className="text-2xl font-medium">
-                            {distanceKm}{" "}
+                            {distanceKm.toFixed(1)}{" "}
                             <Text className="text-sm text-muted-foreground">
-                                / {goalKm} km
+                                / {goalKm.toFixed(1)} km
                             </Text>
                         </Text>
                         <Text className="text-sm text-primary font-medium">

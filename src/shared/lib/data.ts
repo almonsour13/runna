@@ -138,7 +138,7 @@ export const generateActivities = (): Activity[] => {
         day <= now;
         day.setDate(day.getDate() + 1)
     ) {
-        const sessionCount = randomInt(0, sessionMaxPerDay);
+        const sessionCount = randomInt(1, sessionMaxPerDay);
 
         for (let i = 0; i < sessionCount; i++) {
             const type = Math.random() > 0.5 ? "walk" : "run";

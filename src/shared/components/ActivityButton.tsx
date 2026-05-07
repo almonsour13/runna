@@ -16,7 +16,7 @@ export default function ActivityButton() {
                 <View className="absolute justify-between items-center">
                     <Ionicons
                         name="footsteps"
-                        size={28}
+                        size={24}
                         className="text-white"
                     />
                 </View>

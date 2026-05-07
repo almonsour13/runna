@@ -30,5 +30,5 @@ export const computeTotalDistance = (coordinates: Coordinate[]) => {
 };
 
 export const convertMtoKm = (m: number) => {
-    return (m / 1000).toFixed(1);
+    return m / 1000;
 };

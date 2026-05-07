@@ -18,6 +18,7 @@ export default function MainNavigator() {
                     sceneStyle: {
                         backgroundColor: "transparent",
                     },
+                    animation: "shift",
                 }}
                 tabBar={(props) => <MainTabBar {...props} />}
             >

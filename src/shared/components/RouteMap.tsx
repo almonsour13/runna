@@ -8,6 +8,7 @@ interface RouteMapProps {
     type: "walk" | "run";
     size?: number;
     color?: string;
+    strokeWidth?: number;
 }
 
 const PAD = 40;
@@ -27,22 +28,16 @@ function hexToRgba(hex: string, alpha: number): string {
     return `rgba(${r},${g},${b},${alpha})`;
 }
 
-const TYPE_DEFAULTS = {
-    run: "#378ADD",
-    walk: "#1D9E75",
-} as const;
-
 export default function RouteMap({
     coordinates,
     type,
     size,
-    color,
+    color = "#16a34a",
+    strokeWidth = 8,
 }: RouteMapProps) {
     const screenWidth = Dimensions.get("window").width - 32;
     const width = size ?? screenWidth;
     const height = width;
-
-    const resolvedColor = color ?? TYPE_DEFAULTS[type];
 
     const { pathD, startX, startY, endX, endY } = useMemo(() => {
         if (coordinates.length < 2) return null;
@@ -93,8 +88,8 @@ export default function RouteMap({
         endY: 0,
     };
 
-    const gradientId = `routeGrad_${type}_${resolvedColor.replace("#", "")}`;
-    const glowColor = hexToRgba(resolvedColor, 0.25);
+    const gradientId = `routeGrad_${type}_${color.replace("#", "")}`;
+    const glowColor = hexToRgba(color, 0.25);
 
     if (coordinates.length < 2) return null;
 
@@ -110,16 +105,8 @@ export default function RouteMap({
                         y2={endY}
                         gradientUnits="userSpaceOnUse"
                     >
-                        <Stop
-                            offset="0"
-                            stopColor={resolvedColor}
-                            stopOpacity={0.6}
-                        />
-                        <Stop
-                            offset="1"
-                            stopColor={resolvedColor}
-                            stopOpacity={1}
-                        />
+                        <Stop offset="0" stopColor={color} stopOpacity={0.6} />
+                        <Stop offset="1" stopColor={color} stopOpacity={1} />
                     </LinearGradient>
                 </Defs>
 
@@ -127,7 +114,7 @@ export default function RouteMap({
                 <Path
                     d={pathD}
                     stroke={glowColor}
-                    strokeWidth={8}
+                    strokeWidth={strokeWidth * 2.5}
                     strokeLinejoin="round"
                     strokeLinecap="round"
                     fill="none"
@@ -137,7 +124,7 @@ export default function RouteMap({
                 <Path
                     d={pathD}
                     stroke={`url(#${gradientId})`}
-                    strokeWidth={2.5}
+                    strokeWidth={strokeWidth}
                     strokeLinejoin="round"
                     strokeLinecap="round"
                     fill="none"

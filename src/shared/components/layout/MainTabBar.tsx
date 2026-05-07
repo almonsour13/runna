@@ -17,7 +17,7 @@ function MainTabBar({ state, navigation }: { state: any; navigation: any }) {
         {
             label: "Report",
             icon: "bar-chart",
-            visible: true,
+            visible: false,
         },
         {
             label: "History",
@@ -32,9 +32,9 @@ function MainTabBar({ state, navigation }: { state: any; navigation: any }) {
     ];
 
     return (
-        <RowView className="absolute bottom-0 left-0 right-0 p-4 justify-between items-center">
-            <Card className="h-20 p-4 px-6 bg-sidebar flex-1 justify-between">
-                <RowView className="flex-1 gap-0 justify-between">
+        <RowView className="absolute bottom-0 left-0 right-0 p-4 justify-center items-center">
+            <Card className="h-20 p-4 bg-card border border-border/40">
+                <RowView className="flex-1 justify-between">
                     {tabs
                         .filter((tab) => tab.visible)
                         .map((tab, index) => {
@@ -45,7 +45,7 @@ function MainTabBar({ state, navigation }: { state: any; navigation: any }) {
                                     onPress={() =>
                                         navigation.navigate(tab.label)
                                     }
-                                    className="justify-center items-center"
+                                    className="justify-center items-center px-4"
                                 >
                                     <ColView className="gap-2 min-h-12 justify-center items-center ">
                                         <Ionicons

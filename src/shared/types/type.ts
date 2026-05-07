@@ -17,3 +17,16 @@ export type Activity = {
     createdAt: string;
     updatedAt: string;
 };
+
+export type Profile = {
+    id?: string;
+    name: string;
+    height: number; // cm
+    weight: number; // kg
+    age: number; // years
+    gender: Gender | null;
+    createdAt?: string; // ISO 8601
+    updatedAt?: string;
+};
+
+export type Gender = "male" | "female" | "other";
