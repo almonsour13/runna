@@ -1,12 +1,14 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
-import { Dimensions, FlatList, ScrollView, Text, View } from "react-native";
+import Text from "@/shared/components/ui/Text";
+import { Dimensions, FlatList, ScrollView, View } from "react-native";
+import RecentActivities from "./components/RecentActivity";
 
 const { width } = Dimensions.get("window");
 export default function HomeScreen() {
     return (
         <ScrollView showsVerticalScrollIndicator={false}>
-            <ColView className="flex-1 gap-4 pb-4">
+            <ColView className="flex-1 gap-4 pb-28">
                 <View className="px-4 pt-8">
                     <Text className="text-2xl text-foreground font-medium">
                         Home
@@ -15,22 +17,6 @@ export default function HomeScreen() {
                 <View className="px-4">
                     <Card className="h-48" />
                 </View>
-
-                <ColView className="gap-2">
-                    <RowView className="px-4 justify-between">
-                        <Text className="text-base text-foreground">
-                            Category
-                        </Text>
-                        <Text className="text-base text-muted-foreground">
-                            See All
-                        </Text>
-                    </RowView>
-                    <RowView className="px-4 gap-2">
-                        {Array.from({ length: 4 }).map((_, i) => (
-                            <Card key={i} className="h-24 flex-1" />
-                        ))}
-                    </RowView>
-                </ColView>
                 <ColView className="gap-2">
                     <RowView className="px-4 justify-between">
                         <Text className="text-base text-foreground">
@@ -58,21 +44,7 @@ export default function HomeScreen() {
                         )}
                     />
                 </ColView>
-                <ColView className="gap-2">
-                    <RowView className="px-4 justify-between">
-                        <Text className="text-base text-foreground">
-                            Recent Activity
-                        </Text>
-                        <Text className="text-base text-muted-foreground">
-                            See All
-                        </Text>
-                    </RowView>
-                    <ColView className="px-4 gap-2 ">
-                        {Array.from({ length: 4 }).map((_, i) => (
-                            <Card key={i} className="h-24" />
-                        ))}
-                    </ColView>
-                </ColView>
+                <RecentActivities />
             </ColView>
         </ScrollView>
     );
