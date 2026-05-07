@@ -12,7 +12,7 @@ export default function Text({ style, className, ...props }: TextProps) {
     return (
         <RNText
             style={[{ fontFamily: font }, style]}
-            className={cn("", className)}
+            className={cn("text-foreground", className)}
             {...props}
         />
     );
