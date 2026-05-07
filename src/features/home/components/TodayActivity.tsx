@@ -3,13 +3,16 @@ import Card from "@/shared/components/ui/Card";
 import RingChart from "@/shared/components/ui/RingChart";
 import Text from "@/shared/components/ui/Text";
 import { useActivityStore } from "@/shared/stores/use-activity.store";
+import { NavigationProp } from "@/shared/types/type";
 import { computeTotalDistance, convertMtoKm } from "@/shared/utils/distance";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/native";
 import { format } from "date-fns";
 import { useMemo } from "react";
-import { View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 
 export default function TodayActivity() {
+    const navigation = useNavigation<NavigationProp>();
     const activities = useActivityStore((s) => s.activities);
 
     const date = new Date();
@@ -75,11 +78,18 @@ export default function TodayActivity() {
                         • {format(date, "MMM d, yyyy")}
                     </Text>
                 </RowView>
-                <Text className="text-base text-primary font-medium">
-                    {todayActivities.length}
-                    {"  "}
-                    {todayActivities.length === 1 ? "Session" : "Sessions"}
-                </Text>
+                <TouchableOpacity
+                    onPress={() =>
+                        navigation.navigate("History", {
+                            initialFilter: "Today",
+                        })
+                    }
+                >
+                    <Text className="text-base text-primary font-medium">
+                        {todayActivities.length}{" "}
+                        {todayActivities.length === 1 ? "Session" : "Sessions"}
+                    </Text>
+                </TouchableOpacity>
             </RowView>
             <ColView className="px-4 gap-1">
                 <Card className="">

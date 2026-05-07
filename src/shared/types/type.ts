@@ -1,3 +1,20 @@
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+export type RootStackParamList = {
+    History: {
+        initialFilter?:
+            | "All"
+            | "Today"
+            | "This Week"
+            | "This Month"
+            | "All Time";
+    };
+};
+export type NavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    "History"
+>;
+
 export type ActivityType = "walk" | "run";
 
 export type Coordinate = {
