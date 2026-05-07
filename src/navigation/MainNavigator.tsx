@@ -1,3 +1,4 @@
+import HistoryScreen from "@/features/history/HistoryScreen";
 import HomeScreen from "@/features/home/HomeScreen";
 import MainTabBar from "@/shared/components/layout/MainTabBar";
 import { useActivity } from "@/shared/hooks/use-activity";
@@ -21,6 +22,7 @@ export default function MainNavigator() {
                 tabBar={(props) => <MainTabBar {...props} />}
             >
                 <Tab.Screen name="Home" component={HomeScreen} />
+                <Tab.Screen name="History" component={HistoryScreen} />
             </Tab.Navigator>
         </SafeAreaView>
     );

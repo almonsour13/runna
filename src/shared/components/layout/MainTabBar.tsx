@@ -33,7 +33,7 @@ function MainTabBar({ state, navigation }: { state: any; navigation: any }) {
 
     return (
         <RowView className="absolute bottom-0 left-0 right-0 p-4 justify-between items-center">
-            <Card className="h-20 p-4 px-6 bg-card-foreground flex-1 justify-between">
+            <Card className="h-20 p-4 px-6 bg-sidebar flex-1 justify-between">
                 <RowView className="flex-1 gap-0 justify-between">
                     {tabs
                         .filter((tab) => tab.visible)
