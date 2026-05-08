@@ -18,6 +18,7 @@ export type NavigationProp = NativeStackNavigationProp<
     "History"
 >;
 
+export type ActivityTrackingStatus = "idle" | "active" | "paused";
 export type ActivityType = "walk" | "run";
 
 export type Coordinate = {

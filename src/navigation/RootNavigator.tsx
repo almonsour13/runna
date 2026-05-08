@@ -1,4 +1,5 @@
 import ActivityDetailsScreen from "@/features/ActivityDetails/ActivityDetailsScreen";
+import ActivityTrackingScreen from "@/features/ActivityTracking/ActivityTrackingScreen";
 import {
     DMSans_400Regular,
     DMSans_500Medium,
@@ -33,6 +34,13 @@ export default function RootNavigator() {
                 }}
             >
                 <Stack.Screen name="Main" component={MainNavigator} />
+                <Stack.Screen
+                    name="ActivityTracking"
+                    component={ActivityTrackingScreen}
+                    options={{
+                        animation: "fade",
+                    }}
+                />
                 <Stack.Screen
                     name="ActivityDetails"
                     component={ActivityDetailsScreen}
