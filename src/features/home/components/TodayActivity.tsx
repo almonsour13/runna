@@ -98,6 +98,7 @@ export default function TodayActivity() {
             icon: "speedometer-outline",
         },
     ];
+    const hasActivity = todayActivities.length > 0;
     return (
         <ColView>
             <RowView className="px-4 justify-between items-end">
@@ -114,10 +115,14 @@ export default function TodayActivity() {
                         })
                     }
                 >
-                    <Text className="text-base text-primary font-medium">
-                        {todayActivities.length}{" "}
-                        {todayActivities.length === 1 ? "Session" : "Sessions"}
-                    </Text>
+                    {hasActivity && (
+                        <Text className="text-base text-primary font-medium">
+                            {todayActivities.length}{" "}
+                            {todayActivities.length === 1
+                                ? "Session"
+                                : "Sessions"}
+                        </Text>
+                    )}
                 </TouchableOpacity>
             </RowView>
             <ColView className="px-4 gap-1">
@@ -127,17 +132,23 @@ export default function TodayActivity() {
                             <RowView className="justify-between items-center">
                                 <ColView className="gap-1">
                                     <View>
-                                        <Text
-                                            className={`text-[10px] font-medium ${
-                                                goalReached
-                                                    ? "text-primary"
-                                                    : "text-foreground"
-                                            }`}
-                                        >
-                                            {goalReached
-                                                ? "Goal complete"
-                                                : `${pct.toFixed(0)}% of goal`}
-                                        </Text>
+                                        {hasActivity ? (
+                                            <Text
+                                                className={`text-[10px] font-medium ${
+                                                    goalReached
+                                                        ? "text-primary"
+                                                        : "text-foreground"
+                                                }`}
+                                            >
+                                                {goalReached
+                                                    ? "Goal complete"
+                                                    : `${pct.toFixed(0)}% of goal`}
+                                            </Text>
+                                        ) : (
+                                            <Text className="text-[10px] text-foreground">
+                                                Start today's activity
+                                            </Text>
+                                        )}
                                     </View>
 
                                     <RowView className="items-baseline gap-1.5">
@@ -150,9 +161,11 @@ export default function TodayActivity() {
                                     </RowView>
 
                                     <Text className="text-xs text-muted-foreground">
-                                        {remainingKm > 0
-                                            ? `${remainingKm.toFixed(1)} km remaining`
-                                            : `Exceeded by ${(Number(distanceKm) - Number(goalKm)).toFixed(1)} km`}
+                                        {hasActivity
+                                            ? remainingKm > 0
+                                                ? `${remainingKm.toFixed(1)} km remaining`
+                                                : `Exceeded by ${(Number(distanceKm) - Number(goalKm)).toFixed(1)} km`
+                                            : "Start today's activity"}
                                     </Text>
                                 </ColView>
 

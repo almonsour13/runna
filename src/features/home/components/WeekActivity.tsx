@@ -54,6 +54,8 @@ function WeekActivity() {
         return result;
     }, [activities]);
 
+    const hasActivity = weekActivity.some((d) => !d.isFuture && d.distance > 0);
+
     const distanceKm = convertMtoKm(
         weekActivity
             .filter((d) => !d.isFuture)
@@ -76,6 +78,11 @@ function WeekActivity() {
     })();
 
     const motivation = (() => {
+        if (!hasActivity)
+            return {
+                emoji: "✨",
+                text: "No activity this week yet — start today!",
+            };
         if (totalPct >= 90) return { emoji: "🔥", text: "On fire this week!" };
         if (totalPct >= 70)
             return { emoji: "💪", text: "Strong week, keep it up!" };
@@ -84,7 +91,6 @@ function WeekActivity() {
         if (totalPct >= 25) return { emoji: "🚶", text: "Every step counts!" };
         return { emoji: "✨", text: "Let's get moving!" };
     })();
-
     return (
         <View className="px-4">
             {isLoading ? (
@@ -185,9 +191,11 @@ function WeekActivity() {
                                     {/* {motivation.emoji} */}
                                     {motivation.text}
                                 </Text>
-                                <Text className="text-sm text-foreground font-medium">
-                                    {totalPct.toFixed(0)}%
-                                </Text>
+                                {hasActivity && (
+                                    <Text className="text-sm text-foreground font-medium">
+                                        {totalPct.toFixed(0)}%
+                                    </Text>
+                                )}
                             </RowView>
                         </ColView>
                     </ColView>
