@@ -32,7 +32,7 @@ export default function RouteMap({
     coordinates,
     type,
     size,
-    color = "#16a34a",
+    color = "#006239",
     strokeWidth = 8,
 }: RouteMapProps) {
     const screenWidth = Dimensions.get("window").width - 32;

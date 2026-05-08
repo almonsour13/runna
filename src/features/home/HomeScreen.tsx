@@ -1,11 +1,10 @@
 import { ColView } from "@/shared/components/CustomView";
-import { Dimensions, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import HomeHeader from "./components/layout/HomeHeader";
 import RecentActivities from "./components/RecentActivity";
 import TodayActivity from "./components/TodayActivity";
 import WeekActivity from "./components/WeekActivity";
 
-const { width } = Dimensions.get("window");
 export default function HomeScreen() {
     return (
         <ScrollView showsVerticalScrollIndicator={false}>

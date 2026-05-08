@@ -3,8 +3,21 @@ import Card from "@/shared/components/ui/Card";
 import RingChart from "@/shared/components/ui/RingChart";
 import Text from "@/shared/components/ui/Text";
 import { useActivityStore } from "@/shared/stores/use-activity.store";
+import { useProfileStore } from "@/shared/stores/use-profile.store";
 import { NavigationProp } from "@/shared/types/type";
-import { computeTotalDistance, convertMtoKm } from "@/shared/utils/distance";
+import {
+    computeCalories,
+    computePace,
+    computeSpeed,
+    computeTotalDistance,
+} from "@/shared/utils/compute";
+import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
+import {
+    formatCalories,
+    formatDuration,
+    formatPace,
+    formatSpeed,
+} from "@/shared/utils/format";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { format } from "date-fns";
@@ -14,18 +27,30 @@ import { TouchableOpacity, View } from "react-native";
 export default function TodayActivity() {
     const navigation = useNavigation<NavigationProp>();
     const activities = useActivityStore((s) => s.activities);
+    const profile = useProfileStore((s) => s.profile);
 
     const date = new Date();
-    const { todayActivities, distanceKm, goalKm, pct } = useMemo(() => {
+    const {
+        todayActivities,
+        distanceKm,
+        goalKm,
+        pct,
+        durationSec,
+        avgSpeed,
+        avgPace,
+        calories,
+    } = useMemo(() => {
         const todayActivities = activities.filter(
             (a) => new Date(a.createdAt).toDateString() === date.toDateString(),
         );
-        const distanceKm = convertMtoKm(
-            todayActivities.reduce(
-                (acc, activity) =>
-                    acc + computeTotalDistance(activity.coordinates),
-                0,
-            ),
+        const distance = todayActivities.reduce(
+            (acc, activity) => acc + computeTotalDistance(activity.coordinates),
+            0,
+        );
+        const distanceKm = convertMtoKm(distance);
+        const durationSec = todayActivities.reduce(
+            (acc, activity) => acc + convertMsToS(activity.duration),
+            0,
         );
         const goalKm = convertMtoKm(
             todayActivities.reduce((acc, activity) => acc + activity.goal, 0),
@@ -37,34 +62,38 @@ export default function TodayActivity() {
             distanceKm,
             goalKm,
             pct,
+            durationSec,
+            avgSpeed: computeSpeed(distance, durationSec),
+            avgPace: computePace(distance, durationSec),
+            calories: computeCalories(distance, profile?.weight || 70),
         };
     }, [activities]);
 
-    const clampedPct = Math.min(pct, 100);
+    const goalReached = pct >= 100;
     const remainingKm = Math.max(Number(goalKm) - Number(distanceKm), 0);
 
     const stats = [
         {
             label: "Duration",
-            value: "04:12",
-            unit: "h:m",
+            value: formatDuration(durationSec),
+            unit: "hh:mm",
             icon: "time-outline",
         },
         {
             label: "Calories",
-            value: 123,
+            value: formatCalories(calories),
             unit: "kcal",
             icon: "flame-outline",
         },
         {
             label: "Avg. Pace",
-            value: "5:30",
+            value: formatPace(avgPace),
             unit: "min/km",
             icon: "timer-outline",
         },
         {
             label: "Speed",
-            value: 10.9,
+            value: formatSpeed(avgSpeed),
             unit: "km/h",
             icon: "speedometer-outline",
         },
@@ -95,33 +124,50 @@ export default function TodayActivity() {
                 <Card className="">
                     <ColView className="gap-2">
                         <ColView className="gap-4">
-                            <RowView className="justify-between items-end">
-                                <ColView>
-                                    <Text className="text-5xl font-medium">
-                                        {distanceKm.toFixed(1)}{" "}
-                                        <Text className="text-2xl text-muted-foreground">
+                            <RowView className="justify-between items-center">
+                                <ColView className="gap-1">
+                                    <View>
+                                        <Text
+                                            className={`text-[10px] font-medium ${
+                                                goalReached
+                                                    ? "text-primary"
+                                                    : "text-foreground"
+                                            }`}
+                                        >
+                                            {goalReached
+                                                ? "Goal complete"
+                                                : `${pct.toFixed(0)}% of goal`}
+                                        </Text>
+                                    </View>
+
+                                    <RowView className="items-baseline gap-1.5">
+                                        <Text className="text-4xl font-medium text-foreground">
+                                            {distanceKm.toFixed(1)}
+                                        </Text>
+                                        <Text className="text-base text-muted-foreground">
                                             / {goalKm.toFixed(1)} km
                                         </Text>
-                                    </Text>
+                                    </RowView>
 
-                                    <Text className="text-[11px] text-muted-foreground">
-                                        {clampedPct.toFixed(0)}% of daily goal
+                                    <Text className="text-xs text-muted-foreground">
                                         {remainingKm > 0
-                                            ? ` · ${remainingKm.toFixed(1)} km remaining`
-                                            : " · Goal reached!"}
+                                            ? `${remainingKm.toFixed(1)} km remaining`
+                                            : `Exceeded by ${(Number(distanceKm) - Number(goalKm)).toFixed(1)} km`}
                                     </Text>
                                 </ColView>
-                                <View className="relative items-center justify-center">
+
+                                {/* Ring */}
+                                <View className="items-center justify-center">
                                     <RingChart
-                                        pct={Math.min(pct, 100)}
-                                        radius={24}
+                                        pct={pct}
+                                        radius={28}
                                         strokeWidth={6}
                                         strokeLinecap="round"
-                                        trackColor="rgba(128,128,128,0.05)"
+                                        trackColor="rgba(128,128,128,0.08)"
                                     />
-                                    <Text className="absolute text-sm font-medium">
+                                    <Text className="absolute text-[11px] font-medium text-foreground">
                                         {pct.toFixed(0)}
-                                        <Text className="text-[9px] font-medium">
+                                        <Text className="text-[9px] text-muted-foreground">
                                             %
                                         </Text>
                                     </Text>

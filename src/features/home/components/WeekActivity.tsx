@@ -2,7 +2,8 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { useActivityStore } from "@/shared/stores/use-activity.store";
-import { computeTotalDistance, convertMtoKm } from "@/shared/utils/distance";
+import { computeTotalDistance } from "@/shared/utils/compute";
+import { convertMtoKm } from "@/shared/utils/convert";
 import clsx from "clsx";
 import { addDays, format, isSameDay, startOfWeek } from "date-fns";
 import { memo, useMemo } from "react";
@@ -148,7 +149,7 @@ function WeekActivity() {
                                                         "rounded",
                                                         isToday
                                                             ? "bg-primary"
-                                                            : "bg-primary/40",
+                                                            : "bg-primary/20",
                                                     )}
                                                 />
                                             )}

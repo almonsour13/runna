@@ -9,6 +9,9 @@ export type RootStackParamList = {
             | "This Month"
             | "All Time";
     };
+    ActivityDetails: {
+        activityId: string;
+    };
 };
 export type NavigationProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -26,7 +29,7 @@ export type Activity = {
     id: string;
     startTime: string;
     endTime: string;
-    duration: string;
+    duration: number;
     status: string;
     type: ActivityType;
     coordinates: Coordinate[];

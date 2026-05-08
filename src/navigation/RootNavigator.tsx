@@ -1,3 +1,4 @@
+import ActivityDetailsScreen from "@/features/ActivityDetails/ActivityDetailsScreen";
 import {
     DMSans_400Regular,
     DMSans_500Medium,
@@ -32,6 +33,13 @@ export default function RootNavigator() {
                 }}
             >
                 <Stack.Screen name="Main" component={MainNavigator} />
+                <Stack.Screen
+                    name="ActivityDetails"
+                    component={ActivityDetailsScreen}
+                    options={{
+                        animation: "slide_from_right",
+                    }}
+                />
             </Stack.Navigator>
         </NavigationContainer>
     );
