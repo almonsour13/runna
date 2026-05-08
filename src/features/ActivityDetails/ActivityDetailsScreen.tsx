@@ -1,29 +1,35 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import RouteMap from "@/shared/components/RouteMap";
+import SafeScreen from "@/shared/components/SafeScreen";
 import RingChart from "@/shared/components/ui/RingChart";
 import Text from "@/shared/components/ui/Text";
 import { useActivityStore } from "@/shared/stores/use-activity.store";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
 import {
+    computeCalories,
     computePace,
     computeSpeed,
     computeTotalDistance,
 } from "@/shared/utils/compute";
 import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
-import { formatDuration, formatPace, formatSpeed } from "@/shared/utils/format";
+import {
+    formatCalories,
+    formatDuration,
+    formatPace,
+    formatSpeed,
+} from "@/shared/utils/format";
+import { logger } from "@/shared/utils/logger";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { format, isToday, isYesterday } from "date-fns";
+import { useMemo } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import ActivityDetailsEmptyState from "./Components/ActivityDetailsEmptyState";
 
-//running app
 export default function ActivityDetailsScreen() {
     const navigation = useNavigation();
     const route = useRoute();
     const profile = useProfileStore((s) => s.profile);
-
     const { activityId } = route.params as { activityId: string };
 
     const activity = useActivityStore((s) =>
@@ -32,52 +38,71 @@ export default function ActivityDetailsScreen() {
 
     if (!activity) return <ActivityDetailsEmptyState />;
 
-    const dateLabel = isToday(activity.startTime)
-        ? "Today"
-        : isYesterday(activity.startTime)
-          ? "Yesterday"
-          : format(activity.startTime, "EEEE, MMM d yyyy");
+    const { dateLabel, startTime, endTime, distanceKm, goalKm, pct, stats } =
+        useMemo(() => {
+            logger.log("activity", activity);
+            const dateLabel = isToday(activity.startTime)
+                ? "Today"
+                : isYesterday(activity.startTime)
+                  ? "Yesterday"
+                  : format(activity.startTime, "EEEE, MMM d yyyy");
 
-    const startTime = format(activity.startTime, "h:mm a");
-    const endTime = format(activity.endTime, "h:mm a");
-    const distance = computeTotalDistance(activity.coordinates);
-    const distanceKm = Number(convertMtoKm(distance));
-    const goalKm = Number(convertMtoKm(activity.goal));
-    const pct = (distanceKm / goalKm) * 100 || 0;
-    const goalReached = pct >= 100;
-    const remainingKm = Math.max(goalKm - distanceKm, 0);
-    const durationSec = convertMsToS(activity.duration);
-    const stats = [
-        {
-            label: "Duration",
-            value: formatDuration(convertMsToS(activity.duration)),
-            unit: "hh:mm",
-            icon: "time-outline" as const,
-        },
-        {
-            label: "Calories",
-            value: 123,
-            unit: "kcal",
-            icon: "flame-outline" as const,
-        },
-        {
-            label: "Pace",
-            value: formatPace(computePace(distance, durationSec)),
-            unit: "min/km",
-            icon: "timer-outline" as const,
-        },
-        {
-            label: "Speed",
-            value: formatSpeed(computeSpeed(distance, durationSec)),
-            unit: "km/h",
-            icon: "speedometer-outline" as const,
-        },
-    ];
+            const startTime = format(activity.startTime, "h:mm a");
+            const endTime = activity.endTime
+                ? format(activity.endTime, "h:mm a")
+                : "Ongoing";
+
+            const distance = computeTotalDistance(activity.coordinates);
+            const distanceKm = Number(convertMtoKm(distance));
+            const goalKm = Number(convertMtoKm(activity.goal));
+            const pct =
+                goalKm > 0 ? Math.min((distanceKm / goalKm) * 100, 100) : 0;
+            const durationSec = convertMsToS(activity.duration);
+
+            const stats = [
+                {
+                    label: "Duration",
+                    value: formatDuration(durationSec),
+                    unit: "hh:mm",
+                    icon: "time-outline" as const,
+                },
+                {
+                    label: "Calories",
+                    value: formatCalories(
+                        computeCalories(distance, profile?.weight ?? 70),
+                    ),
+                    unit: "kcal",
+                    icon: "flame-outline" as const,
+                },
+                {
+                    label: "Pace",
+                    value: formatPace(computePace(distance, durationSec)),
+                    unit: "min/km",
+                    icon: "timer-outline" as const,
+                },
+                {
+                    label: "Speed",
+                    value: formatSpeed(computeSpeed(distance, durationSec)),
+                    unit: "km/h",
+                    icon: "speedometer-outline" as const,
+                },
+            ];
+
+            return {
+                dateLabel,
+                startTime,
+                endTime,
+                distanceKm,
+                goalKm,
+                pct,
+                stats,
+            };
+        }, [activity, profile?.weight]);
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeScreen>
             <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-                <ColView className="flex-1 gap-8 ">
+                <ColView className="flex-1 gap-8">
                     <RowView className="px-4 pt-4 gap-2 items-center">
                         <RowView className="flex-1 gap-4 items-center">
                             <TouchableOpacity
@@ -98,14 +123,16 @@ export default function ActivityDetailsScreen() {
                             <Ionicons name="share-social" size={24} />
                         </RowView>
                     </RowView>
-                    <ColView className="px-4 ">
+
+                    <ColView className="px-4">
                         <RouteMap
                             coordinates={activity.coordinates}
                             type={activity.type}
                             strokeWidth={4}
                         />
                     </ColView>
-                    <ColView className="flex-1 p-4 pt-8 gap-8 ">
+
+                    <ColView className="flex-1 p-4 pt-8 gap-8">
                         <RowView className="justify-between">
                             <ColView className="gap-1">
                                 <RowView className="gap-1 items-center">
@@ -141,6 +168,7 @@ export default function ActivityDetailsScreen() {
                                 </Text>
                             </View>
                         </RowView>
+
                         <RowView className="gap-2">
                             {stats.map((stat) => (
                                 <ColView
@@ -171,6 +199,6 @@ export default function ActivityDetailsScreen() {
                     </ColView>
                 </ColView>
             </ScrollView>
-        </SafeAreaView>
+        </SafeScreen>
     );
 }

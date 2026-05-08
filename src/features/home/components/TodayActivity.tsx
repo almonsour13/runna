@@ -29,7 +29,8 @@ export default function TodayActivity() {
     const activities = useActivityStore((s) => s.activities);
     const profile = useProfileStore((s) => s.profile);
 
-    const date = new Date();
+    const date = useMemo(() => new Date(), []);
+
     const {
         todayActivities,
         distanceKm,
@@ -43,19 +44,26 @@ export default function TodayActivity() {
         const todayActivities = activities.filter(
             (a) => new Date(a.createdAt).toDateString() === date.toDateString(),
         );
+
         const distance = todayActivities.reduce(
             (acc, activity) => acc + computeTotalDistance(activity.coordinates),
             0,
         );
         const distanceKm = convertMtoKm(distance);
+
         const durationSec = todayActivities.reduce(
             (acc, activity) => acc + convertMsToS(activity.duration),
             0,
         );
-        const goalKm = convertMtoKm(
-            todayActivities.reduce((acc, activity) => acc + activity.goal, 0),
+
+        const goalM = todayActivities.reduce(
+            (acc, activity) => acc + activity.goal,
+            0,
         );
-        const pct = (Number(distanceKm) / Number(goalKm)) * 100 || 0;
+        const goalKm = convertMtoKm(goalM);
+
+        const pct =
+            goalKm > 0 ? (Number(distanceKm) / Number(goalKm)) * 100 : 0;
 
         return {
             todayActivities,
@@ -65,9 +73,9 @@ export default function TodayActivity() {
             durationSec,
             avgSpeed: computeSpeed(distance, durationSec),
             avgPace: computePace(distance, durationSec),
-            calories: computeCalories(distance, profile?.weight || 70),
+            calories: computeCalories(distance, profile?.weight ?? 70),
         };
-    }, [activities]);
+    }, [activities, date, profile]);
 
     const goalReached = pct >= 100;
     const remainingKm = Math.max(Number(goalKm) - Number(distanceKm), 0);
@@ -98,7 +106,9 @@ export default function TodayActivity() {
             icon: "speedometer-outline",
         },
     ];
+
     const hasActivity = todayActivities.length > 0;
+
     return (
         <ColView>
             <RowView className="px-4 justify-between items-end">
@@ -126,7 +136,7 @@ export default function TodayActivity() {
                 </TouchableOpacity>
             </RowView>
             <ColView className="px-4 gap-1">
-                <Card className="">
+                <Card>
                     <ColView className="gap-2">
                         <ColView className="gap-4">
                             <RowView className="justify-between items-center">
@@ -169,7 +179,6 @@ export default function TodayActivity() {
                                     </Text>
                                 </ColView>
 
-                                {/* Ring */}
                                 <View className="items-center justify-center">
                                     <RingChart
                                         pct={pct}
@@ -186,7 +195,9 @@ export default function TodayActivity() {
                                     </Text>
                                 </View>
                             </RowView>
+
                             <View className="border-b border-border/40" />
+
                             <RowView>
                                 {stats.map((stat, i) => (
                                     <ColView

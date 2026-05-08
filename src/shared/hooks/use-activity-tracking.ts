@@ -54,7 +54,6 @@ export const useActivityTracking = () => {
 
         const unsubscribeLocation = locationService.onLocationUpdate((loc) => {
             addCoordinateRef.current(loc);
-            console.log("use activity tracking:", loc);
         });
 
         return () => {

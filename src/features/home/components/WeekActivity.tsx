@@ -12,18 +12,28 @@ import { TouchableOpacity, View } from "react-native";
 function WeekActivity() {
     const isLoading = useActivityStore((s) => s.isLoading);
     const activities = useActivityStore((s) => s.activities);
-    const today = new Date();
 
-    const weekActivity = useMemo(() => {
+    const today = useMemo(() => new Date(), []);
+
+    const {
+        weekActivity,
+        distanceKm,
+        goalKm,
+        totalPct,
+        streak,
+        motivation,
+        hasActivity,
+    } = useMemo(() => {
         const map = new Map<string, typeof activities>();
         activities.forEach((a) => {
             const key = new Date(a.createdAt).toDateString();
             if (!map.has(key)) map.set(key, []);
             map.get(key)!.push(a);
         });
+
         const start = startOfWeek(today, { weekStartsOn: 0 });
 
-        const result = Array.from({ length: 7 }).map((_, i) => {
+        const weekActivity = Array.from({ length: 7 }).map((_, i) => {
             const date = addDays(start, i);
             const key = date.toDateString();
             const dayActivities = map.get(key) ?? [];
@@ -37,8 +47,7 @@ function WeekActivity() {
                 (acc, activity) => acc + activity.goal,
                 0,
             );
-            const pct =
-                Math.min((Number(distance) / Number(goal)) * 100, 100) || 0;
+            const pct = goal > 0 ? Math.min((distance / goal) * 100, 100) : 0;
 
             return {
                 date,
@@ -51,46 +60,62 @@ function WeekActivity() {
                 isFuture: date > today,
             };
         });
-        return result;
-    }, [activities]);
 
-    const hasActivity = weekActivity.some((d) => !d.isFuture && d.distance > 0);
+        const hasActivity = weekActivity.some(
+            (d) => !d.isFuture && d.distance > 0,
+        );
 
-    const distanceKm = convertMtoKm(
-        weekActivity
-            .filter((d) => !d.isFuture)
-            .reduce((a, b) => a + b.distance, 0),
-    );
-    const goalKm = convertMtoKm(
-        weekActivity.filter((d) => !d.isFuture).reduce((a, b) => a + b.goal, 0),
-    );
+        const distanceKm = convertMtoKm(
+            weekActivity
+                .filter((d) => !d.isFuture)
+                .reduce((a, b) => a + b.distance, 0),
+        );
+        const goalKm = convertMtoKm(
+            weekActivity
+                .filter((d) => !d.isFuture)
+                .reduce((a, b) => a + b.goal, 0),
+        );
 
-    const totalPct = goalKm > 0 ? (distanceKm / goalKm) * 100 : 0;
+        const totalPct = goalKm > 0 ? (distanceKm / goalKm) * 100 : 0;
 
-    const streak = (() => {
-        let count = 0;
-        for (let i = weekActivity.length - 1; i >= 0; i--) {
-            if (weekActivity[i].isFuture) continue;
-            if (weekActivity[i].pct >= 100) count++;
-            else break;
-        }
-        return count;
-    })();
+        const streak = (() => {
+            let count = 0;
+            for (let i = weekActivity.length - 1; i >= 0; i--) {
+                if (weekActivity[i].isFuture) continue;
+                if (weekActivity[i].pct >= 100) count++;
+                else break;
+            }
+            return count;
+        })();
 
-    const motivation = (() => {
-        if (!hasActivity)
-            return {
-                emoji: "✨",
-                text: "No activity this week yet — start today!",
-            };
-        if (totalPct >= 90) return { emoji: "🔥", text: "On fire this week!" };
-        if (totalPct >= 70)
-            return { emoji: "💪", text: "Strong week, keep it up!" };
-        if (totalPct >= 50)
-            return { emoji: "👟", text: "Halfway there, push on!" };
-        if (totalPct >= 25) return { emoji: "🚶", text: "Every step counts!" };
-        return { emoji: "✨", text: "Let's get moving!" };
-    })();
+        const motivation = (() => {
+            if (!hasActivity)
+                return {
+                    emoji: "✨",
+                    text: "No activity this week yet — start today!",
+                };
+            if (totalPct >= 90)
+                return { emoji: "🔥", text: "On fire this week!" };
+            if (totalPct >= 70)
+                return { emoji: "💪", text: "Strong week, keep it up!" };
+            if (totalPct >= 50)
+                return { emoji: "👟", text: "Halfway there, push on!" };
+            if (totalPct >= 25)
+                return { emoji: "🚶", text: "Every step counts!" };
+            return { emoji: "✨", text: "Let's get moving!" };
+        })();
+
+        return {
+            weekActivity,
+            distanceKm,
+            goalKm,
+            totalPct,
+            streak,
+            motivation,
+            hasActivity,
+        };
+    }, [activities, today]);
+
     return (
         <View className="px-4">
             {isLoading ? (
@@ -99,7 +124,7 @@ function WeekActivity() {
                 <Card className="">
                     <ColView className="gap-4">
                         <ColView className="gap-2">
-                            <RowView className="justify-between ">
+                            <RowView className="justify-between">
                                 <Text className="text-sm uppercase text-muted-foreground">
                                     This Week
                                 </Text>
@@ -135,60 +160,51 @@ function WeekActivity() {
                                 </Text>
                             </RowView>
                         </ColView>
-                        <RowView className="items-end gap-1 ">
-                            {weekActivity.map((day, i) => {
-                                const isToday = isSameDay(day.date, today);
 
-                                return (
-                                    <TouchableOpacity
-                                        key={i}
-                                        disabled={day.isFuture}
-                                        className="flex-1 items-center gap-1"
+                        <RowView className="items-end gap-1">
+                            {weekActivity.map((day, i) => (
+                                <TouchableOpacity
+                                    key={i}
+                                    disabled={day.isFuture}
+                                    className="flex-1 items-center gap-1"
+                                >
+                                    <Card className="light h-16 w-full justify-end bg-foreground/16 rounded overflow-hidden p-0 border-0">
+                                        {!day.isFuture && (
+                                            <View
+                                                style={{
+                                                    height: `${day.pct}%`,
+                                                }}
+                                                className={clsx(
+                                                    "rounded",
+                                                    day.isToday
+                                                        ? "bg-primary"
+                                                        : "bg-primary/20",
+                                                )}
+                                            />
+                                        )}
+                                    </Card>
+                                    <Text
+                                        className={`text-xs ${
+                                            day.isToday
+                                                ? "text-foreground font-bold"
+                                                : "text-muted-foreground"
+                                        }`}
                                     >
-                                        <Card className="light h-16 w-full justify-end bg-foreground/16 rounded overflow-hidden p-0 border-0">
-                                            {!day.isFuture && (
-                                                <View
-                                                    style={{
-                                                        height: `${day.pct}%`,
-                                                    }}
-                                                    className={clsx(
-                                                        "rounded",
-                                                        isToday
-                                                            ? "bg-primary"
-                                                            : "bg-primary/20",
-                                                    )}
-                                                />
-                                            )}
-                                        </Card>
-
-                                        <Text
-                                            className={`text-xs ${
-                                                isToday
-                                                    ? "text-foreground font-bold"
-                                                    : "text-muted-foreground"
-                                            }`}
-                                        >
-                                            {day.label}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
+                                        {day.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
                         </RowView>
 
-                        {/* Footer / Summary */}
                         <ColView className="gap-2">
                             <View className="h-1 w-full bg-foreground/16 rounded overflow-hidden">
                                 <View
-                                    style={{
-                                        width: `${totalPct}%`,
-                                    }}
+                                    style={{ width: `${totalPct}%` }}
                                     className="h-1 bg-primary rounded"
                                 />
                             </View>
-
                             <RowView className="justify-between">
                                 <Text className="text-sm text-muted-foreground">
-                                    {/* {motivation.emoji} */}
                                     {motivation.text}
                                 </Text>
                                 {hasActivity && (
@@ -204,4 +220,5 @@ function WeekActivity() {
         </View>
     );
 }
+
 export default memo(WeekActivity);

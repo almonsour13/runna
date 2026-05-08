@@ -3,6 +3,7 @@ import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { useNavigation } from "@react-navigation/native";
 import { format, isToday, isYesterday } from "date-fns";
+import { useMemo } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { Activity, NavigationProp } from "../types/type";
 import { computeTotalDistance } from "../utils/compute";
@@ -12,21 +13,27 @@ import RouteMap from "./RouteMap";
 
 export default function ActivityCard({ activity }: { activity: Activity }) {
     const navigation = useNavigation<NavigationProp>();
-    const date = isToday(activity.startTime)
-        ? "Today"
-        : isYesterday(activity.startTime)
-          ? "Yesterday"
-          : format(activity.startTime, "MMM d");
 
-    const timeRange = [
-        date,
-        format(activity.startTime, "p"),
-        format(activity.endTime, "p"),
-    ].join(" • ");
+    const { distanceKm, goalKm, pct, timeRange } = useMemo(() => {
+        const distanceKm = convertMtoKm(
+            computeTotalDistance(activity.coordinates),
+        );
+        const goalKm = convertMtoKm(activity.goal);
+        const pct = goalKm > 0 ? Math.min((distanceKm / goalKm) * 100, 100) : 0;
+        const date = isToday(activity.startTime)
+            ? "Today"
+            : isYesterday(activity.startTime)
+              ? "Yesterday"
+              : format(activity.startTime, "MMM d");
+        const timeRange = [
+            date,
+            format(activity.startTime, "p"),
+            activity.endTime ? format(activity.endTime, "p") : "Ongoing",
+        ].join(" • ");
 
-    const distanceKm = convertMtoKm(computeTotalDistance(activity.coordinates));
-    const goalKm = convertMtoKm(activity.goal);
-    const pct = (Number(distanceKm) / Number(goalKm)) * 100 || 0;
+        return { distanceKm, goalKm, pct, timeRange };
+    }, [activity]);
+
     return (
         <TouchableOpacity
             activeOpacity={0.9}

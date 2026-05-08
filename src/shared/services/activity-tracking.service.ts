@@ -260,6 +260,10 @@ class ActivityTrackingService {
                 updatedAt: new Date().toISOString(),
                 createdAt: new Date().toISOString(),
             };
+            logger.log(
+                "[ActivityService] Activity stopped",
+                formattedNewActivity,
+            );
 
             await activityService.save(formattedNewActivity);
 
