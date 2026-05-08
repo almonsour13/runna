@@ -69,8 +69,11 @@ function generateEarthCoordinates(
         coordinates.push({
             latitude: Number((lat + noiseLat).toFixed(6)),
             longitude: Number((lng + noiseLng).toFixed(6)),
-            // ✅ each point is startTimestamp + (index * 5000ms)
             timestamp: startTimestamp + coordinates.length * intervalMs,
+            accuracy: 0,
+            altitude: 0,
+            heading: 0,
+            speed: 0,
         });
 
         distanceCovered += distanceThisStep;
@@ -79,12 +82,17 @@ function generateEarthCoordinates(
     return coordinates;
 }
 
-export const generateActivities = (): Activity[] => {
-    const months = 2;
-
-    const goal = 5000; // meters
-    const sessionMaxPerDay = 3;
-
+export const generateActivities = ({
+    months = 2,
+    goal = 5000,
+    sessionMinPerDay = 1,
+    sessionMaxPerDay = 3,
+}: {
+    months?: number;
+    goal?: number;
+    sessionMinPerDay?: number;
+    sessionMaxPerDay?: number;
+}): Activity[] => {
     const activities: Activity[] = [];
 
     const now = new Date();
@@ -100,7 +108,7 @@ export const generateActivities = (): Activity[] => {
         day <= now;
         day.setDate(day.getDate() + 1)
     ) {
-        const sessionCount = randomInt(1, sessionMaxPerDay);
+        const sessionCount = randomInt(sessionMinPerDay, sessionMaxPerDay);
 
         for (let i = 0; i < sessionCount; i++) {
             const type = Math.random() > 0.5 ? "walk" : "run";
