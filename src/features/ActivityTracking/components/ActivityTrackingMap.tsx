@@ -15,8 +15,17 @@ export default function ActivityTrackingMap() {
     );
     const animatedHeight = useRef(new Animated.Value(0)).current;
     const animatedOpacity = useRef(new Animated.Value(0)).current;
+    const isFirstRender = useRef(true);
 
     useEffect(() => {
+        if (isFirstRender.current) {
+            // Set the value instantly without animation
+            animatedHeight.setValue(isMapExpanded ? MAP_HEIGHT : 0);
+            animatedOpacity.setValue(isMapExpanded ? 1 : 0);
+            isFirstRender.current = false;
+            return;
+        }
+
         Animated.parallel([
             Animated.timing(animatedHeight, {
                 toValue: isMapExpanded ? MAP_HEIGHT : 0,
