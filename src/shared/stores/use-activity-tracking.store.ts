@@ -1,9 +1,10 @@
 import { create } from "zustand";
-import { ActivityTrackingStatus } from "../types/type";
+import { ActivityTrackingStatus, Coordinate } from "../types/type";
 
 type ActivityTracking = {
     status: ActivityTrackingStatus;
     duration: number;
+    coordinates: Coordinate[] | [];
 };
 
 type ActivityTrackingState = {
@@ -14,11 +15,18 @@ type ActivityTrackingState = {
 
     setDuration: (duration: number) => void;
     setStatus: (status: ActivityTrackingStatus) => void;
+
+    setCoordinates: (coordinates: Coordinate[]) => void;
+    addCoordinate: (coordinate: Coordinate) => void;
+
+    isMapExpanded?: boolean;
+    setIsMapExpanded: (isMapExpanded: boolean) => void;
 };
 
 const INITIAL_STATE: ActivityTracking = {
     status: "idle",
     duration: 0,
+    coordinates: [],
 };
 
 export const useActivityTrackingStore = create<ActivityTrackingState>(
@@ -43,5 +51,23 @@ export const useActivityTrackingStore = create<ActivityTrackingState>(
                     status,
                 },
             })),
+
+        setCoordinates: (coordinates) =>
+            set((state) => ({
+                activity: {
+                    ...state.activity,
+                    coordinates,
+                },
+            })),
+        addCoordinate: (coordinate) =>
+            set((state) => ({
+                activity: {
+                    ...state.activity,
+                    coordinates: [...state.activity.coordinates, coordinate],
+                },
+            })),
+
+        isMapExpanded: false,
+        setIsMapExpanded: (isMapExpanded) => set({ isMapExpanded }),
     }),
 );

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { generateActivities } from "../lib/data";
+import { activityService } from "../services/storage/activity.service";
 import { useActivityStore } from "../stores/use-activity.store";
 
 export const useActivity = () => {
@@ -10,7 +10,7 @@ export const useActivity = () => {
         const init = async () => {
             try {
                 setIsLoading(true);
-                const data = generateActivities();
+                const data = await activityService.get();
 
                 setActivities(data);
 

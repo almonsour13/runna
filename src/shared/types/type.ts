@@ -17,14 +17,26 @@ export type NavigationProp = NativeStackNavigationProp<
     RootStackParamList,
     "History"
 >;
-
+export type Location = {
+    latitude: number;
+    longitude: number;
+    altitude: number | null;
+    accuracy: number;
+    timestamp: number;
+    speed: number | null;
+    heading: number | null;
+};
 export type ActivityTrackingStatus = "idle" | "active" | "paused";
 export type ActivityType = "walk" | "run";
 
 export type Coordinate = {
     latitude: number;
     longitude: number;
+    altitude: number | null;
     timestamp: number;
+    speed: number;
+    accuracy: number;
+    heading?: number | null;
 };
 export type Activity = {
     id: string;

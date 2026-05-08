@@ -1,28 +1,49 @@
-import { ActivityTrackingStatus } from "../types/type";
+import { STORAGE_KEYS } from "../constant/constant";
+import { Activity, ActivityTrackingStatus, Coordinate } from "../types/type";
 import { logger } from "../utils/logger";
 import { generateId } from "../utils/utils";
+import { locationService } from "./location.service";
+import { activityService } from "./storage/activity.service";
+import { StorageService } from "./storage/storage.service";
 
 type Metrics = {
     duration: number;
     status?: ActivityTrackingStatus;
+    coordinates?: Coordinate[] | [];
 };
+
 type ActivityTracking = {
     id: string;
     startTime: number;
     pausedTime: number;
     lastPauseTime: number | null;
     status: ActivityTrackingStatus;
-    steps: number;
+    coordinates: Coordinate[] | [];
 };
 
 class ActivityTrackingService {
+    private activityStorage = new StorageService(STORAGE_KEYS.activityTracking);
     private activity: ActivityTracking | null = null;
     private metricsUpdateCallBacks: Array<(metrics: Metrics) => void> = [];
     private readonly SESSION_UPDATE_INTERVAL = 1000;
     private activeActivityUpdateInterval: ReturnType<
         typeof setInterval
     > | null = null;
+    private removeLocationListener: (() => void) | null = null;
 
+    getCurrentMetrics(): Metrics | null {
+        if (!this.activity) return null;
+
+        return {
+            duration: this.getElapsedMs(),
+            status: this.activity.status,
+            coordinates: this.activity.coordinates,
+        };
+    }
+
+    // ======================
+    // Elapsed time
+    // ======================
     private getElapsedMs(): number {
         if (!this.activity) return 0;
 
@@ -35,11 +56,13 @@ class ActivityTrackingService {
 
         return Date.now() - startTime - pausedTime - extraPaused;
     }
+
+    // ======================
+    // Metrics
+    // ======================
     private notifyMetricsUpdate(): void {
         if (!this.activity) return;
 
-        // REMOVE: fake step calculation based on elapsed time
-        // Steps are now updated directly from stepService via subscribeToSteps()
         const stats: Metrics = {
             duration: this.getElapsedMs(),
         };
@@ -48,13 +71,16 @@ class ActivityTrackingService {
             try {
                 callback(stats);
             } catch (error) {
-                logger.error("[ActiveActivityService] Metrics callback error", {
+                logger.error("[ActivityService] Metrics callback error", {
                     error,
                 });
             }
         });
     }
 
+    // ======================
+    // Session interval
+    // ======================
     private startSession(): void {
         this.stopSession();
 
@@ -77,14 +103,45 @@ class ActivityTrackingService {
         }
     }
 
-    async start() {
+    private startLocationListener(): void {
+        this.stopLocationListener();
+
+        this.removeLocationListener = locationService.onLocationUpdate(
+            async (coord: Coordinate) => {
+                if (!this.activity || this.activity.status !== "active") return;
+                this.activity = {
+                    ...this.activity,
+                    coordinates: [...this.activity.coordinates, coord],
+                };
+
+                await this.activityStorage.set(this.activity);
+            },
+        );
+
+        logger.log("[ActivityService] Location listener started");
+    }
+
+    private stopLocationListener(): void {
+        if (this.removeLocationListener) {
+            this.removeLocationListener();
+            this.removeLocationListener = null;
+            logger.log("[ActivityService] Location listener stopped");
+        }
+    }
+    // ======================
+    // Controls
+    // ======================
+    async start(): Promise<void> {
         if (this.activity) {
             logger.warn(
-                "[activityService] Start blocked: activity already exists",
-                { id: this.activity.id },
+                "[ActivityService] Start blocked: activity already exists",
+                {
+                    id: this.activity.id,
+                },
             );
             throw new Error("An activity is already in progress");
         }
+
         try {
             this.activity = {
                 id: generateId(),
@@ -92,24 +149,34 @@ class ActivityTrackingService {
                 pausedTime: 0,
                 lastPauseTime: null,
                 status: "active",
-                steps: 0,
+                coordinates: [],
             };
+
             this.startSession();
+            await locationService.start();
+            this.startLocationListener();
+
+            logger.log("[ActivityService] Activity started", {
+                id: this.activity.id,
+            });
+            this.activityStorage.set(this.activity);
         } catch (error) {
-            logger.error("[activityService] Failed to start activity", {
+            logger.error("[ActivityService] Failed to start activity", {
                 error,
             });
+            this.activity = null;
             throw error;
         }
     }
-    async pause() {
+
+    async pause(): Promise<void> {
         if (!this.activity) {
-            logger.error("[activityService] Pause failed: no active activity");
+            logger.error("[ActivityService] Pause failed: no active activity");
             throw new Error("No activity in progress");
         }
 
         if (this.activity.status === "paused") {
-            logger.warn("[activityService] Activity already paused", {
+            logger.warn("[ActivityService] Activity already paused", {
                 id: this.activity.id,
             });
             return;
@@ -118,20 +185,24 @@ class ActivityTrackingService {
         this.activity.status = "paused";
         this.activity.lastPauseTime = Date.now();
         this.stopSession();
+        await locationService.stop();
+        this.stopLocationListener();
 
-        logger.log("[activityService] Activity paused", {
+        logger.log("[ActivityService] Activity paused", {
             id: this.activity.id,
             pausedAt: this.activity.lastPauseTime,
         });
+        this.activityStorage.set(this.activity);
     }
-    async resume() {
+
+    async resume(): Promise<void> {
         if (!this.activity) {
-            logger.error("[activityService] Resume failed: no active activity");
+            logger.error("[ActivityService] Resume failed: no active activity");
             throw new Error("No activity in progress");
         }
 
         if (this.activity.status === "active") {
-            logger.warn("[activityService] Activity already active", {
+            logger.warn("[ActivityService] Activity already active", {
                 id: this.activity.id,
             });
             return;
@@ -139,11 +210,10 @@ class ActivityTrackingService {
 
         if (this.activity.lastPauseTime != null) {
             const pauseDuration = Date.now() - this.activity.lastPauseTime;
-
             this.activity.pausedTime += pauseDuration;
             this.activity.lastPauseTime = null;
 
-            logger.log("[activityService] Pause duration applied", {
+            logger.log("[ActivityService] Pause duration applied", {
                 id: this.activity.id,
                 pauseDuration,
                 totalPausedTime: this.activity.pausedTime,
@@ -152,60 +222,130 @@ class ActivityTrackingService {
 
         this.activity.status = "active";
         this.startSession();
+        await locationService.start();
+        this.startLocationListener();
 
-        logger.log("[activityService] Activity resumed", {
+        logger.log("[ActivityService] Activity resumed", {
             id: this.activity.id,
             status: this.activity.status,
         });
+        this.activityStorage.set(this.activity);
     }
-    async stop() {
+
+    async stop(): Promise<Activity> {
         if (!this.activity) {
-            logger.warn("[activityService] Stop called but no active activity");
+            logger.warn("[ActivityService] Stop called but no active activity");
             throw new Error("No activity in progress");
         }
+
         try {
-            logger.log("[activityService] Stopping activity", {
+            logger.log("[ActivityService] Stopping activity", {
                 id: this.activity.id,
                 startTime: this.activity.startTime,
-                steps: this.activity.steps,
+                totalDuration: this.getElapsedMs(),
             });
 
+            const finalDuration = this.getElapsedMs();
+            const finalCoordinates = this.activity.coordinates;
             const endTime = new Date().toISOString();
-            this.activity = null;
+            const formattedNewActivity: Activity = {
+                id: this.activity.id,
+                startTime: new Date(this.activity.startTime).toISOString(),
+                endTime,
+                duration: finalDuration,
+                coordinates: finalCoordinates,
+                status: "active",
+                type: "run",
+                goal: 5000,
+                updatedAt: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
+            };
+
+            await activityService.save(formattedNewActivity);
+
             this.stopSession();
+            await locationService.stop();
+            this.stopLocationListener();
+            this.activity = null;
+            logger.log("[ActivityService] Activity stopped");
+            this.activityStorage.remove();
+
+            return formattedNewActivity;
         } catch (error) {
-            logger.error("[activityService] Error stopping activity", {
+            logger.error("[ActivityService] Error stopping activity", {
                 error,
             });
             throw error;
         }
     }
-    async discard() {
+
+    async discard(): Promise<void> {
         if (!this.activity) {
             logger.error(
-                "[activityService] Discard failed: no active activity",
+                "[ActivityService] Discard failed: no active activity",
             );
             throw new Error("No activity in progress");
         }
 
         try {
-            logger.log("[activityService] Discarding activity", {
+            logger.log("[ActivityService] Discarding activity", {
                 id: this.activity.id,
             });
 
-            this.activity = null;
             this.stopSession();
+            await locationService.stop();
+            this.stopLocationListener();
+            this.activity = null;
 
-            logger.log("[activityService] Activity discarded");
+            logger.log("[ActivityService] Activity discarded");
+            this.activityStorage.remove();
         } catch (error) {
-            logger.error("[activityService] Error discarding activity", {
+            logger.error("[ActivityService] Error discarding activity", {
                 error,
             });
             throw error;
         }
     }
 
-    onStatsUpdate(callback: (metric: Metrics) => void): () => void {
+    async restore(): Promise<ActivityTracking | null> {
+        try {
+            const storedActivity = await this.activityStorage.get();
+
+            if (!storedActivity) {
+                logger.log("[ActivityService] No stored activity found");
+                return null;
+            }
+
+            this.activity = storedActivity;
+
+            if (storedActivity.status === "active") {
+                this.startSession();
+                await locationService.start();
+                this.startLocationListener();
+            } else {
+                this.stopSession();
+                await locationService.stop();
+                this.stopLocationListener();
+            }
+
+            logger.log("[ActivityService] Restored activity", {
+                id: storedActivity.id,
+                status: storedActivity.status,
+            });
+
+            return storedActivity;
+        } catch (error) {
+            logger.error("[ActivityService] Error restoring activity", {
+                error,
+            });
+            throw error;
+        }
+    }
+
+    // ======================
+    // Listener
+    // ======================
+    onMetricsUpdate(callback: (metric: Metrics) => void): () => void {
         this.metricsUpdateCallBacks.push(callback);
 
         return () => {
