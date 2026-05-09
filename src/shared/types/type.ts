@@ -1,6 +1,10 @@
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 export type RootStackParamList = {
+    Main: undefined;
+    Home: undefined;
+    ActivityTracking: undefined;
+    Settings: undefined;
     History: {
         initialFilter?:
             | "All"
@@ -12,11 +16,12 @@ export type RootStackParamList = {
     ActivityDetails: {
         activityId: string;
     };
+
+    Profile: {
+        screen?: "ProfileScreen" | "ProfileEdit";
+    };
 };
-export type NavigationProp = NativeStackNavigationProp<
-    RootStackParamList,
-    "History"
->;
+export type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export type Location = {
     latitude: number;
     longitude: number;
@@ -58,6 +63,7 @@ export type Profile = {
     weight: number; // kg
     age: number; // years
     gender: Gender | null;
+    goal: number;
     createdAt?: string; // ISO 8601
     updatedAt?: string;
 };

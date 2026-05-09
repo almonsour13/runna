@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { Activity } from "../types/type";
 
-type ActivityState = {
+type ActivityStore = {
     isLoading: boolean;
     setIsLoading: (isLoading: boolean) => void;
     error: string | null;
@@ -20,7 +20,7 @@ const INITIAL_VALUE = {
     activities: [],
 };
 
-export const useActivityStore = create<ActivityState>((set, get) => ({
+export const useActivityStore = create<ActivityStore>((set, get) => ({
     ...INITIAL_VALUE,
     setIsLoading: (isLoading) => set({ isLoading }),
     setError: (error) => set({ error }),

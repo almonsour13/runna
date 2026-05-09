@@ -7,7 +7,7 @@ type ActivityTracking = {
     coordinates: Coordinate[] | [];
 };
 
-type ActivityTrackingState = {
+type ActivityTrackingStore = {
     activity: ActivityTracking;
 
     setActivity: (activity: ActivityTracking) => void;
@@ -29,7 +29,7 @@ const INITIAL_STATE: ActivityTracking = {
     coordinates: [],
 };
 
-export const useActivityTrackingStore = create<ActivityTrackingState>(
+export const useActivityTrackingStore = create<ActivityTrackingStore>(
     (set) => ({
         activity: INITIAL_STATE,
 

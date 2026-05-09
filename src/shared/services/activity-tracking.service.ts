@@ -109,6 +109,7 @@ class ActivityTrackingService {
         this.removeLocationListener = locationService.onLocationUpdate(
             async (coord: Coordinate) => {
                 if (!this.activity || this.activity.status !== "active") return;
+                console.log(coord);
                 this.activity = {
                     ...this.activity,
                     coordinates: [...this.activity.coordinates, coord],

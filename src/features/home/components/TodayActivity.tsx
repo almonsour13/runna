@@ -26,6 +26,7 @@ import { TouchableOpacity, View } from "react-native";
 
 export default function TodayActivity() {
     const navigation = useNavigation<NavigationProp>();
+    const isLoading = useActivityStore((s) => s.isLoading);
     const activities = useActivityStore((s) => s.activities);
     const profile = useProfileStore((s) => s.profile);
 
@@ -129,111 +130,115 @@ export default function TodayActivity() {
                         <Text className="text-base text-primary font-medium">
                             {todayActivities.length}{" "}
                             {todayActivities.length === 1
-                                ? "Session"
-                                : "Sessions"}
+                                ? "Activity"
+                                : "Activities"}
                         </Text>
                     )}
                 </TouchableOpacity>
             </RowView>
             <ColView className="px-4 gap-1">
-                <Card>
-                    <ColView className="gap-2">
-                        <ColView className="gap-4">
-                            <RowView className="justify-between items-center">
-                                <ColView className="gap-1">
-                                    <View>
-                                        {hasActivity ? (
-                                            <Text
-                                                className={`text-[10px] font-medium ${
-                                                    goalReached
-                                                        ? "text-primary"
-                                                        : "text-foreground"
-                                                }`}
-                                            >
-                                                {goalReached
-                                                    ? "Goal complete"
-                                                    : `${pct.toFixed(0)}% of goal`}
-                                            </Text>
-                                        ) : (
-                                            <Text className="text-[10px] text-foreground">
-                                                Start today's activity
-                                            </Text>
-                                        )}
-                                    </View>
-
-                                    <RowView className="items-baseline gap-1.5">
-                                        <Text className="text-4xl font-medium text-foreground">
-                                            {distanceKm.toFixed(1)}
-                                        </Text>
-                                        <Text className="text-base text-muted-foreground">
-                                            / {goalKm.toFixed(1)} km
-                                        </Text>
-                                    </RowView>
-
-                                    <Text className="text-xs text-muted-foreground">
-                                        {hasActivity
-                                            ? remainingKm > 0
-                                                ? `${remainingKm.toFixed(1)} km remaining`
-                                                : `Exceeded by ${(Number(distanceKm) - Number(goalKm)).toFixed(1)} km`
-                                            : "Start today's activity"}
-                                    </Text>
-                                </ColView>
-
-                                <View className="items-center justify-center">
-                                    <RingChart
-                                        pct={pct}
-                                        radius={28}
-                                        strokeWidth={6}
-                                        strokeLinecap="round"
-                                        trackColor="rgba(128,128,128,0.08)"
-                                    />
-                                    <Text className="absolute text-[11px] font-medium text-foreground">
-                                        {pct.toFixed(0)}
-                                        <Text className="text-[9px] text-muted-foreground">
-                                            %
-                                        </Text>
-                                    </Text>
-                                </View>
-                            </RowView>
-
-                            <View className="border-b border-border/40" />
-
-                            <RowView>
-                                {stats.map((stat, i) => (
-                                    <ColView
-                                        key={stat.label}
-                                        className={
-                                            i > 0
-                                                ? "flex-1 pl-4 border-l border-border/40 gap-1"
-                                                : "flex-1 gap-1"
-                                        }
-                                    >
-                                        <RowView className="gap-1 items-center">
-                                            <Ionicons
-                                                name={stat.icon as any}
-                                                size={11}
-                                                className="text-primary"
-                                            />
-                                            <Text className="text-xs text-muted-foreground">
-                                                {stat.label}
-                                            </Text>
-                                        </RowView>
-                                        <ColView className="gap-0">
-                                            <Text className="text-xl font-medium text-foreground">
-                                                {stat.value}
-                                            </Text>
-                                            {stat.unit && (
-                                                <Text className="text-[8px] font-normal text-muted-foreground">
-                                                    {stat.unit}
+                {isLoading ? (
+                    <Card className="h-52" />
+                ) : (
+                    <Card>
+                        <ColView className="gap-2">
+                            <ColView className="gap-4">
+                                <RowView className="justify-between items-center">
+                                    <ColView className="gap-1">
+                                        <View>
+                                            {hasActivity ? (
+                                                <Text
+                                                    className={`text-[10px] font-medium ${
+                                                        goalReached
+                                                            ? "text-primary"
+                                                            : "text-foreground"
+                                                    }`}
+                                                >
+                                                    {goalReached
+                                                        ? "Goal complete"
+                                                        : `${pct.toFixed(0)}% of goal`}
+                                                </Text>
+                                            ) : (
+                                                <Text className="text-[10px] text-foreground">
+                                                    Start today's activity
                                                 </Text>
                                             )}
-                                        </ColView>
+                                        </View>
+
+                                        <RowView className="items-baseline gap-1.5">
+                                            <Text className="text-4xl font-medium text-foreground">
+                                                {distanceKm.toFixed(1)}
+                                            </Text>
+                                            <Text className="text-base text-muted-foreground">
+                                                / {goalKm.toFixed(1)} km
+                                            </Text>
+                                        </RowView>
+
+                                        <Text className="text-xs text-muted-foreground">
+                                            {hasActivity
+                                                ? remainingKm > 0
+                                                    ? `${remainingKm.toFixed(1)} km remaining`
+                                                    : `Exceeded by ${(Number(distanceKm) - Number(goalKm)).toFixed(1)} km`
+                                                : "Start today's activity"}
+                                        </Text>
                                     </ColView>
-                                ))}
-                            </RowView>
+
+                                    <View className="items-center justify-center">
+                                        <RingChart
+                                            pct={pct}
+                                            radius={28}
+                                            strokeWidth={6}
+                                            strokeLinecap="round"
+                                            trackColor="rgba(128,128,128,0.08)"
+                                        />
+                                        <Text className="absolute text-[11px] font-medium text-foreground">
+                                            {pct.toFixed(0)}
+                                            <Text className="text-[9px] text-muted-foreground">
+                                                %
+                                            </Text>
+                                        </Text>
+                                    </View>
+                                </RowView>
+
+                                <View className="border-b border-border/40" />
+
+                                <RowView>
+                                    {stats.map((stat, i) => (
+                                        <ColView
+                                            key={stat.label}
+                                            className={
+                                                i > 0
+                                                    ? "flex-1 pl-4 border-l border-border/40 gap-1"
+                                                    : "flex-1 gap-1"
+                                            }
+                                        >
+                                            <RowView className="gap-1 items-center">
+                                                <Ionicons
+                                                    name={stat.icon as any}
+                                                    size={11}
+                                                    className="text-primary"
+                                                />
+                                                <Text className="text-xs text-muted-foreground">
+                                                    {stat.label}
+                                                </Text>
+                                            </RowView>
+                                            <ColView className="gap-0">
+                                                <Text className="text-xl font-medium text-foreground">
+                                                    {stat.value}
+                                                </Text>
+                                                {stat.unit && (
+                                                    <Text className="text-[8px] font-normal text-muted-foreground">
+                                                        {stat.unit}
+                                                    </Text>
+                                                )}
+                                            </ColView>
+                                        </ColView>
+                                    ))}
+                                </RowView>
+                            </ColView>
                         </ColView>
-                    </ColView>
-                </Card>
+                    </Card>
+                )}
             </ColView>
         </ColView>
     );

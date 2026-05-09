@@ -132,6 +132,7 @@ class LocationService {
     // Start / Stop Tracking
     // ======================
     async start(enableBackground = true): Promise<void> {
+        this.requestPermissions();
         if (this.mode === "recording") {
             logger.warn("[Location] Already recording, ignoring start()");
             return;

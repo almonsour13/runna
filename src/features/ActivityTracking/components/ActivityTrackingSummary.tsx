@@ -22,41 +22,43 @@ export default function ActivityTrackingSummary() {
     const duration = activity.duration;
     const coordinates = activity.coordinates;
 
+    const goal = profile?.goal || 0;
+
     const time = formatDurationHHMMSS(duration);
 
-    const { distanceKm, calories, pace } = useMemo(() => {
+    const { stats } = useMemo(() => {
         const distance = computeTotalDistance(coordinates);
         const distanceKm = convertMtoKm(distance);
         const calories = formatCalories(
             computeCalories(distance, profile?.weight ?? 70),
         );
         const pace = formatPace(computePace(distance, convertMsToS(duration)));
-        return { distanceKm, calories, pace };
+        const pct = Math.min((distanceKm / goal) * 100, 100) || 0;
+        const stats = [
+            {
+                label: "Distance",
+                value: distanceKm.toFixed(1),
+                unit: "km",
+                icon: "location-outline" as const,
+            },
+            {
+                label: "Calories",
+                value: calories,
+                unit: "kcal",
+                icon: "flame-outline" as const,
+            },
+            {
+                label: "Pace",
+                value: pace,
+                unit: "min/km",
+                icon: "timer-outline" as const,
+            },
+        ];
+        return { stats };
     }, [coordinates, duration, profile?.weight]);
 
-    const stats = [
-        {
-            label: "Distance",
-            value: distanceKm.toFixed(1),
-            unit: "km",
-            icon: "location-outline" as const,
-        },
-        {
-            label: "Calories",
-            value: calories,
-            unit: "kcal",
-            icon: "flame-outline" as const,
-        },
-        {
-            label: "Pace",
-            value: pace,
-            unit: "min/km",
-            icon: "timer-outline" as const,
-        },
-    ];
-
     return (
-        <ColView className="flex-1 p-4 gap-8 justify-center items-center">
+        <ColView className="flex-1 p-4 gap-4 justify-center items-center">
             <RowView className="justify-center items-center">
                 <ColView className="gap-1 items-center">
                     <RowView className="gap-1 items-center">
@@ -73,7 +75,7 @@ export default function ActivityTrackingSummary() {
                 </ColView>
             </RowView>
             <RowView>
-                {stats.map((stat, index) => (
+                {stats.map((stat, i) => (
                     <ColView
                         key={stat.label}
                         className="flex-1 gap-1 justify-center items-center"

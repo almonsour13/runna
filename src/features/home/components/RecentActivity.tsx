@@ -1,5 +1,6 @@
 import ActivityCard from "@/shared/components/ActivityCard";
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { useActivityStore } from "@/shared/stores/use-activity.store";
 import { NavigationProp } from "@/shared/types/type";
@@ -10,6 +11,7 @@ import { TouchableOpacity } from "react-native";
 
 export default function RecentActivities() {
     const navigation = useNavigation<NavigationProp>();
+    const isLoading = useActivityStore((s) => s.isLoading);
     const activities = useActivityStore((s) => s.activities);
 
     const recentActivities = useMemo(() => {
@@ -40,8 +42,13 @@ export default function RecentActivities() {
                     </TouchableOpacity>
                 )}
             </RowView>
-
-            {recentActivities.length === 0 ? (
+            {isLoading ? (
+                <ColView className="px-4 gap-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                        <Card key={i} className="h-26" />
+                    ))}
+                </ColView>
+            ) : recentActivities.length === 0 ? (
                 <ColView className="px-4 py-8 items-center gap-2">
                     <Ionicons
                         name="footsteps-outline"

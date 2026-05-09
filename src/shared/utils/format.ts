@@ -1,11 +1,10 @@
+const pad = (n: number) => n.toString().padStart(2, "0");
 export const formatDurationHHMMSS = (ms: number): string => {
     const totalSeconds = Math.floor(ms / 1000);
 
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-
-    const pad = (n: number) => String(n).padStart(2, "0");
 
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 };
@@ -15,13 +14,11 @@ export function formatDuration(seconds: number) {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
 
-    const pad = (n: number) => n.toString().padStart(2, "0");
-
     return `${pad(hrs)}:${pad(mins)}`;
 }
 export function formatPace(secondsPerKm: number) {
     if (!secondsPerKm || secondsPerKm <= 0 || !isFinite(secondsPerKm)) {
-        return "0:00";
+        return "00:00";
     }
 
     const totalSeconds = Math.round(secondsPerKm);
@@ -29,7 +26,7 @@ export function formatPace(secondsPerKm: number) {
     const min = Math.floor(totalSeconds / 60);
     const sec = totalSeconds % 60;
 
-    return `${min}:${sec.toString().padStart(2, "0")}`;
+    return `${pad(min)}:${pad(sec)}`;
 }
 export function formatSpeed(speed: number) {
     if (!speed || speed < 0 || !isFinite(speed)) return "0.0";

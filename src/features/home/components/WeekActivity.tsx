@@ -125,7 +125,7 @@ function WeekActivity() {
                     <ColView className="gap-4">
                         <ColView className="gap-2">
                             <RowView className="justify-between">
-                                <Text className="text-sm uppercase text-muted-foreground">
+                                <Text className="text-sm uppercase">
                                     This Week
                                 </Text>
                                 <RowView className="gap-2 items-center">
@@ -168,7 +168,7 @@ function WeekActivity() {
                                     disabled={day.isFuture}
                                     className="flex-1 items-center gap-1"
                                 >
-                                    <Card className="light h-16 w-full justify-end bg-foreground/16 rounded overflow-hidden p-0 border-0">
+                                    <Card className="light h-16 w-full justify-end bg-muted rounded overflow-hidden p-0 border-0">
                                         {!day.isFuture && (
                                             <View
                                                 style={{
