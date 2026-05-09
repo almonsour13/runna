@@ -1,5 +1,7 @@
 import ActivityDetailsScreen from "@/features/ActivityDetails/ActivityDetailsScreen";
 import ActivityTrackingScreen from "@/features/ActivityTracking/ActivityTrackingScreen";
+import "@/shared/services/activity-background-tracking.service";
+import { RootStackParamList } from "@/shared/types/type";
 import {
     DMSans_400Regular,
     DMSans_500Medium,
@@ -10,8 +12,10 @@ import {
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MainNavigator from "./MainNavigator";
+import ProfileNavigator from "./ProfileNavigator";
+import SettingsNavigator from "./SettingsNavigator";
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
     const [loaded] = useFonts({
@@ -44,6 +48,20 @@ export default function RootNavigator() {
                 <Stack.Screen
                     name="ActivityDetails"
                     component={ActivityDetailsScreen}
+                    options={{
+                        animation: "slide_from_right",
+                    }}
+                />
+                <Stack.Screen
+                    name="Settings"
+                    component={SettingsNavigator}
+                    options={{
+                        animation: "slide_from_right",
+                    }}
+                />
+                <Stack.Screen
+                    name="Profile"
+                    component={ProfileNavigator}
                     options={{
                         animation: "slide_from_right",
                     }}
