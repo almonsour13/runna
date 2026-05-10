@@ -2,6 +2,7 @@ import Constants from "expo-constants";
 import * as ExpoLocation from "expo-location";
 import * as TaskManager from "expo-task-manager";
 import {
+    ACTIVITY_BACKGROUND_TASK,
     DISTANCE_INTERVAL_METERS,
     LOCATION_ACCURACY,
     LOCATION_TIME_INTERVAL_MS,
@@ -10,7 +11,7 @@ import { Coordinate, Location } from "../types/type";
 import { KalmanFilter } from "../utils/kalman-filter";
 import { logger } from "../utils/logger";
 import { preprocessLocation } from "../utils/preprocess-location";
-import { ACTIVITY_BACKGROUND_TASK } from "./activity-background-tracking.service";
+import { registerBackgroundEmitter } from "./activity-background-tracking.service";
 import { fakeLocationTrackingService } from "./fake-location-tracking.service";
 
 type LocationCallback = (coord: Coordinate, label: string | null) => void;
@@ -27,6 +28,13 @@ class LocationService {
     private kalman = new KalmanFilter();
     private lastCoord: Coordinate | null = null;
 
+    constructor() {
+        // Inject emitter into sub-services here — no circular imports needed
+        fakeLocationTrackingService.setEmitter((loc) =>
+            this.emitBackgroundLocation(loc),
+        );
+        registerBackgroundEmitter((loc) => this.emitBackgroundLocation(loc));
+    }
     // ======================
     // Permissions
     // ======================
@@ -231,7 +239,14 @@ class LocationService {
         );
 
         if (!isRegistered) {
-            logger.warn("[Location] Task not registered");
+            logger.error(
+                "[Location] Task not registered — ensure activity-background-tracking.service " +
+                    "is imported at the app entry point BEFORE any other imports.",
+            );
+            // Graceful fallback: use foreground tracking instead
+            logger.warn("[Location] Falling back to foreground tracking");
+            await this.startForegroundTracking();
+            this.useBackgroundTracking = false;
             return;
         }
 

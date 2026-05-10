@@ -32,6 +32,7 @@ export default function ActivityTrackingSummary() {
         const calories = formatCalories(
             computeCalories(distance, profile?.weight ?? 70),
         );
+        const durationSec = convertMsToS(duration);
         const pace = formatPace(computePace(distance, convertMsToS(duration)));
         const pct = Math.min((distanceKm / goal) * 100, 100) || 0;
         const stats = [
@@ -68,7 +69,7 @@ export default function ActivityTrackingSummary() {
                             className="text-primary"
                         />
                         <Text className="text-sm text-muted-foreground">
-                            Duration
+                            Duration {coordinates.length}
                         </Text>
                     </RowView>
                     <Text className="text-7xl font-bold">{time}</Text>

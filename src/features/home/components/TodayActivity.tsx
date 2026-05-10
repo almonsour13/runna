@@ -1,10 +1,13 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import ActivityGroupDrawer, {
+    ActivityGroupDrawerHandle,
+} from "@/shared/components/drawer/ActivityGroupDrawer";
 import Card from "@/shared/components/ui/Card";
-import RingChart from "@/shared/components/ui/RingChart";
 import Text from "@/shared/components/ui/Text";
 import { useActivityStore } from "@/shared/stores/use-activity.store";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
 import { NavigationProp } from "@/shared/types/type";
+import { cn } from "@/shared/utils/cn";
 import {
     computeCalories,
     computePace,
@@ -16,12 +19,11 @@ import {
     formatCalories,
     formatDuration,
     formatPace,
-    formatSpeed,
 } from "@/shared/utils/format";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { format } from "date-fns";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { TouchableOpacity, View } from "react-native";
 
 export default function TodayActivity() {
@@ -29,217 +31,208 @@ export default function TodayActivity() {
     const isLoading = useActivityStore((s) => s.isLoading);
     const activities = useActivityStore((s) => s.activities);
     const profile = useProfileStore((s) => s.profile);
+    const activityGrouperDrawer = useRef<ActivityGroupDrawerHandle>(null);
 
     const date = useMemo(() => new Date(), []);
 
     const {
         todayActivities,
-        distanceKm,
-        goalKm,
-        pct,
-        durationSec,
-        avgSpeed,
-        avgPace,
-        calories,
+        totalDistanceKm,
+        totalGoalKm,
+        goalCompletionPct,
+        totalDurationSec,
+        averageSpeed,
+        averagePace,
+        totalCalories,
     } = useMemo(() => {
         const todayActivities = activities.filter(
-            (a) => new Date(a.createdAt).toDateString() === date.toDateString(),
+            (activity) =>
+                new Date(activity.createdAt).toDateString() ===
+                date.toDateString(),
         );
 
-        const distance = todayActivities.reduce(
-            (acc, activity) => acc + computeTotalDistance(activity.coordinates),
-            0,
-        );
-        const distanceKm = convertMtoKm(distance);
-
-        const durationSec = todayActivities.reduce(
-            (acc, activity) => acc + convertMsToS(activity.duration),
+        const totalDistanceMeters = todayActivities.reduce(
+            (sum, activity) => sum + computeTotalDistance(activity.coordinates),
             0,
         );
 
-        const goalM = todayActivities.reduce(
-            (acc, activity) => acc + activity.goal,
+        const totalDistanceKm = convertMtoKm(totalDistanceMeters);
+
+        const totalDurationSec = todayActivities.reduce(
+            (sum, activity) => sum + convertMsToS(activity.duration),
             0,
         );
-        const goalKm = convertMtoKm(goalM);
 
-        const pct =
-            goalKm > 0 ? (Number(distanceKm) / Number(goalKm)) * 100 : 0;
+        const totalGoalMeters = todayActivities.reduce(
+            (sum, activity) => sum + activity.goal,
+            0,
+        );
+
+        const totalGoalKm = convertMtoKm(totalGoalMeters);
+
+        const goalCompletionPct =
+            totalGoalKm > 0
+                ? (Number(totalDistanceKm) / Number(totalGoalKm)) * 100
+                : 0;
 
         return {
             todayActivities,
-            distanceKm,
-            goalKm,
-            pct,
-            durationSec,
-            avgSpeed: computeSpeed(distance, durationSec),
-            avgPace: computePace(distance, durationSec),
-            calories: computeCalories(distance, profile?.weight ?? 70),
+
+            totalDistanceKm,
+            totalGoalKm,
+            goalCompletionPct,
+
+            totalDurationSec,
+
+            averageSpeed: computeSpeed(totalDistanceMeters, totalDurationSec),
+
+            averagePace: computePace(totalDistanceMeters, totalDurationSec),
+
+            totalCalories: computeCalories(
+                totalDistanceMeters,
+                profile?.weight ?? 70,
+            ),
         };
     }, [activities, date, profile]);
 
-    const goalReached = pct >= 100;
-    const remainingKm = Math.max(Number(goalKm) - Number(distanceKm), 0);
+    const isGoalReached = goalCompletionPct >= 100;
+
+    const remainingDistanceKm = Math.max(
+        Number(totalGoalKm) - Number(totalDistanceKm),
+        0,
+    );
 
     const stats = [
         {
+            label: "Distance",
+            value: totalDistanceKm.toFixed(1),
+            unit: "km",
+            icon: "navigate-outline",
+            visible: true,
+        },
+        {
             label: "Duration",
-            value: formatDuration(durationSec),
+            value: formatDuration(totalDurationSec),
             unit: "hh:mm",
             icon: "time-outline",
+            visible: true,
         },
         {
             label: "Calories",
-            value: formatCalories(calories),
+            value: formatCalories(totalCalories),
             unit: "kcal",
             icon: "flame-outline",
+            visible: true,
         },
         {
-            label: "Avg. Pace",
-            value: formatPace(avgPace),
+            label: "Pace",
+            value: formatPace(averagePace),
             unit: "min/km",
             icon: "timer-outline",
-        },
-        {
-            label: "Speed",
-            value: formatSpeed(avgSpeed),
-            unit: "km/h",
-            icon: "speedometer-outline",
+            visible: false,
         },
     ];
 
-    const hasActivity = todayActivities.length > 0;
+    const hasActivities = todayActivities.length > 0;
 
     return (
-        <ColView>
-            <RowView className="px-4 justify-between items-end">
-                <RowView>
-                    <Text className="text-lg font-medium">Today</Text>
-                    <Text className="text-lg text-muted-foreground font-medium">
-                        • {format(date, "MMM d, yyyy")}
-                    </Text>
-                </RowView>
-                <TouchableOpacity
-                    onPress={() =>
-                        navigation.navigate("History", {
-                            initialFilter: "Today",
-                        })
-                    }
-                >
-                    {hasActivity && (
-                        <Text className="text-base text-primary font-medium">
-                            {todayActivities.length}{" "}
-                            {todayActivities.length === 1
-                                ? "Activity"
-                                : "Activities"}
+        <>
+            <ColView className="">
+                <RowView className="px-4 justify-between items-end">
+                    <RowView className="gap-0">
+                        <Text className="text-lg font-medium">Today</Text>
+                        <Text className="text-lg text-muted-foreground font-medium">
+                            {" "}
+                            • {format(date, "MMM d, yyyy")}
                         </Text>
-                    )}
-                </TouchableOpacity>
-            </RowView>
-            <ColView className="px-4 gap-1">
-                {isLoading ? (
-                    <Card className="h-52" />
-                ) : (
-                    <Card>
-                        <ColView className="gap-2">
+                    </RowView>
+                    <TouchableOpacity
+                        onPress={() =>
+                            activityGrouperDrawer.current?.openWithActivityDate(
+                                date.toDateString(),
+                            )
+                        }
+                    >
+                        {hasActivities && (
+                            <Text className="text-base text-primary font-medium">
+                                {todayActivities.length}{" "}
+                                {todayActivities.length === 1
+                                    ? "Activity"
+                                    : "Activities"}
+                            </Text>
+                        )}
+                    </TouchableOpacity>
+                </RowView>
+                <ColView className="px-4 gap-1">
+                    {isLoading ? (
+                        <Card className="h-32" />
+                    ) : (
+                        <Card className="p-0 bg-transparent">
                             <ColView className="gap-4">
-                                <RowView className="justify-between items-center">
-                                    <ColView className="gap-1">
-                                        <View>
-                                            {hasActivity ? (
-                                                <Text
-                                                    className={`text-[10px] font-medium ${
-                                                        goalReached
-                                                            ? "text-primary"
-                                                            : "text-foreground"
-                                                    }`}
+                                <RowView className="justify-between gap-1">
+                                    {stats
+                                        .filter((stat) => stat.visible)
+                                        .map((stat, i) => (
+                                            <Card
+                                                key={stat.label}
+                                                className={cn("flex-1")}
+                                            >
+                                                <ColView
+                                                    className={cn("gap-1")}
                                                 >
-                                                    {goalReached
-                                                        ? "Goal complete"
-                                                        : `${pct.toFixed(0)}% of goal`}
-                                                </Text>
-                                            ) : (
-                                                <Text className="text-[10px] text-foreground">
-                                                    Start today's activity
-                                                </Text>
-                                            )}
-                                        </View>
-
-                                        <RowView className="items-baseline gap-1.5">
-                                            <Text className="text-4xl font-medium text-foreground">
-                                                {distanceKm.toFixed(1)}
-                                            </Text>
-                                            <Text className="text-base text-muted-foreground">
-                                                / {goalKm.toFixed(1)} km
-                                            </Text>
-                                        </RowView>
-
-                                        <Text className="text-xs text-muted-foreground">
-                                            {hasActivity
-                                                ? remainingKm > 0
-                                                    ? `${remainingKm.toFixed(1)} km remaining`
-                                                    : `Exceeded by ${(Number(distanceKm) - Number(goalKm)).toFixed(1)} km`
-                                                : "Start today's activity"}
-                                        </Text>
-                                    </ColView>
-
-                                    <View className="items-center justify-center">
-                                        <RingChart
-                                            pct={pct}
-                                            radius={28}
-                                            strokeWidth={6}
-                                            strokeLinecap="round"
-                                            trackColor="rgba(128,128,128,0.08)"
+                                                    <RowView className="gap-1 items-center">
+                                                        <Ionicons
+                                                            name={
+                                                                stat.icon as any
+                                                            }
+                                                            size={11}
+                                                            className="text-primary"
+                                                        />
+                                                        <Text className="text-xs text-muted-foreground">
+                                                            {stat.label}
+                                                        </Text>
+                                                    </RowView>
+                                                    <ColView className="gap-0">
+                                                        <Text className="text-2xl font-semibold text-foreground">
+                                                            {stat.value}
+                                                        </Text>
+                                                        {stat.unit && (
+                                                            <Text className="text-[8px] font-normal text-muted-foreground">
+                                                                {stat.unit}
+                                                            </Text>
+                                                        )}
+                                                    </ColView>
+                                                </ColView>
+                                            </Card>
+                                        ))}
+                                </RowView>
+                                <ColView className="hidden gap-2">
+                                    <View className="h-1 bg-muted rounded-full overflow-hidden">
+                                        <View
+                                            style={{
+                                                width: `${goalCompletionPct}%`,
+                                            }}
+                                            className="h-1 bg-primary rounded"
                                         />
-                                        <Text className="absolute text-[11px] font-medium text-foreground">
-                                            {pct.toFixed(0)}
-                                            <Text className="text-[9px] text-muted-foreground">
-                                                %
-                                            </Text>
-                                        </Text>
                                     </View>
-                                </RowView>
-
-                                <View className="border-b border-border/40" />
-
-                                <RowView>
-                                    {stats.map((stat, i) => (
-                                        <ColView
-                                            key={stat.label}
-                                            className={
-                                                i > 0
-                                                    ? "flex-1 pl-4 border-l border-border/40 gap-1"
-                                                    : "flex-1 gap-1"
-                                            }
-                                        >
-                                            <RowView className="gap-1 items-center">
-                                                <Ionicons
-                                                    name={stat.icon as any}
-                                                    size={11}
-                                                    className="text-primary"
-                                                />
-                                                <Text className="text-xs text-muted-foreground">
-                                                    {stat.label}
-                                                </Text>
-                                            </RowView>
-                                            <ColView className="gap-0">
-                                                <Text className="text-xl font-medium text-foreground">
-                                                    {stat.value}
-                                                </Text>
-                                                {stat.unit && (
-                                                    <Text className="text-[8px] font-normal text-muted-foreground">
-                                                        {stat.unit}
-                                                    </Text>
-                                                )}
-                                            </ColView>
-                                        </ColView>
-                                    ))}
-                                </RowView>
+                                    <RowView className="justify-between">
+                                        <Text className="text-xs">
+                                            {totalDistanceKm.toFixed(1)}km
+                                        </Text>
+                                        <Text className="text-xs">
+                                            {goalCompletionPct.toFixed(0)}%
+                                        </Text>
+                                        <Text className="text-xs">
+                                            {totalGoalKm}km
+                                        </Text>
+                                    </RowView>
+                                </ColView>
                             </ColView>
-                        </ColView>
-                    </Card>
-                )}
+                        </Card>
+                    )}
+                </ColView>
             </ColView>
-        </ColView>
+            <ActivityGroupDrawer ref={activityGrouperDrawer} />
+        </>
     );
 }

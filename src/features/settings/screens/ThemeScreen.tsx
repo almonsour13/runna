@@ -1,4 +1,5 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import {
     ThemeMode,
@@ -46,10 +47,10 @@ export default function ThemeScreen() {
                             className="text-foreground"
                         />
                     </TouchableOpacity>
-                    <Text className="text-2xl">Settings</Text>
+                    <Text className="text-2xl">Theme</Text>
                 </RowView>
             </RowView>
-            <ColView className="px-4 gap-0">
+            <ColView className="px-4 gap-1">
                 {THEME_MODE.map((item, i) => {
                     const isSelected = theme === item.value;
                     return (
@@ -57,27 +58,29 @@ export default function ThemeScreen() {
                             key={i}
                             onPress={() => setTheme(item.value)}
                         >
-                            <RowView className="h-16 justify-between items-center px-4 py-2 bg-card">
-                                <RowView className="gap-4 items-center">
-                                    <View className="bg-muted h-10 w-10 items-center justify-center rounded">
+                            <Card className="justify-center h-18">
+                                <RowView className="justify-between items-center">
+                                    <RowView className="gap-4 items-center">
+                                        <View className="bg-muted h-10 w-10 items-center justify-center rounded">
+                                            <Ionicons
+                                                name={item.icon as any}
+                                                size={20}
+                                                className="text-foreground"
+                                            />
+                                        </View>
+                                        <Text className="text-base">
+                                            {item.label}
+                                        </Text>
+                                    </RowView>
+                                    {isSelected && (
                                         <Ionicons
-                                            name={item.icon as any}
+                                            name="checkmark"
                                             size={20}
-                                            className="text-foreground"
+                                            className="text-primary"
                                         />
-                                    </View>
-                                    <Text className="text-base">
-                                        {item.label}
-                                    </Text>
+                                    )}
                                 </RowView>
-                                {isSelected && (
-                                    <Ionicons
-                                        name="checkmark"
-                                        size={20}
-                                        className="text-primary"
-                                    />
-                                )}
-                            </RowView>
+                            </Card>
                         </TouchableOpacity>
                     );
                 })}

@@ -1,6 +1,5 @@
 import * as ExpoLocation from "expo-location";
 import { logger } from "../utils/logger";
-import { locationService } from "./location.service";
 
 const ROUTE_DELTAS = [
     { dlat: 0.00005, dlng: 0.0001 },
@@ -16,6 +15,7 @@ const ROUTE_DELTAS = [
 ];
 
 type FakeMode = "preview" | "recording" | "stopped";
+type EmitFn = (location: ExpoLocation.LocationObject) => void;
 
 const TICK_INTERVAL_MS = 1000;
 
@@ -30,11 +30,17 @@ class FakeLocationTrackingService {
     private intervalId: ReturnType<typeof setInterval> | null = null;
     private mode: FakeMode = "stopped";
 
+    // Injected by LocationService — no import needed
+    private emit: EmitFn = () => {};
+
+    setEmitter(fn: EmitFn): void {
+        this.emit = fn;
+    }
+
     // ======================
     // Controls
     // ======================
 
-    /** Continuous low-frequency ticks for map display — no route progression */
     async startPreview(): Promise<void> {
         if (this.intervalId !== null) {
             logger.warn("[FakeLocation] Already running");
@@ -55,7 +61,6 @@ class FakeLocationTrackingService {
         logger.log("[FakeLocation] Preview stopped");
     }
 
-    /** Full route tracking with jitter and speed */
     async start(): Promise<void> {
         if (this.intervalId !== null) {
             logger.warn("[FakeLocation] Already running");
@@ -101,8 +106,8 @@ class FakeLocationTrackingService {
                 longitude: this.currentLng,
                 altitude: 45.0,
                 accuracy: isRecording
-                    ? 4 + Math.random() * 3 // 4–7m realistic GPS
-                    : 8 + Math.random() * 4, // 8–12m looser for preview
+                    ? 4 + Math.random() * 3
+                    : 8 + Math.random() * 4,
                 altitudeAccuracy: 2.5,
                 heading: this.bearing(delta.dlat, delta.dlng),
                 speed: isRecording ? 2.8 + Math.random() * 0.4 : 0,
@@ -118,7 +123,8 @@ class FakeLocationTrackingService {
             tick: this.routeIndex,
         });
 
-        locationService.emitBackgroundLocation(fakeLocation);
+        // Call the injected emitter, not locationService directly
+        this.emit(fakeLocation);
     }
 
     // ======================

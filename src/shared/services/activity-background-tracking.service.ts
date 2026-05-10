@@ -1,10 +1,25 @@
 import * as ExpoLocation from "expo-location";
 import * as TaskManager from "expo-task-manager";
+import { ACTIVITY_BACKGROUND_TASK } from "../constant/constant";
 import { logger } from "../utils/logger";
-import { locationService } from "./location.service";
 
-export const ACTIVITY_BACKGROUND_TASK = "ACTIVITY_BACKGROUND_TASK";
+console.log("[BGTask] Imports done, about to defineTask...");
+type EmitFn = (location: ExpoLocation.LocationObject) => void;
 
+// Module-level slot — populated by LocationService after both modules load
+let emitLocation: EmitFn = () => {
+    logger.warn(
+        "[BGTask] emitLocation called before LocationService registered it",
+    );
+};
+
+export function registerBackgroundEmitter(fn: EmitFn): void {
+    emitLocation = fn;
+}
+console.log("[BGTask] Calling defineTask with:", ACTIVITY_BACKGROUND_TASK); // ← add here
+TaskManager.getRegisteredTasksAsync().then((tasks) => {
+    console.log("[Startup] Registered tasks:", JSON.stringify(tasks, null, 2));
+});
 TaskManager.defineTask(ACTIVITY_BACKGROUND_TASK, async ({ data, error }) => {
     logger.log("[BGTask] Called");
 
@@ -27,7 +42,7 @@ TaskManager.defineTask(ACTIVITY_BACKGROUND_TASK, async ({ data, error }) => {
 
     logger.log(`[BGTask] Received ${locations.length} location(s)`);
 
-    locations.forEach((loc) => {
-        locationService.emitBackgroundLocation(loc);
-    });
+    locations.forEach((loc) => emitLocation(loc));
 });
+
+console.log("[BGTask] defineTask complete");

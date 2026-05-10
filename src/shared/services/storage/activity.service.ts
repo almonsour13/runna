@@ -12,6 +12,9 @@ class ActivityService {
             if (this.cachedActivities) return this.cachedActivities;
 
             const activities = (await this.storage.get()) ?? [];
+            // const activities = generateActivities({
+            //     months: 12,
+            // });
             this.cachedActivities = activities;
             logger.log("[ActivityStorage] get → success");
             return activities;

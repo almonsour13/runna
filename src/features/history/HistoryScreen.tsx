@@ -10,16 +10,27 @@ import FilterButton from "./components/FilterButton";
 import HistoryHeader from "./components/HistoryHeader";
 
 type HistoryRoute = RouteProp<RootStackParamList, "History">;
-const filter = ["All", "Today", "This Week", "This Month"];
+
+const FILTER_OPTIONS = ["All", "Today", "This Week", "This Month"] as const;
+const PAGE_LIMIT = 10;
 export default function HistoryScreen() {
     const route = useRoute<HistoryRoute>();
+
     const { initialFilter } = route.params ?? {};
-    const isLoading = useActivityStore((s) => s.isLoading);
-    const activities = useActivityStore((s) => s.activities);
+
+    const isActivitiesLoading = useActivityStore((state) => state.isLoading);
+
+    const activities = useActivityStore((state) => state.activities);
+
     const [selectedFilter, setSelectedFilter] = useState(
-        initialFilter ?? filter[0],
+        initialFilter ?? FILTER_OPTIONS[0],
     );
-    const [sort, setSort] = useState<"Oldest" | "Newest">("Newest");
+
+    const [selectedSortOrder, setSelectedSortOrder] = useState<
+        "Oldest" | "Newest"
+    >("Newest");
+
+    const [page, setPage] = useState(1);
 
     useEffect(() => {
         if (route.params?.initialFilter) {
@@ -27,95 +38,128 @@ export default function HistoryScreen() {
         }
     }, [route.params]);
 
+    useEffect(() => {
+        setPage(1);
+    }, [selectedFilter, selectedSortOrder]);
+
     const filteredActivities = useMemo(() => {
-        const now = Date.now();
+        const todayStartDate = new Date();
+        todayStartDate.setHours(0, 0, 0, 0);
 
-        const startOfToday = new Date();
-        startOfToday.setHours(0, 0, 0, 0);
-        const startToday = startOfToday.getTime();
+        const todayEndDate = new Date();
+        todayEndDate.setHours(23, 59, 59, 999);
 
-        const endToday = new Date();
-        endToday.setHours(23, 59, 59, 999);
-        const end = endToday.getTime();
+        const todayStartMs = todayStartDate.getTime();
+
+        const todayEndMs = todayEndDate.getTime();
+
+        const currentDate = new Date();
 
         return activities
-            .map((a) => ({
-                ...a,
-                createdAtMs: new Date(a.createdAt).getTime(), // ✅ compute once
+            .map((activity) => ({
+                ...activity,
+                createdAtMs: new Date(activity.createdAt).getTime(),
             }))
-            .filter((a) => {
+            .filter((activity) => {
                 if (selectedFilter === "Today") {
-                    return a.createdAtMs >= startToday && a.createdAtMs <= end;
+                    return (
+                        activity.createdAtMs >= todayStartMs &&
+                        activity.createdAtMs <= todayEndMs
+                    );
                 }
 
                 if (selectedFilter === "This Week") {
-                    const start = new Date();
-                    const day = start.getDay();
-                    start.setDate(start.getDate() - day);
-                    start.setHours(0, 0, 0, 0);
+                    const weekStartDate = new Date();
+
+                    const currentDay = weekStartDate.getDay();
+
+                    weekStartDate.setDate(weekStartDate.getDate() - currentDay);
+
+                    weekStartDate.setHours(0, 0, 0, 0);
 
                     return (
-                        a.createdAtMs >= start.getTime() && a.createdAtMs <= end
+                        activity.createdAtMs >= weekStartDate.getTime() &&
+                        activity.createdAtMs <= todayEndMs
                     );
                 }
 
                 if (selectedFilter === "This Month") {
-                    const d = new Date(a.createdAtMs);
+                    const activityDate = new Date(activity.createdAtMs);
+
                     return (
-                        d.getMonth() === new Date().getMonth() &&
-                        d.getFullYear() === new Date().getFullYear()
+                        activityDate.getMonth() === currentDate.getMonth() &&
+                        activityDate.getFullYear() === currentDate.getFullYear()
                     );
                 }
 
                 return true;
             })
-            .sort((a, b) =>
-                sort === "Newest"
-                    ? b.createdAtMs - a.createdAtMs
-                    : a.createdAtMs - b.createdAtMs,
+            .sort((firstActivity, secondActivity) =>
+                selectedSortOrder === "Newest"
+                    ? secondActivity.createdAtMs - firstActivity.createdAtMs
+                    : firstActivity.createdAtMs - secondActivity.createdAtMs,
             );
-    }, [activities, selectedFilter, sort]);
+    }, [activities, selectedFilter, selectedSortOrder]);
 
-    const handleFilterChange = useCallback((f: string) => {
-        setSelectedFilter(f);
+    const paginatedActivities = useMemo(
+        () => filteredActivities.slice(0, page * PAGE_LIMIT),
+        [filteredActivities, page],
+    );
+
+    const hasMore = paginatedActivities.length < filteredActivities.length;
+
+    const handleFilterChange = useCallback(
+        (filterValue: (typeof FILTER_OPTIONS)[number]) => {
+            setSelectedFilter(filterValue);
+        },
+        [],
+    );
+
+    const toggleSortOrder = useCallback(() => {
+        setSelectedSortOrder((previousOrder) =>
+            previousOrder === "Newest" ? "Oldest" : "Newest",
+        );
     }, []);
 
-    const toggleSort = useCallback(() => {
-        setSort((prev) => (prev === "Newest" ? "Oldest" : "Newest"));
-    }, []);
+    const handleLoadMore = useCallback(() => {
+        if (hasMore) setPage((prev) => prev + 1);
+    }, [hasMore]);
 
-    const RenderHeader = () => (
+    const HeaderComponent = () => (
         <ColView>
             <HistoryHeader />
+
             <RowView className="px-4 gap-1 mb-2 justify-between">
-                <RowView className="gap-1 ">
-                    {filter.map((f, index) => {
-                        return (
-                            <FilterButton
-                                label={f}
-                                active={f === selectedFilter}
-                                onPress={() => handleFilterChange(f)}
-                                key={index}
-                            />
-                        );
-                    })}
+                <RowView className="gap-1">
+                    {FILTER_OPTIONS.map((filterOption, index) => (
+                        <FilterButton
+                            key={index}
+                            label={filterOption}
+                            active={filterOption === selectedFilter}
+                            onPress={() => handleFilterChange(filterOption)}
+                        />
+                    ))}
                 </RowView>
+
                 <FilterButton
-                    label={sort}
-                    active={sort === "Newest"}
-                    onPress={toggleSort}
+                    label={selectedSortOrder}
+                    active={selectedSortOrder === "Newest"}
+                    onPress={toggleSortOrder}
                 />
             </RowView>
         </ColView>
     );
+
     return (
         <FlatList
             key="history-list"
             data={
-                isLoading && filteredActivities.length === 0
+                isActivitiesLoading && filteredActivities.length === 0
                     ? []
-                    : filteredActivities
+                    : paginatedActivities // ✅ use paginated slice
             }
+            onEndReached={handleLoadMore}
+            keyExtractor={(item) => item.id}
             contentContainerClassName="gap-1 pb-28"
             showsVerticalScrollIndicator={false}
             onEndReachedThreshold={0.5}
@@ -123,10 +167,10 @@ export default function HistoryScreen() {
             updateCellsBatchingPeriod={50}
             initialNumToRender={10}
             windowSize={10}
-            disableIntervalMomentum={true}
-            ListHeaderComponent={RenderHeader}
+            disableIntervalMomentum
+            ListHeaderComponent={HeaderComponent}
             ListEmptyComponent={
-                isLoading ? (
+                isActivitiesLoading ? (
                     <RowView className="justify-center py-8">
                         <ActivityIndicator size="large" />
                     </RowView>
@@ -138,13 +182,11 @@ export default function HistoryScreen() {
                     </RowView>
                 )
             }
-            renderItem={({ item }) => {
-                return (
-                    <ColView key={item.id} className="px-4">
-                        <ActivityCard activity={item} />
-                    </ColView>
-                );
-            }}
+            renderItem={({ item }) => (
+                <ColView className="px-4">
+                    <ActivityCard activity={item} />
+                </ColView>
+            )}
         />
     );
 }

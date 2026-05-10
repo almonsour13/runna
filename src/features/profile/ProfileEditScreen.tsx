@@ -1,109 +1,210 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
+import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
 import { Profile } from "@/shared/types/type";
+import { cn } from "@/shared/utils/cn";
+import { formatCmToftIn } from "@/shared/utils/format";
+import { capitalize } from "@/shared/utils/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useState } from "react";
-import {
-    FlatList,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { useRef, useState } from "react";
+import { TextInput, TouchableOpacity } from "react-native";
+import AgeDrawer from "../../shared/components/drawer/AgeDrawer";
+import GenderDrawer from "../../shared/components/drawer/GenderDrawer";
+import GoalDrawer from "../../shared/components/drawer/GoalDrawer";
+import HeightDrawer from "../../shared/components/drawer/HeightDrawer";
+import WeightDrawer from "../../shared/components/drawer/WeightDrawer";
 
-const ITEM_HEIGHT = 50;
 export default function ProfileEditScreen() {
     const navigation = useNavigation();
     const profile = useProfileStore((s) => s.profile);
+    const updateProfile = useProfileStore((s) => s.updateProfile);
+
     const [newProfile, setNewProfile] = useState<Profile | null>(profile);
-    const ages = Array.from({ length: 100 }, (_, i) => i + 1);
 
-    const onScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const offsetY = event.nativeEvent.contentOffset.y;
+    const ageDrawerRef = useRef<DrawerHandle>(null);
+    const genderDrawerRef = useRef<DrawerHandle>(null);
+    const heightDrawerRef = useRef<DrawerHandle>(null);
+    const weightDrawerRef = useRef<DrawerHandle>(null);
+    const goalDrawerRef = useRef<DrawerHandle>(null);
 
-        const index = Math.round(offsetY / ITEM_HEIGHT);
-
-        const selectedAge = ages[index];
-
-        console.log(selectedAge);
+    const handleChange = (key: keyof Profile, value: any) => {
+        setNewProfile((prev) => {
+            if (!prev) return prev;
+            return { ...prev, [key]: value };
+        });
     };
+
+    const handleSave = () => {
+        if (newProfile) {
+            updateProfile(newProfile);
+        }
+        navigation.goBack();
+    };
+
+    const isDirty =
+        newProfile?.name?.trim() !== profile?.name?.trim() ||
+        newProfile?.age !== profile?.age ||
+        newProfile?.gender !== profile?.gender ||
+        newProfile?.weight !== profile?.weight ||
+        newProfile?.height !== profile?.height;
+
+    const isValid =
+        !!newProfile?.name?.trim() &&
+        !!newProfile?.age &&
+        !!newProfile?.gender &&
+        !!newProfile?.weight &&
+        !!newProfile?.height;
+
+    const canSave = isDirty && isValid;
+
     return (
-        <ColView className="flex-1 gap-8">
-            <RowView className="px-4 pt-8 ">
-                <RowView className="gap-4 items-center">
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Ionicons
-                            name="arrow-back"
-                            size={24}
-                            className="text-foreground"
-                        />
-                    </TouchableOpacity>
-                    <Text className="text-2xl">Edit Profile</Text>
+        <>
+            <ColView className="flex-1 gap-8">
+                <RowView className="px-4 pt-8 justify-between items-center">
+                    <RowView className="gap-4 items-center">
+                        <TouchableOpacity onPress={() => navigation.goBack()}>
+                            <Ionicons
+                                name="arrow-back"
+                                size={24}
+                                className="text-foreground"
+                            />
+                        </TouchableOpacity>
+                        <Text className="text-2xl">Edit Profile</Text>
+                    </RowView>
                 </RowView>
-            </RowView>
-            <ColView className="px-4 gap-4">
-                <ColView>
-                    <Text>Name</Text>
-                    <Card className="h-18">
-                        <TextInput />
-                    </Card>
-                </ColView>
-                <RowView>
-                    <ColView className="flex-1">
-                        <Text>Age</Text>
-                        <Card className="h-18"></Card>
+
+                <ColView className="px-4 gap-4">
+                    <ColView>
+                        <Text>Name</Text>
+                        <Card className="h-18">
+                            <TextInput
+                                placeholder="Enter your name"
+                                value={newProfile?.name}
+                                onChangeText={(v) => handleChange("name", v)}
+                            />
+                        </Card>
                     </ColView>
-                    <ColView className="flex-1">
-                        <Text>Gender</Text>
-                        <Card className="h-18"></Card>
-                    </ColView>
-                </RowView>
-                <RowView>
-                    <ColView className="flex-1">
-                        <Text>Height</Text>
-                        <Card className="h-18"></Card>
-                    </ColView>
-                    <ColView className="flex-1">
-                        <Text>Weight</Text>
-                        <Card className="h-18"></Card>
-                    </ColView>
-                </RowView>
-                <ColView>
-                    <Text>Goal</Text>
-                    <Card className="h-18"></Card>
-                </ColView>
-            </ColView>
-            <ColView className="flex-1 justify-end">
-                <FlatList
-                    data={ages}
-                    snapToInterval={ITEM_HEIGHT}
-                    decelerationRate="fast"
-                    showsVerticalScrollIndicator={false}
-                    onMomentumScrollEnd={onScrollEnd}
-                    contentContainerStyle={{
-                        paddingVertical: ITEM_HEIGHT,
-                    }}
-                    style={{
-                        height: ITEM_HEIGHT * 1, // visible rows
-                    }}
-                    renderItem={({ item }) => (
-                        <View
-                            style={{
-                                height: ITEM_HEIGHT,
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}
-                            className="bg-red-200"
+
+                    <RowView>
+                        <ColView className="flex-1">
+                            <Text>Age</Text>
+                            <TouchableOpacity
+                                onPress={() => ageDrawerRef.current?.open()}
+                            >
+                                <Card className="h-18 justify-center">
+                                    <Text>
+                                        {newProfile?.age
+                                            ? newProfile.age
+                                            : "Select Age"}
+                                    </Text>
+                                </Card>
+                            </TouchableOpacity>
+                        </ColView>
+                        <ColView className="flex-1">
+                            <Text>Gender</Text>
+                            <TouchableOpacity
+                                onPress={() => genderDrawerRef.current?.open()}
+                            >
+                                <Card className="h-18 justify-center">
+                                    <Text>
+                                        {newProfile?.gender
+                                            ? capitalize(newProfile.gender)
+                                            : "Select Gender"}
+                                    </Text>
+                                </Card>
+                            </TouchableOpacity>
+                        </ColView>
+                    </RowView>
+
+                    <RowView>
+                        <ColView className="flex-1">
+                            <Text>Height</Text>
+                            <TouchableOpacity
+                                onPress={() => heightDrawerRef.current?.open()}
+                            >
+                                <Card className="h-18 justify-center">
+                                    <Text>
+                                        {newProfile?.height
+                                            ? formatCmToftIn(newProfile.height)
+                                            : "Select Height"}
+                                    </Text>
+                                </Card>
+                            </TouchableOpacity>
+                        </ColView>
+                        <ColView className="flex-1">
+                            <Text>Weight</Text>
+                            <TouchableOpacity
+                                onPress={() => weightDrawerRef.current?.open()}
+                            >
+                                <Card className="h-18 justify-center">
+                                    <Text>
+                                        {newProfile?.weight
+                                            ? `${newProfile.weight} kg`
+                                            : "Select Weight"}
+                                    </Text>
+                                </Card>
+                            </TouchableOpacity>
+                        </ColView>
+                    </RowView>
+
+                    <ColView>
+                        <Text>Goal</Text>
+                        <TouchableOpacity
+                            onPress={() => goalDrawerRef.current?.open()}
                         >
-                            <Text>{item}</Text>
-                        </View>
-                    )}
-                />
+                            <Card className="h-18 justify-center">
+                                <Text>
+                                    {newProfile?.goal
+                                        ? `${newProfile.goal / 1000} km`
+                                        : "Select Goal"}
+                                </Text>
+                            </Card>
+                        </TouchableOpacity>
+                    </ColView>
+                </ColView>
+
+                <ColView className="flex-1 justify-end p-4 pb-8">
+                    <TouchableOpacity
+                        className={cn(
+                            "h-18 rounded-full bg-primary justify-center items-center",
+                            !canSave && "opacity-30",
+                        )}
+                        disabled={!canSave}
+                        onPress={() => handleSave()}
+                    >
+                        <Text>Save</Text>
+                    </TouchableOpacity>
+                </ColView>
             </ColView>
-        </ColView>
+
+            <AgeDrawer
+                ref={ageDrawerRef}
+                value={newProfile?.age}
+                onChange={(v) => handleChange("age", v)}
+            />
+            <GenderDrawer
+                ref={genderDrawerRef}
+                value={newProfile?.gender}
+                onChange={(v) => handleChange("gender", v)}
+            />
+            <HeightDrawer
+                ref={heightDrawerRef}
+                value={newProfile?.height}
+                onChange={(v) => handleChange("height", v)}
+            />
+            <WeightDrawer
+                ref={weightDrawerRef}
+                value={newProfile?.weight}
+                onChange={(v) => handleChange("weight", v)}
+            />
+            <GoalDrawer
+                ref={goalDrawerRef}
+                value={newProfile?.goal}
+                onChange={(v) => handleChange("goal", v)}
+            />
+        </>
     );
 }

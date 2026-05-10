@@ -1,0 +1,162 @@
+import { ColView, RowView } from "@/shared/components/CustomView";
+import Drawer, { DrawerHandle } from "@/shared/components/ui/Drawer";
+import Text from "@/shared/components/ui/Text";
+import { cn } from "@/shared/utils/cn";
+import {
+    forwardRef,
+    useEffect,
+    useImperativeHandle,
+    useRef,
+    useState,
+} from "react";
+import {
+    FlatList,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    View,
+} from "react-native";
+
+interface Props {
+    value?: number | null; // in meters
+    onChange: (meters: number) => void;
+}
+
+const ITEM_HEIGHT = 56;
+const VISIBLE_ITEMS = 5;
+const RECOMMENDED_KM = 10;
+
+const GoalDrawer = forwardRef<DrawerHandle, Props>(
+    ({ value, onChange }, ref) => {
+        const drawerRef = useRef<DrawerHandle>(null);
+
+        useImperativeHandle(ref, () => ({
+            open: () => drawerRef.current?.open(),
+            close: () => drawerRef.current?.close(),
+        }));
+
+        const minGoal = 5;
+        const maxGoal = 100;
+        const interval = 5;
+        const goals = Array.from(
+            { length: (maxGoal - minGoal) / interval + 1 },
+            (_, i) => minGoal + i * interval,
+        );
+
+        // value is in meters, convert to km for display
+        const toKm = (meters: number) => Math.round(meters / 1000);
+        const defaultKm = value != null ? toKm(value) : RECOMMENDED_KM;
+
+        const [selectedGoal, setSelectedGoal] = useState(defaultKm);
+
+        useEffect(() => {
+            if (value != null) setSelectedGoal(toKm(value));
+        }, [value]);
+
+        const initialIndex = Math.max(
+            0,
+            Math.min((defaultKm - minGoal) / interval, goals.length - 1),
+        );
+
+        const onScrollEnd = (
+            event: NativeSyntheticEvent<NativeScrollEvent>,
+        ) => {
+            const offsetY = event.nativeEvent.contentOffset.y;
+            const index = Math.round(offsetY / ITEM_HEIGHT);
+            const selectedKm =
+                goals[Math.max(0, Math.min(index, goals.length - 1))];
+            setSelectedGoal(selectedKm);
+            onChange(selectedKm * 1000); // emit back as meters
+        };
+
+        return (
+            <Drawer ref={drawerRef} disableScrollView={true}>
+                <ColView className="relative gap-4 p-4">
+                    <RowView className="px-4 justify-center">
+                        <Text className="text-base font-medium text-foreground">
+                            Select Your Goal
+                        </Text>
+                    </RowView>
+                    <View className="relative">
+                        <FlatList
+                            data={goals}
+                            keyExtractor={(item) => item.toString()}
+                            snapToInterval={ITEM_HEIGHT}
+                            decelerationRate="fast"
+                            showsVerticalScrollIndicator={false}
+                            onMomentumScrollEnd={onScrollEnd}
+                            initialScrollIndex={initialIndex}
+                            getItemLayout={(_, index) => ({
+                                length: ITEM_HEIGHT,
+                                offset: ITEM_HEIGHT * index,
+                                index,
+                            })}
+                            contentContainerStyle={{
+                                paddingVertical:
+                                    ITEM_HEIGHT * Math.floor(VISIBLE_ITEMS / 2),
+                            }}
+                            style={{
+                                height: ITEM_HEIGHT * VISIBLE_ITEMS,
+                            }}
+                            renderItem={({ item }) => {
+                                const isSelected = item === selectedGoal;
+                                const isRecommended = item === RECOMMENDED_KM;
+                                return (
+                                    <View
+                                        style={{ height: ITEM_HEIGHT }}
+                                        className="relative justify-center items-center"
+                                    >
+                                        <RowView className="items-end gap-1">
+                                            <Text
+                                                className={cn(
+                                                    "text-muted-foreground text-2xl",
+                                                    !isSelected && "opacity-30",
+                                                    isSelected &&
+                                                        "text-foreground text-3xl font-medium",
+                                                )}
+                                            >
+                                                {item}
+                                            </Text>
+                                            <Text
+                                                className={cn(
+                                                    "text-sm pb-1 text-muted-foreground",
+                                                    !isSelected && "opacity-30",
+                                                )}
+                                            >
+                                                km
+                                            </Text>
+                                        </RowView>
+                                        {isRecommended && (
+                                            <View className="absolute right-0">
+                                                <Text
+                                                    className={cn(
+                                                        "text-xs text-muted-foreground",
+                                                        !isSelected &&
+                                                            "opacity-30",
+                                                        isSelected &&
+                                                            "text-primary opacity-100",
+                                                    )}
+                                                >
+                                                    Recommended
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
+                                );
+                            }}
+                        />
+                        <View
+                            style={{
+                                height: ITEM_HEIGHT,
+                                top:
+                                    ITEM_HEIGHT * Math.floor(VISIBLE_ITEMS / 2),
+                            }}
+                            className="absolute -z-20 left-0 right-0 border-b border-t border-border/40"
+                        />
+                    </View>
+                </ColView>
+            </Drawer>
+        );
+    },
+);
+
+export default GoalDrawer;

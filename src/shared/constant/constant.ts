@@ -17,3 +17,5 @@ export const STORAGE_KEYS = {
     profile: `${PREFIX}:profile`,
     settings: `${PREFIX}:settings`,
 };
+
+export const ACTIVITY_BACKGROUND_TASK = "ACTIVITY_BACKGROUND_TASK";

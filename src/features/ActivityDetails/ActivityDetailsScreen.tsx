@@ -18,7 +18,6 @@ import {
     formatPace,
     formatSpeed,
 } from "@/shared/utils/format";
-import { logger } from "@/shared/utils/logger";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { format, isToday, isYesterday } from "date-fns";
@@ -38,66 +37,101 @@ export default function ActivityDetailsScreen() {
 
     if (!activity) return <ActivityDetailsEmptyState />;
 
-    const { dateLabel, startTime, endTime, distanceKm, goalKm, pct, stats } =
-        useMemo(() => {
-            logger.log("activity", activity);
-            const dateLabel = isToday(activity.startTime)
-                ? "Today"
-                : isYesterday(activity.startTime)
-                  ? "Yesterday"
-                  : format(activity.startTime, "EEEE, MMM d yyyy");
+    const {
+        activityDateLabel,
+        activityStartTimeLabel,
+        activityEndTimeLabel,
 
-            const startTime = format(activity.startTime, "h:mm a");
-            const endTime = activity.endTime
-                ? format(activity.endTime, "h:mm a")
-                : "Ongoing";
+        totalDistanceM,
+        totalDistanceKm,
 
-            const distance = computeTotalDistance(activity.coordinates);
-            const distanceKm = Number(convertMtoKm(distance));
-            const goalKm = Number(convertMtoKm(activity.goal));
-            const pct =
-                goalKm > 0 ? Math.min((distanceKm / goalKm) * 100, 100) : 0;
-            const durationSec = convertMsToS(activity.duration);
+        goalDistanceM,
+        goalDistanceKm,
 
-            const stats = [
-                {
-                    label: "Duration",
-                    value: formatDuration(durationSec),
-                    unit: "hh:mm",
-                    icon: "time-outline" as const,
-                },
-                {
-                    label: "Calories",
-                    value: formatCalories(
-                        computeCalories(distance, profile?.weight ?? 70),
-                    ),
-                    unit: "kcal",
-                    icon: "flame-outline" as const,
-                },
-                {
-                    label: "Pace",
-                    value: formatPace(computePace(distance, durationSec)),
-                    unit: "min/km",
-                    icon: "timer-outline" as const,
-                },
-                {
-                    label: "Speed",
-                    value: formatSpeed(computeSpeed(distance, durationSec)),
-                    unit: "km/h",
-                    icon: "speedometer-outline" as const,
-                },
-            ];
+        goalCompletionPct,
 
-            return {
-                dateLabel,
-                startTime,
-                endTime,
-                distanceKm,
-                goalKm,
-                pct,
-                stats,
-            };
-        }, [activity, profile?.weight]);
+        totalDurationSec,
+
+        activityStats,
+    } = useMemo(() => {
+        const activityDateLabel = isToday(activity.startTime)
+            ? "Today"
+            : isYesterday(activity.startTime)
+              ? "Yesterday"
+              : format(activity.startTime, "EEEE, MMM d yyyy");
+
+        const activityStartTimeLabel = format(activity.startTime, "h:mm a");
+
+        const activityEndTimeLabel = activity.endTime
+            ? format(activity.endTime, "h:mm a")
+            : "Ongoing";
+
+        const totalDistanceM = computeTotalDistance(activity.coordinates);
+
+        const totalDistanceKm = Number(convertMtoKm(totalDistanceM));
+
+        const goalDistanceM = activity.goal;
+
+        const goalDistanceKm = Number(convertMtoKm(goalDistanceM));
+
+        const goalCompletionPct =
+            goalDistanceKm > 0
+                ? Math.min((totalDistanceKm / goalDistanceKm) * 100, 100)
+                : 0;
+
+        const totalDurationSec = convertMsToS(activity.duration);
+
+        const activityStats = [
+            {
+                label: "Duration",
+                value: formatDuration(totalDurationSec),
+                unit: "hh:mm",
+                icon: "time-outline" as const,
+            },
+            {
+                label: "Calories",
+                value: formatCalories(
+                    computeCalories(totalDistanceM, profile?.weight ?? 70),
+                ),
+                unit: "kcal",
+                icon: "flame-outline" as const,
+            },
+            {
+                label: "Pace",
+                value: formatPace(
+                    computePace(totalDistanceM, totalDurationSec),
+                ),
+                unit: "min/km",
+                icon: "timer-outline" as const,
+            },
+            {
+                label: "Speed",
+                value: formatSpeed(
+                    computeSpeed(totalDistanceM, totalDurationSec),
+                ),
+                unit: "km/h",
+                icon: "speedometer-outline" as const,
+            },
+        ];
+
+        return {
+            activityDateLabel,
+            activityStartTimeLabel,
+            activityEndTimeLabel,
+
+            totalDistanceM,
+            totalDistanceKm,
+
+            goalDistanceM,
+            goalDistanceKm,
+
+            goalCompletionPct,
+
+            totalDurationSec,
+
+            activityStats,
+        };
+    }, [activity, profile?.weight]);
 
     return (
         <SafeScreen>
@@ -112,10 +146,11 @@ export default function ActivityDetailsScreen() {
                             </TouchableOpacity>
                             <ColView className="gap-0">
                                 <Text className="text-lg font-medium">
-                                    {dateLabel}
+                                    {activityDateLabel}
                                 </Text>
                                 <Text className="text-xs text-muted-foreground">
-                                    {startTime} – {endTime}
+                                    {activityStartTimeLabel} –{" "}
+                                    {activityEndTimeLabel}
                                 </Text>
                             </ColView>
                         </RowView>
@@ -146,22 +181,22 @@ export default function ActivityDetailsScreen() {
                                     </Text>
                                 </RowView>
                                 <Text className="text-6xl font-bold">
-                                    {distanceKm.toFixed(1)}{" "}
+                                    {totalDistanceKm.toFixed(1)}{" "}
                                     <Text className="text-muted-foreground font-medium text-2xl">
-                                        / {goalKm.toFixed(1)} km
+                                        / {goalDistanceKm.toFixed(1)} km
                                     </Text>
                                 </Text>
                             </ColView>
                             <View className="items-center justify-center">
                                 <RingChart
-                                    pct={pct}
+                                    pct={goalCompletionPct}
                                     radius={28}
                                     strokeWidth={8}
                                     strokeLinecap="round"
                                     trackColor="rgba(128,128,128,0.08)"
                                 />
                                 <Text className="absolute text-[11px] font-medium text-foreground">
-                                    {pct.toFixed(0)}
+                                    {goalCompletionPct.toFixed(0)}
                                     <Text className="text-[9px] text-muted-foreground">
                                         %
                                     </Text>
@@ -170,7 +205,7 @@ export default function ActivityDetailsScreen() {
                         </RowView>
 
                         <RowView className="gap-2">
-                            {stats.map((stat) => (
+                            {activityStats.map((stat) => (
                                 <ColView
                                     key={stat.label}
                                     className="flex-1 gap-1"

@@ -24,6 +24,8 @@ export default function RecentActivities() {
             .slice(0, 5);
     }, [activities]);
 
+    const hasActivities = recentActivities.length > 0;
+
     return (
         <ColView>
             <RowView className="px-4 justify-between items-end">
@@ -48,7 +50,7 @@ export default function RecentActivities() {
                         <Card key={i} className="h-26" />
                     ))}
                 </ColView>
-            ) : recentActivities.length === 0 ? (
+            ) : !hasActivities ? (
                 <ColView className="px-4 py-8 items-center gap-2">
                     <Ionicons
                         name="footsteps-outline"

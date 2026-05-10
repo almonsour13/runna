@@ -36,3 +36,11 @@ export function formatCalories(calories: number) {
     if (!calories || calories < 0 || !isFinite(calories)) return "0";
     return calories.toFixed(0);
 }
+
+export function formatCmToftIn(cm: number) {
+    if (!cm || cm < 0 || !isFinite(cm)) return "0";
+    const inches = Math.round(cm / 2.54);
+    const ft = Math.floor(inches / 12);
+    const remainingInches = inches % 12;
+    return `${ft}' ${remainingInches}"`;
+}

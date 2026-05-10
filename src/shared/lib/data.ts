@@ -85,7 +85,7 @@ function generateEarthCoordinates(
 export const generateActivities = ({
     months = 2,
     goal = 5000,
-    sessionMinPerDay = 1,
+    sessionMinPerDay = 2,
     sessionMaxPerDay = 3,
 }: {
     months?: number;

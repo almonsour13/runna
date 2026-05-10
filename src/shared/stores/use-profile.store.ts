@@ -4,6 +4,7 @@ import { create } from "zustand";
 type ProfileStore = {
     profile: Profile | null;
     setProfile: (profile: Profile | null) => void;
+    updateProfile: (profile: Profile) => void;
     setName: (name: string) => void;
     setAge: (age: number) => void;
     setWeight: (weight: number) => void;
@@ -18,12 +19,19 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
         name: "Al Monsour",
         age: 23,
         weight: 65,
-        height: 166,
+        height: 164,
         gender: "male",
         goal: 5000,
     },
 
     setProfile: (profile) => set({ profile }),
+    updateProfile: (profile) =>
+        set({
+            profile: {
+                ...get().profile,
+                ...profile,
+            },
+        }),
 
     setName: (name) =>
         set((state) => {
