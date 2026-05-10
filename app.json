@@ -39,7 +39,8 @@
             "favicon": "./assets/images/favicon.png"
         },
         "plugins": [
-            "expo-dev-client", // ← add this
+            "@maplibre/maplibre-react-native",
+            "expo-dev-client",
             "expo-task-manager",
             [
                 "expo-splash-screen",
@@ -60,7 +61,8 @@
                     "isAndroidBackgroundLocationEnabled": true,
                     "isIosBackgroundLocationEnabled": true
                 }
-            ]
+            ],
+            "@maplibre/maplibre-react-native"
         ],
         "experiments": {
             "typedRoutes": true,
