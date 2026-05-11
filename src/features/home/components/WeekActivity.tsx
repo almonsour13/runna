@@ -268,7 +268,7 @@ function WeekActivity() {
                                     </RowView>
                                 </RowView>
                                 <RowView className="gap-4 ">
-                                    <Text className="text-6xl font-semibold text-foreground">
+                                    <Text className="text-5xl font-semibold text-foreground">
                                         {totalDistanceKm
                                             .toFixed(1)
                                             .toLocaleString()}

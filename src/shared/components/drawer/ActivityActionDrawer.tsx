@@ -30,6 +30,7 @@ const ActivityActionDrawer = forwardRef<
             drawerRef.current?.open();
         },
     }));
+
     const CARD_ACTIONS = [
         {
             label: "View Details",
@@ -39,6 +40,10 @@ const ActivityActionDrawer = forwardRef<
                 });
                 drawerRef.current?.close();
             },
+        },
+        {
+            label: "Export",
+            onPress: () => {},
         },
         {
             label: "Delete",
