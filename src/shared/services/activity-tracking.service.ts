@@ -114,7 +114,10 @@ class ActivityTrackingService {
                     ...this.activity,
                     coordinates: [...this.activity.coordinates, coord],
                 };
-
+                logger.log(
+                    "[ActivityService] Coordinates Points",
+                    this.activity.coordinates.length,
+                );
                 await this.activityStorage.set(this.activity);
             },
         );

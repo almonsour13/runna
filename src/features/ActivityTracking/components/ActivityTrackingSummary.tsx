@@ -33,12 +33,15 @@ export default function ActivityTrackingSummary() {
             computeCalories(distance, profile?.weight ?? 70),
         );
         const durationSec = convertMsToS(duration);
-        const pace = formatPace(computePace(distance, convertMsToS(duration)));
+        const pace =
+            distanceKm > 0.01
+                ? formatPace(computePace(distance, convertMsToS(duration)))
+                : "00:00";
         const pct = Math.min((distanceKm / goal) * 100, 100) || 0;
         const stats = [
             {
                 label: "Distance",
-                value: distanceKm.toFixed(1),
+                value: distanceKm.toFixed(2).padStart(2, "0"),
                 unit: "km",
                 icon: "location-outline" as const,
             },

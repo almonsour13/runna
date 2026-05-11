@@ -3,9 +3,8 @@ import * as ExpoLocation from "expo-location";
 import * as TaskManager from "expo-task-manager";
 import {
     ACTIVITY_BACKGROUND_TASK,
-    DISTANCE_INTERVAL_METERS,
-    LOCATION_ACCURACY,
-    LOCATION_TIME_INTERVAL_MS,
+    BACKGROUND_TRACKING_CONFIG,
+    GPS_CONFIG,
 } from "../constant/constant";
 import { Coordinate, Location } from "../types/type";
 import { KalmanFilter } from "../utils/kalman-filter";
@@ -140,7 +139,7 @@ class LocationService {
     // Start / Stop Tracking
     // ======================
     async start(enableBackground = true): Promise<void> {
-        this.requestPermissions();
+        await this.requestPermissions();
         if (this.mode === "recording") {
             logger.warn("[Location] Already recording, ignoring start()");
             return;
@@ -212,9 +211,9 @@ class LocationService {
 
         this.subscription = await ExpoLocation.watchPositionAsync(
             {
-                accuracy: ExpoLocation.Accuracy.BestForNavigation,
-                timeInterval: LOCATION_TIME_INTERVAL_MS,
-                distanceInterval: DISTANCE_INTERVAL_METERS,
+                accuracy: GPS_CONFIG.LOCATION_ACCURACY,
+                timeInterval: GPS_CONFIG.LOCATION_TIME_INTERVAL_MS,
+                distanceInterval: GPS_CONFIG.DISTANCE_INTERVAL_METERS,
             },
             (location) => {
                 this.emitLocation(location, true);
@@ -234,19 +233,14 @@ class LocationService {
     private async startBackgroundTracking(): Promise<void> {
         logger.log("[Location] Background tracking start requested");
 
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         const isRegistered = await TaskManager.isTaskRegisteredAsync(
             ACTIVITY_BACKGROUND_TASK,
         );
 
-        if (!isRegistered) {
-            logger.error(
-                "[Location] Task not registered — ensure activity-background-tracking.service " +
-                    "is imported at the app entry point BEFORE any other imports.",
-            );
-            // Graceful fallback: use foreground tracking instead
-            logger.warn("[Location] Falling back to foreground tracking");
-            await this.startForegroundTracking();
-            this.useBackgroundTracking = false;
+        if (isRegistered) {
+            logger.log("[Location] Background tracking already running");
             return;
         }
 
@@ -254,9 +248,9 @@ class LocationService {
             await ExpoLocation.startLocationUpdatesAsync(
                 ACTIVITY_BACKGROUND_TASK,
                 {
-                    accuracy: LOCATION_ACCURACY,
-                    distanceInterval: DISTANCE_INTERVAL_METERS,
-                    timeInterval: LOCATION_TIME_INTERVAL_MS,
+                    accuracy: GPS_CONFIG.LOCATION_ACCURACY,
+                    distanceInterval: GPS_CONFIG.DISTANCE_INTERVAL_METERS,
+                    timeInterval: GPS_CONFIG.LOCATION_TIME_INTERVAL_MS,
                     showsBackgroundLocationIndicator: true,
                     foregroundService: {
                         notificationTitle: "🏃 Running",
@@ -265,9 +259,17 @@ class LocationService {
                         killServiceOnDestroy: false,
                     },
                     pausesUpdatesAutomatically: false,
+                    deferredUpdatesInterval:
+                        BACKGROUND_TRACKING_CONFIG.DEFERRED_UPDATES_INTERVAL,
+                    deferredUpdatesDistance:
+                        BACKGROUND_TRACKING_CONFIG.DEFERRED_UPDATES_DISTANCE,
                 },
             );
+            const isRegistered = await TaskManager.isTaskRegisteredAsync(
+                ACTIVITY_BACKGROUND_TASK,
+            );
 
+            logger.log("[Location] isRegistered:", isRegistered);
             logger.log("[Location] Background tracking started");
         } catch (error) {
             logger.error("[Location] Failed to start background tracking", {
@@ -309,18 +311,18 @@ class LocationService {
             longitude: location.coords.longitude,
         };
 
-        const smoothed = filter
-            ? this.kalman.update(
-                  raw.latitude,
-                  raw.longitude,
-                  location.timestamp,
-                  location.coords.accuracy ?? 10,
-              )
-            : raw;
+        // const smoothed = filter
+        //     ? this.kalman.update(
+        //           raw.latitude,
+        //           raw.longitude,
+        //           location.timestamp,
+        //           location.coords.accuracy ?? 10,
+        //       )
+        //     : raw;
 
         const coord: Coordinate = {
-            latitude: smoothed.latitude,
-            longitude: smoothed.longitude,
+            latitude: raw.latitude,
+            longitude: raw.longitude,
             timestamp: location.timestamp,
             speed: location.coords.speed ?? 0,
             accuracy: location.coords.accuracy ?? 999,
@@ -331,7 +333,6 @@ class LocationService {
         // Drop the point if it fails accuracy / speed / distance checks
         const processedCoord = preprocessLocation(coord, this.lastCoord);
         if (!processedCoord) return;
-
         this.lastCoord = processedCoord;
         this.locationUpdateCallbacks.forEach((cb) => cb(processedCoord, null));
     }

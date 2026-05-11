@@ -63,6 +63,15 @@ const AgeDrawer = forwardRef<DrawerHandle, Props>(
             setSelectedAge(selected);
             onChange(selected);
         };
+        const scrollY = useRef(0);
+        const [activeIndex, setActiveIndex] = useState(initialIndex);
+
+        const onScroll = (event: any) => {
+            scrollY.current = event.nativeEvent.contentOffset.y;
+
+            const index = Math.round(scrollY.current / ITEM_HEIGHT);
+            setActiveIndex(index);
+        };
 
         return (
             <Drawer ref={drawerRef} disableScrollView={true}>
@@ -90,6 +99,7 @@ const AgeDrawer = forwardRef<DrawerHandle, Props>(
                                 paddingVertical:
                                     ITEM_HEIGHT * Math.floor(VISIBLE_ITEMS / 2),
                             }}
+                            onScroll={onScroll}
                             style={{
                                 height: ITEM_HEIGHT * VISIBLE_ITEMS,
                             }}
@@ -103,11 +113,10 @@ const AgeDrawer = forwardRef<DrawerHandle, Props>(
                                 >
                                     <Text
                                         className={cn(
-                                            item !== selectedAge &&
-                                                "opacity-30",
-                                            "text-muted-foreground text-2xl",
-                                            item === selectedAge &&
-                                                "text-foreground text-3xl font-medium",
+                                            "text-foreground text-2xl",
+                                            // activeIndex === ages.indexOf(item)
+                                            //     ? "text-foreground"
+                                            //     : "text-muted-foreground",
                                         )}
                                     >
                                         {item}
@@ -115,14 +124,19 @@ const AgeDrawer = forwardRef<DrawerHandle, Props>(
                                 </View>
                             )}
                         />
-                        <View
-                            style={{
-                                height: ITEM_HEIGHT,
-                                top:
-                                    ITEM_HEIGHT * Math.floor(VISIBLE_ITEMS / 2),
-                            }}
-                            className="absolute -z-20 left-0 right-0 border-b border-t border-border/40"
-                        />
+                        <ColView
+                            className="absolute inset-0 "
+                            pointerEvents="none"
+                        >
+                            <View className="flex-1 bg-card/80" />
+                            <View
+                                style={{
+                                    height: ITEM_HEIGHT,
+                                }}
+                                className=""
+                            />
+                            <View className="flex-1 bg-card/80" />
+                        </ColView>
                     </View>
                 </ColView>
             </Drawer>

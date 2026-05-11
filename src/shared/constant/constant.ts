@@ -1,9 +1,15 @@
 import { LocationAccuracy } from "expo-location";
 
-export const LOCATION_TIME_INTERVAL_MS = 3000;
-export const LOCATION_ACCURACY = LocationAccuracy.BestForNavigation;
-export const DISTANCE_INTERVAL_METERS = 5;
+export const GPS_CONFIG = {
+    LOCATION_TIME_INTERVAL_MS: 3000,
+    LOCATION_ACCURACY: LocationAccuracy.BestForNavigation,
+    DISTANCE_INTERVAL_METERS: 3,
+};
 
+export const BACKGROUND_TRACKING_CONFIG = {
+    DEFERRED_UPDATES_INTERVAL: 3000, // milliseconds
+    DEFERRED_UPDATES_DISTANCE: 3, // meters
+};
 export const MIN_ACCURACY_METERS = 15;
 export const MIN_DISTANCE_METERS = 5;
 export const MAX_SPEED_MPS = 10;

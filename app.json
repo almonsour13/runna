@@ -7,7 +7,7 @@
         "icon": "./assets/images/icon.png",
         "scheme": "exposetup",
         "userInterfaceStyle": "automatic",
-        "newArchEnabled": true,
+        "newArchEnabled": false,
         "ios": {
             "supportsTablet": true
         },
@@ -21,16 +21,12 @@
             "edgeToEdgeEnabled": true,
             "predictiveBackGestureEnabled": false,
             "permissions": [
+                "ACTIVITY_RECOGNITION",
                 "ACCESS_COARSE_LOCATION",
                 "ACCESS_FINE_LOCATION",
                 "ACCESS_BACKGROUND_LOCATION",
                 "FOREGROUND_SERVICE",
-                "FOREGROUND_SERVICE_LOCATION",
-                "android.permission.ACCESS_COARSE_LOCATION",
-                "android.permission.ACCESS_FINE_LOCATION",
-                "android.permission.ACCESS_BACKGROUND_LOCATION",
-                "android.permission.FOREGROUND_SERVICE",
-                "android.permission.FOREGROUND_SERVICE_LOCATION"
+                "FOREGROUND_SERVICE_LOCATION"
             ],
             "package": "com.almonsour13.runna"
         },
@@ -62,7 +58,12 @@
                     "isIosBackgroundLocationEnabled": true
                 }
             ],
-            "@maplibre/maplibre-react-native"
+            [
+                "expo-sensors",
+                {
+                    "motionPermission": "Allow $(BUNDLE_ID) to track your steps."
+                }
+            ]
         ],
         "experiments": {
             "typedRoutes": true,

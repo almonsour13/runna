@@ -58,9 +58,12 @@ const HeightDrawer = forwardRef<DrawerHandle, HeightProps>(
             if (value != null) setSelectedHeight(value);
         }, [value]);
 
-        const initialIndex = heightsImperial.indexOf(
-            heightsImperial.find((item) => item.cm === defaultHeight) ??
-                heightsImperial[0],
+        const initialIndex = Math.max(
+            0,
+            Math.min(
+                (defaultHeight - heightsImperial[0].cm) / 2.54,
+                heightsImperial.length - 1,
+            ),
         );
 
         const onScrollEnd = (
@@ -114,22 +117,14 @@ const HeightDrawer = forwardRef<DrawerHandle, HeightProps>(
                                             <RowView className="gap-8">
                                                 <Text
                                                     className={cn(
-                                                        "text-muted-foreground text-2xl",
-                                                        !isSelected &&
-                                                            "opacity-30",
-                                                        isSelected &&
-                                                            "text-foreground text-3xl font-medium",
+                                                        "text-foreground text-2xl",
                                                     )}
                                                 >
                                                     {item.label}
                                                 </Text>
                                                 <Text
                                                     className={cn(
-                                                        "text-muted-foreground text-2xl",
-                                                        !isSelected &&
-                                                            "opacity-30",
-                                                        isSelected &&
-                                                            "text-foreground text-3xl font-medium",
+                                                        "text-foreground text-2xl",
                                                     )}
                                                 >
                                                     {item.cm}{" "}
@@ -140,8 +135,7 @@ const HeightDrawer = forwardRef<DrawerHandle, HeightProps>(
                                             </RowView>
                                             <Text
                                                 className={cn(
-                                                    "text-sm pb-1 text-muted-foreground",
-                                                    !isSelected && "opacity-30",
+                                                    "text-sm pb-1 text-foreground",
                                                 )}
                                             ></Text>
                                         </RowView>
@@ -149,14 +143,20 @@ const HeightDrawer = forwardRef<DrawerHandle, HeightProps>(
                                 );
                             }}
                         />
-                        <View
-                            style={{
-                                height: ITEM_HEIGHT,
-                                top:
-                                    ITEM_HEIGHT * Math.floor(VISIBLE_ITEMS / 2),
-                            }}
-                            className="absolute -z-20 left-0 right-0 border-b border-t border-border/40"
-                        />
+
+                        <ColView
+                            className="absolute inset-0 "
+                            pointerEvents="none"
+                        >
+                            <View className="flex-1 bg-card/80" />
+                            <View
+                                style={{
+                                    height: ITEM_HEIGHT,
+                                }}
+                                className=""
+                            />
+                            <View className="flex-1 bg-card/80" />
+                        </ColView>
                     </View>
                 </ColView>
             </Drawer>

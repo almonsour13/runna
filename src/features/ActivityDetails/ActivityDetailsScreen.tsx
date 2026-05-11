@@ -81,6 +81,16 @@ export default function ActivityDetailsScreen() {
 
         const totalDurationSec = convertMsToS(activity.duration);
 
+        const pace =
+            totalDistanceKm > 0.01
+                ? formatPace(
+                      computePace(
+                          totalDistanceM,
+                          convertMsToS(totalDurationSec),
+                      ),
+                  )
+                : "00:00";
+
         const activityStats = [
             {
                 label: "Duration",
@@ -98,9 +108,7 @@ export default function ActivityDetailsScreen() {
             },
             {
                 label: "Pace",
-                value: formatPace(
-                    computePace(totalDistanceM, totalDurationSec),
-                ),
+                value: pace,
                 unit: "min/km",
                 icon: "timer-outline" as const,
             },

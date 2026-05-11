@@ -108,32 +108,24 @@ const GoalDrawer = forwardRef<DrawerHandle, Props>(
                                         <RowView className="items-end gap-1">
                                             <Text
                                                 className={cn(
-                                                    "text-muted-foreground text-2xl",
-                                                    !isSelected && "opacity-30",
-                                                    isSelected &&
-                                                        "text-foreground text-3xl font-medium",
+                                                    "text-foreground text-2xl",
                                                 )}
                                             >
                                                 {item}
                                             </Text>
                                             <Text
                                                 className={cn(
-                                                    "text-sm pb-1 text-muted-foreground",
-                                                    !isSelected && "opacity-30",
+                                                    "text-sm pb-1 text-foreground",
                                                 )}
                                             >
                                                 km
                                             </Text>
                                         </RowView>
                                         {isRecommended && (
-                                            <View className="absolute right-0">
+                                            <View className="absolute z-40 right-0">
                                                 <Text
                                                     className={cn(
-                                                        "text-xs text-muted-foreground",
-                                                        !isSelected &&
-                                                            "opacity-30",
-                                                        isSelected &&
-                                                            "text-primary opacity-100",
+                                                        "text-xs text-foreground",
                                                     )}
                                                 >
                                                     Recommended
@@ -144,14 +136,20 @@ const GoalDrawer = forwardRef<DrawerHandle, Props>(
                                 );
                             }}
                         />
-                        <View
-                            style={{
-                                height: ITEM_HEIGHT,
-                                top:
-                                    ITEM_HEIGHT * Math.floor(VISIBLE_ITEMS / 2),
-                            }}
-                            className="absolute -z-20 left-0 right-0 border-b border-t border-border/40"
-                        />
+
+                        <ColView
+                            className="absolute inset-0 "
+                            pointerEvents="none"
+                        >
+                            <View className="flex-1 bg-card/80" />
+                            <View
+                                style={{
+                                    height: ITEM_HEIGHT,
+                                }}
+                                className=""
+                            />
+                            <View className="flex-1 bg-card/80" />
+                        </ColView>
                     </View>
                 </ColView>
             </Drawer>

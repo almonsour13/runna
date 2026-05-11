@@ -6,7 +6,6 @@ import { logger } from "../utils/logger";
 console.log("[BGTask] Imports done, about to defineTask...");
 type EmitFn = (location: ExpoLocation.LocationObject) => void;
 
-// Module-level slot — populated by LocationService after both modules load
 let emitLocation: EmitFn = () => {
     logger.warn(
         "[BGTask] emitLocation called before LocationService registered it",
@@ -16,10 +15,7 @@ let emitLocation: EmitFn = () => {
 export function registerBackgroundEmitter(fn: EmitFn): void {
     emitLocation = fn;
 }
-console.log("[BGTask] Calling defineTask with:", ACTIVITY_BACKGROUND_TASK); // ← add here
-TaskManager.getRegisteredTasksAsync().then((tasks) => {
-    console.log("[Startup] Registered tasks:", JSON.stringify(tasks, null, 2));
-});
+
 TaskManager.defineTask(ACTIVITY_BACKGROUND_TASK, async ({ data, error }) => {
     logger.log("[BGTask] Called");
 
@@ -43,6 +39,13 @@ TaskManager.defineTask(ACTIVITY_BACKGROUND_TASK, async ({ data, error }) => {
     logger.log(`[BGTask] Received ${locations.length} location(s)`);
 
     locations.forEach((loc) => emitLocation(loc));
+});
+
+TaskManager.getRegisteredTasksAsync().then((tasks) => {
+    console.log(
+        "[BGTask] Tasks after defineTask:",
+        JSON.stringify(tasks, null, 2),
+    );
 });
 
 console.log("[BGTask] defineTask complete");
