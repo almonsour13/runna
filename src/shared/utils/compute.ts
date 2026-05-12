@@ -41,7 +41,7 @@ export function computeSpeed(distanceMeters: number, durationSeconds: number) {
     return distanceKm / durationHours;
 }
 export const computePace = (distance: number, duration: number) => {
-    if (!distance || distance <= 0 || !duration || duration <= 0) return 0;
+    if (distance === 0) return 0;
 
     const distanceKm = distance / 1000;
     return duration / distanceKm; // sec/km

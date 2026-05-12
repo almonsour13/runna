@@ -1,73 +1,51 @@
 import { create } from "zustand";
 import { ActivityTrackingStatus, Coordinate } from "../types/type";
 
-type ActivityTracking = {
+type ActivityTrackingStore = {
     status: ActivityTrackingStatus;
     duration: number;
-    coordinates: Coordinate[] | [];
-};
-
-type ActivityTrackingStore = {
-    activity: ActivityTracking;
-
-    setActivity: (activity: ActivityTracking) => void;
-    clearActivity: () => void;
+    previewCoordinate: Coordinate | null;
+    coordinates: Coordinate[];
+    label: string | null;
+    mode: "preview" | "recording";
+    isMapExpanded: boolean;
 
     setDuration: (duration: number) => void;
     setStatus: (status: ActivityTrackingStatus) => void;
-
+    setPreviewCoordinate: (coordinate: Coordinate | null) => void;
     setCoordinates: (coordinates: Coordinate[]) => void;
     addCoordinate: (coordinate: Coordinate) => void;
-
-    isMapExpanded?: boolean;
+    setLabel: (label: string | null) => void;
+    setMode: (mode: "preview" | "recording") => void;
     setIsMapExpanded: (isMapExpanded: boolean) => void;
+    clearActivity: () => void;
 };
 
-const INITIAL_STATE: ActivityTracking = {
-    status: "idle",
+const INITIAL_STATE = {
+    status: "idle" as ActivityTrackingStatus,
     duration: 0,
-    coordinates: [],
+    previewCoordinate: null,
+    coordinates: [] as Coordinate[],
+    label: null,
+    mode: "preview" as const,
 };
 
 export const useActivityTrackingStore = create<ActivityTrackingStore>(
     (set) => ({
-        activity: INITIAL_STATE,
+        ...INITIAL_STATE,
+        isMapExpanded: false,
 
-        setActivity: (activity) => set({ activity }),
-        clearActivity: () => set({ activity: INITIAL_STATE }),
-
-        setDuration: (duration) =>
-            set((state) => ({
-                activity: {
-                    ...state.activity,
-                    duration,
-                },
-            })),
-
-        setStatus: (status) =>
-            set((state) => ({
-                activity: {
-                    ...state.activity,
-                    status,
-                },
-            })),
-
-        setCoordinates: (coordinates) =>
-            set((state) => ({
-                activity: {
-                    ...state.activity,
-                    coordinates,
-                },
-            })),
+        setDuration: (duration) => set({ duration }),
+        setStatus: (status) => set({ status }),
+        setPreviewCoordinate: (previewCoordinate) => set({ previewCoordinate }),
+        setCoordinates: (coordinates) => set({ coordinates }),
         addCoordinate: (coordinate) =>
             set((state) => ({
-                activity: {
-                    ...state.activity,
-                    coordinates: [...state.activity.coordinates, coordinate],
-                },
+                coordinates: [...state.coordinates, coordinate],
             })),
-
-        isMapExpanded: false,
+        setLabel: (label) => set({ label }),
+        setMode: (mode) => set({ mode }),
         setIsMapExpanded: (isMapExpanded) => set({ isMapExpanded }),
+        clearActivity: () => set(INITIAL_STATE),
     }),
 );

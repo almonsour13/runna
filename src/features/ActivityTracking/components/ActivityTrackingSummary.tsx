@@ -18,9 +18,8 @@ import { useMemo } from "react";
 
 export default function ActivityTrackingSummary() {
     const profile = useProfileStore((s) => s.profile);
-    const activity = useActivityTrackingStore((s) => s.activity);
-    const duration = activity.duration;
-    const coordinates = activity.coordinates;
+    const duration = useActivityTrackingStore((s) => s.duration);
+    const coordinates = useActivityTrackingStore((s) => s.coordinates);
 
     const goal = profile?.goal || 0;
 

@@ -1,7 +1,9 @@
 import { useActivityStore } from "@/shared/stores/use-activity.store";
 import { NavigationProp } from "@/shared/types/type";
+import { formatRelativeDateLabel } from "@/shared/utils/format";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { format } from "date-fns";
 import {
     forwardRef,
     useImperativeHandle,
@@ -10,7 +12,7 @@ import {
     useState,
 } from "react";
 import ActivityCard from "../ActivityCard";
-import { ColView } from "../CustomView";
+import { ColView, RowView } from "../CustomView";
 import Drawer, { DrawerHandle } from "../ui/Drawer";
 import Text from "../ui/Text";
 
@@ -49,6 +51,7 @@ const ActivityGroupDrawer = forwardRef<
         };
     }, [activityDate, activities]);
     const hasActivities = activityGroupActivities.length > 0;
+    const activityDateObj = new Date(activityDate);
 
     if (!hasActivities) {
         return (
@@ -71,11 +74,31 @@ const ActivityGroupDrawer = forwardRef<
             </Drawer>
         );
     }
+    const dateLabel = [
+        formatRelativeDateLabel(activityDateObj),
+        format(activityDateObj, "EEE"),
+        format(activityDateObj, "MMM d, yyy"),
+    ]
+        .filter(Boolean)
+        .join(" • ");
     return (
         <>
             <Drawer ref={drawerRef}>
                 <ColView className="gap-1 py-4">
-                    <ColView className="px-4 gap-1">
+                    <ColView className="px-4 gap-2">
+                        <RowView className="justify-between items-end">
+                            <RowView className="gap-0">
+                                <Text className="text-lg font-medium">
+                                    {dateLabel}
+                                </Text>
+                            </RowView>
+                            <Text className="text-base text-primary font-medium">
+                                {activityGroupActivities.length}{" "}
+                                {activityGroupActivities.length === 1
+                                    ? "Activity"
+                                    : "Activities"}
+                            </Text>
+                        </RowView>
                         {activityGroupActivities.map((activity) => (
                             <ActivityCard
                                 key={activity.id}

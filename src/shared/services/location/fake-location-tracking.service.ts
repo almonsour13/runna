@@ -1,5 +1,5 @@
 import * as ExpoLocation from "expo-location";
-import { logger } from "../utils/logger";
+import { logger } from "../../utils/logger";
 
 const ROUTE_DELTAS = [
     { dlat: 0.00005, dlng: 0.0001 },

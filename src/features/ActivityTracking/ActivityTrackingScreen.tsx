@@ -5,8 +5,10 @@ import ActivityTrackingMap from "./components/ActivityTrackingMap";
 import ActivityTrackingSummary from "./components/ActivityTrackingSummary";
 
 import SafeScreen from "@/shared/components/SafeScreen";
+import { useActivityPreviewTracking } from "@/shared/hooks/use-activity-preview-tracking";
 
 export default function ActivityTrackingScreen() {
+    useActivityPreviewTracking();
     return (
         <SafeScreen>
             <ColView className="flex-1 gap-8">

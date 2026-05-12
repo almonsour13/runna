@@ -1,4 +1,12 @@
+import { isToday, isYesterday } from "date-fns";
+
 const pad = (n: number) => n.toString().padStart(2, "0");
+
+export const formatRelativeDateLabel = (date: Date) => {
+    if (isToday(date)) return "Today";
+    if (isYesterday(date)) return "Yesterday";
+    return null;
+};
 export const formatDurationHHMMSS = (ms: number): string => {
     const totalSeconds = Math.floor(ms / 1000);
 
@@ -26,7 +34,7 @@ export function formatPace(secondsPerKm: number) {
     const min = Math.floor(totalSeconds / 60);
     const sec = totalSeconds % 60;
 
-    return `${pad(min)}:${pad(sec)}`;
+    return `${min}:${pad(sec)}`;
 }
 export function formatSpeed(speed: number) {
     if (!speed || speed < 0 || !isFinite(speed)) return "0.0";

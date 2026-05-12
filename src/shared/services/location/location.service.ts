@@ -3,17 +3,21 @@ import * as ExpoLocation from "expo-location";
 import * as TaskManager from "expo-task-manager";
 import {
     ACTIVITY_BACKGROUND_TASK,
-    BACKGROUND_TRACKING_CONFIG,
+    GPS_BACKGROUND_TRACKING_CONFIG,
     GPS_CONFIG,
-} from "../constant/constant";
-import { Coordinate, Location } from "../types/type";
-import { KalmanFilter } from "../utils/kalman-filter";
-import { logger } from "../utils/logger";
-import { preprocessLocation } from "../utils/preprocess-location";
-import { registerBackgroundEmitter } from "./activity-background-tracking.service";
+} from "../../constant/constant";
+import { Coordinate, Location } from "../../types/type";
+import { KalmanFilter } from "../../utils/kalman-filter";
+import { logger } from "../../utils/logger";
+import { preprocessLocation } from "../../utils/preprocess-location";
+import { registerBackgroundEmitter } from "../background/activity-background-tracking.service";
 import { fakeLocationTrackingService } from "./fake-location-tracking.service";
 
-type LocationCallback = (coord: Coordinate, label: string | null) => void;
+type LocationCallback = (
+    coord: Coordinate,
+    label: string | null,
+    mode: "preview" | "recording" | null,
+) => void;
 type TrackingMode = "preview" | "recording";
 
 // true when running inside Expo Go (appOwnership === "expo")
@@ -26,6 +30,7 @@ class LocationService {
     private useBackgroundTracking = false;
     private kalman = new KalmanFilter();
     private lastCoord: Coordinate | null = null;
+    private lastGeocodeTime = 0;
 
     constructor() {
         // Inject emitter into sub-services here — no circular imports needed
@@ -105,6 +110,7 @@ class LocationService {
         logger.log("[Location] Start preview mode");
         this.mode = "preview";
         this.subscription?.remove();
+        this.lastCoord = null;
 
         if (IS_EXPO_GO) {
             await fakeLocationTrackingService.startPreview();
@@ -113,9 +119,9 @@ class LocationService {
 
         this.subscription = await ExpoLocation.watchPositionAsync(
             {
-                accuracy: ExpoLocation.Accuracy.BestForNavigation,
-                timeInterval: 1000,
-                distanceInterval: 0,
+                accuracy: GPS_CONFIG.LOCATION_ACCURACY,
+                timeInterval: GPS_CONFIG.LOCATION_TIME_INTERVAL_MS,
+                distanceInterval: GPS_CONFIG.DISTANCE_INTERVAL_METERS,
             },
             (location) => {
                 this.emitLocation(location, true);
@@ -147,22 +153,14 @@ class LocationService {
 
         this.kalman.reset();
         this.lastCoord = null;
-        logger.log(
-            `[Location] Start tracking (${IS_EXPO_GO ? "fake" : enableBackground ? "background" : "foreground"})`,
-        );
 
-        if (this.mode === "preview") {
-            logger.log("[Location] Switching preview → recording");
-            this.subscription?.remove();
-            this.subscription = null;
-
-            if (IS_EXPO_GO) {
-                await fakeLocationTrackingService.stopPreview();
-            }
-        }
+        await this.stopPreview();
 
         this.mode = "recording";
         this.useBackgroundTracking = enableBackground;
+        logger.log(
+            `[Location] Start tracking (${IS_EXPO_GO ? "fake" : enableBackground ? "background" : "foreground"})`,
+        );
 
         if (IS_EXPO_GO) {
             await fakeLocationTrackingService.start();
@@ -260,9 +258,9 @@ class LocationService {
                     },
                     pausesUpdatesAutomatically: false,
                     deferredUpdatesInterval:
-                        BACKGROUND_TRACKING_CONFIG.DEFERRED_UPDATES_INTERVAL,
+                        GPS_BACKGROUND_TRACKING_CONFIG.DEFERRED_UPDATES_INTERVAL,
                     deferredUpdatesDistance:
-                        BACKGROUND_TRACKING_CONFIG.DEFERRED_UPDATES_DISTANCE,
+                        GPS_BACKGROUND_TRACKING_CONFIG.DEFERRED_UPDATES_DISTANCE,
                 },
             );
             const isRegistered = await TaskManager.isTaskRegisteredAsync(
@@ -302,27 +300,26 @@ class LocationService {
     // ======================
     // Shared emitter
     // ======================
-    private emitLocation(
+    private async emitLocation(
         location: ExpoLocation.LocationObject,
-        filter = false,
+        filter = true,
     ) {
         const raw = {
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
         };
 
-        // const smoothed = filter
-        //     ? this.kalman.update(
-        //           raw.latitude,
-        //           raw.longitude,
-        //           location.timestamp,
-        //           location.coords.accuracy ?? 10,
-        //       )
-        //     : raw;
-
+        const smoothed = filter
+            ? this.kalman.update(
+                  raw.latitude,
+                  raw.longitude,
+                  location.timestamp,
+                  location.coords.accuracy ?? 10,
+              )
+            : raw;
         const coord: Coordinate = {
-            latitude: raw.latitude,
-            longitude: raw.longitude,
+            latitude: smoothed.latitude,
+            longitude: smoothed.longitude,
             timestamp: location.timestamp,
             speed: location.coords.speed ?? 0,
             accuracy: location.coords.accuracy ?? 999,
@@ -330,11 +327,79 @@ class LocationService {
             heading: location.coords.heading ?? null,
         };
 
-        // Drop the point if it fails accuracy / speed / distance checks
+        if (this.mode === "preview") {
+            const label = await this.tryReverseGeocodeThrottled(coord);
+
+            logger.log("[Location] Preview emit", {
+                lat: coord.latitude,
+                lng: coord.longitude,
+                accuracy: coord.accuracy,
+                label,
+            });
+
+            this.locationUpdateCallbacks.forEach((cb) =>
+                cb(coord, label, this.mode),
+            );
+            return;
+        }
+
+        // Recording
         const processedCoord = preprocessLocation(coord, this.lastCoord);
-        if (!processedCoord) return;
+
+        if (!processedCoord) {
+            logger.log("[Location] Recording coord dropped by filter", {
+                lat: coord.latitude,
+                lng: coord.longitude,
+                accuracy: coord.accuracy,
+                lastCoord: this.lastCoord,
+            });
+            return;
+        }
+
+        const label = await this.tryReverseGeocodeThrottled(processedCoord);
         this.lastCoord = processedCoord;
-        this.locationUpdateCallbacks.forEach((cb) => cb(processedCoord, null));
+        logger.log("[Location] Recording emit", {
+            lat: processedCoord.latitude,
+            lng: processedCoord.longitude,
+            accuracy: processedCoord.accuracy,
+            label,
+            totalCallbacks: this.locationUpdateCallbacks.length,
+        });
+
+        this.locationUpdateCallbacks.forEach((cb) =>
+            cb(processedCoord, label, this.mode),
+        );
+    }
+    private async tryReverseGeocodeThrottled(
+        coord: Coordinate,
+    ): Promise<string | null> {
+        const now = Date.now();
+        if (
+            now - this.lastGeocodeTime <
+            GPS_CONFIG.LOCATION_GEOCODE_INTERVAL_MS
+        )
+            return null;
+        this.lastGeocodeTime = now;
+
+        try {
+            const results = await ExpoLocation.reverseGeocodeAsync({
+                latitude: coord.latitude,
+                longitude: coord.longitude,
+            });
+            if (!results?.length) return null;
+            const top = results[0];
+            const parts = [
+                top.name || top.street,
+                top.district || top.city,
+            ].filter(Boolean);
+
+            const label = parts.length > 0 ? parts.join(", ") : null;
+            logger.log("[Location] Reverse geocode result", { label });
+            return label;
+        } catch (error) {
+            logger.warn("[Location] Reverse geocode failed", { error });
+            return null;
+        }
     }
 
     emitBackgroundLocation(location: ExpoLocation.LocationObject): void {

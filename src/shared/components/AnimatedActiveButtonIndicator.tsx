@@ -4,8 +4,7 @@ import { useActivityTrackingStore } from "../stores/use-activity-tracking.store"
 import Card from "./ui/Card";
 
 export default function AnimatedActiveButtonIndicator() {
-    const activity = useActivityTrackingStore((s) => s.activity);
-    const status = activity.status;
+    const status = useActivityTrackingStore((s) => s.status);
 
     const isActive = status === "active";
 

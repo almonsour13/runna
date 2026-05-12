@@ -1,6 +1,5 @@
 import ActivityDetailsScreen from "@/features/ActivityDetails/ActivityDetailsScreen";
 import ActivityTrackingScreen from "@/features/ActivityTracking/ActivityTrackingScreen";
-import "@/shared/services/activity-background-tracking.service";
 import { RootStackParamList } from "@/shared/types/type";
 import {
     DMSans_400Regular,
@@ -11,7 +10,6 @@ import {
 } from "@expo-google-fonts/dm-sans";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import "../shared/services/activity-background-tracking.service";
 import MainNavigator from "./MainNavigator";
 import ProfileNavigator from "./ProfileNavigator";
 import SettingsNavigator from "./SettingsNavigator";

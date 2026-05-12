@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { activityTrackingService } from "../services/activity-tracking.service";
-import { locationService } from "../services/location.service";
+import { locationService } from "../services/location/location.service";
 import { useActivityTrackingStore } from "../stores/use-activity-tracking.store";
 
 export const useActivityTracking = () => {
@@ -8,57 +8,42 @@ export const useActivityTracking = () => {
     const setStatus = useActivityTrackingStore((s) => s.setStatus);
     const setCoordinates = useActivityTrackingStore((s) => s.setCoordinates);
     const addCoordinate = useActivityTrackingStore((s) => s.addCoordinate);
+    const setLabel = useActivityTrackingStore((s) => s.setLabel);
+    const setMode = useActivityTrackingStore((s) => s.setMode);
 
-    // Keep refs up-to-date so callbacks always see the latest function references
-    const addCoordinateRef = useRef(addCoordinate);
-    const setDurationRef = useRef(setDuration);
-    const setStatusRef = useRef(setStatus);
-
-    useEffect(() => {
-        addCoordinateRef.current = addCoordinate;
-    }, [addCoordinate]);
-
-    useEffect(() => {
-        setDurationRef.current = setDuration;
-    }, [setDuration]);
-
-    useEffect(() => {
-        setStatusRef.current = setStatus;
-    }, [setStatus]);
-
+    // Restore persisted activity on mount
     useEffect(() => {
         activityTrackingService.restore().then((stored) => {
             if (!stored) return;
             const metrics = activityTrackingService.getCurrentMetrics();
             if (!metrics) return;
-            setDurationRef.current(metrics.duration);
-            if (metrics.status) {
-                setStatusRef.current(metrics.status);
-            }
-            if (metrics.coordinates) {
-                setCoordinates(metrics.coordinates);
-            }
+            setDuration(metrics.duration);
+            if (metrics.status) setStatus(metrics.status);
+            if (metrics.coordinates) setCoordinates(metrics.coordinates);
         });
     }, []);
 
+    // Subscribe to activity metrics updates
     useEffect(() => {
-        const unsubscribeMetrics = activityTrackingService.onMetricsUpdate(
-            (stats) => {
-                setDurationRef.current(stats.duration);
+        const unsubscribe = activityTrackingService.onMetricsUpdate((stats) => {
+            setDuration(stats.duration);
+            if (stats.status) setStatus(stats.status);
+        });
 
-                if (stats.status) {
-                    setStatusRef.current(stats.status);
-                }
+        return () => unsubscribe();
+    }, []);
+
+    useEffect(() => {
+        const unsubscribe = locationService.onLocationUpdate(
+            (loc, label, mode) => {
+                if (mode) setMode(mode);
+                if (label) setLabel(label);
+                if (mode === "recording") addCoordinate(loc);
             },
         );
 
-        const unsubscribeLocation = locationService.onLocationUpdate((loc) => {
-            addCoordinateRef.current(loc);
-        });
-
         return () => {
-            unsubscribeMetrics();
-            unsubscribeLocation();
+            unsubscribe();
         };
     }, []);
 };

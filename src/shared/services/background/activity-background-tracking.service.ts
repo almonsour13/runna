@@ -1,7 +1,7 @@
+import { ACTIVITY_BACKGROUND_TASK } from "@/shared/constant/constant";
+import { logger } from "@/shared/utils/logger";
 import * as ExpoLocation from "expo-location";
 import * as TaskManager from "expo-task-manager";
-import { ACTIVITY_BACKGROUND_TASK } from "../constant/constant";
-import { logger } from "../utils/logger";
 
 console.log("[BGTask] Imports done, about to defineTask...");
 type EmitFn = (location: ExpoLocation.LocationObject) => void;

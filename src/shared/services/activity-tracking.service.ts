@@ -2,7 +2,7 @@ import { STORAGE_KEYS } from "../constant/constant";
 import { Activity, ActivityTrackingStatus, Coordinate } from "../types/type";
 import { logger } from "../utils/logger";
 import { generateId } from "../utils/utils";
-import { locationService } from "./location.service";
+import { locationService } from "./location/location.service";
 import { activityService } from "./storage/activity.service";
 import { StorageService } from "./storage/storage.service";
 
@@ -107,17 +107,13 @@ class ActivityTrackingService {
         this.stopLocationListener();
 
         this.removeLocationListener = locationService.onLocationUpdate(
-            async (coord: Coordinate) => {
+            async (coord: Coordinate, _label, mode) => {
                 if (!this.activity || this.activity.status !== "active") return;
-                console.log(coord);
+                if (mode !== "recording") return;
                 this.activity = {
                     ...this.activity,
                     coordinates: [...this.activity.coordinates, coord],
                 };
-                logger.log(
-                    "[ActivityService] Coordinates Points",
-                    this.activity.coordinates.length,
-                );
                 await this.activityStorage.set(this.activity);
             },
         );
@@ -157,13 +153,14 @@ class ActivityTrackingService {
             };
 
             this.startSession();
+            await locationService.stopPreview();
             await locationService.start();
             this.startLocationListener();
+            this.activityStorage.set(this.activity);
 
             logger.log("[ActivityService] Activity started", {
                 id: this.activity.id,
             });
-            this.activityStorage.set(this.activity);
         } catch (error) {
             logger.error("[ActivityService] Failed to start activity", {
                 error,
@@ -189,14 +186,15 @@ class ActivityTrackingService {
         this.activity.status = "paused";
         this.activity.lastPauseTime = Date.now();
         this.stopSession();
-        await locationService.stop();
         this.stopLocationListener();
+        await locationService.stop();
+        await locationService.startPreview();
+        this.activityStorage.set(this.activity);
 
         logger.log("[ActivityService] Activity paused", {
             id: this.activity.id,
             pausedAt: this.activity.lastPauseTime,
         });
-        this.activityStorage.set(this.activity);
     }
 
     async resume(): Promise<void> {
@@ -226,14 +224,15 @@ class ActivityTrackingService {
 
         this.activity.status = "active";
         this.startSession();
+        await locationService.stopPreview();
         await locationService.start();
         this.startLocationListener();
 
+        this.activityStorage.set(this.activity);
         logger.log("[ActivityService] Activity resumed", {
             id: this.activity.id,
             status: this.activity.status,
         });
-        this.activityStorage.set(this.activity);
     }
 
     async stop(): Promise<Activity> {
@@ -272,11 +271,12 @@ class ActivityTrackingService {
             await activityService.save(formattedNewActivity);
 
             this.stopSession();
-            await locationService.stop();
             this.stopLocationListener();
+            await locationService.stop();
+            await locationService.startPreview();
             this.activity = null;
-            logger.log("[ActivityService] Activity stopped");
             this.activityStorage.remove();
+            logger.log("[ActivityService] Activity stopped");
 
             return formattedNewActivity;
         } catch (error) {
@@ -301,12 +301,13 @@ class ActivityTrackingService {
             });
 
             this.stopSession();
-            await locationService.stop();
             this.stopLocationListener();
+            await locationService.stop();
+            await locationService.startPreview();
             this.activity = null;
+            this.activityStorage.remove();
 
             logger.log("[ActivityService] Activity discarded");
-            this.activityStorage.remove();
         } catch (error) {
             logger.error("[ActivityService] Error discarding activity", {
                 error,
@@ -328,6 +329,7 @@ class ActivityTrackingService {
 
             if (storedActivity.status === "active") {
                 this.startSession();
+                await locationService.stopPreview();
                 await locationService.start();
                 this.startLocationListener();
             } else {

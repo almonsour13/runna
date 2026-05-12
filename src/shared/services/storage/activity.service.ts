@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from "@/shared/constant/constant";
+import { generateActivities } from "@/shared/lib/data";
 import { Activity } from "@/shared/types/type";
 import { logger } from "@/shared/utils/logger";
 import { StorageService } from "./storage.service";
@@ -11,10 +12,10 @@ class ActivityService {
         try {
             if (this.cachedActivities) return this.cachedActivities;
 
-            const activities = (await this.storage.get()) ?? [];
-            // const activities = generateActivities({
-            //     months: 12,
-            // });
+            // const activities = (await this.storage.get()) ?? [];
+            const activities = generateActivities({
+                months: 12,
+            });
             this.cachedActivities = activities;
             logger.log("[ActivityStorage] get → success");
             return activities;
@@ -23,7 +24,17 @@ class ActivityService {
             throw error;
         }
     }
-
+    async getById(id: string): Promise<Activity | null> {
+        try {
+            const activities = await this.get();
+            const activity = activities.find((a) => a.id === id);
+            logger.log("[ActivityStorage] getById → success");
+            return activity ?? null;
+        } catch (error) {
+            logger.error("[ActivityStorage] getById → error:", error);
+            throw error;
+        }
+    }
     async save(activity: Activity): Promise<void> {
         try {
             const activities = await this.get(); // ensures cache is populated

@@ -10,8 +10,7 @@ import { Animated, TouchableOpacity } from "react-native";
 export default function ActivityTrackingController() {
     const { start, resume, pause, stop, reset } =
         useAcitivityTrackingController();
-    const activity = useActivityTrackingStore((s) => s.activity);
-    const status = activity.status;
+    const status = useActivityTrackingStore((s) => s.status);
 
     const isIdle = status === "idle";
     const isActive = status === "active";

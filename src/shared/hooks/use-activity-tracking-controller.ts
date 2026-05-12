@@ -1,47 +1,46 @@
-import { ToastAndroid } from "react-native";
 import { activityTrackingService } from "../services/activity-tracking.service";
 import { useActivityTrackingStore } from "../stores/use-activity-tracking.store";
 import { useActivityStore } from "../stores/use-activity.store";
 
 export const useAcitivityTrackingController = () => {
-    const activity = useActivityTrackingStore((s) => s.activity);
-    const status = activity.status;
+    const status = useActivityTrackingStore((s) => s.status);
     const setStatus = useActivityTrackingStore((s) => s.setStatus);
+    const setMode = useActivityTrackingStore((s) => s.setMode);
     const addActivity = useActivityStore((s) => s.addActivity);
     const clearActivity = useActivityTrackingStore((s) => s.clearActivity);
 
     const start = async () => {
         if (status !== "idle") return;
         setStatus("active");
-        activityTrackingService.start();
-        ToastAndroid.show("Activity started", ToastAndroid.LONG);
+        setMode("recording");
+        await activityTrackingService.start();
     };
 
     const pause = async () => {
         if (status !== "active") return;
         setStatus("paused");
-        activityTrackingService.pause();
-        ToastAndroid.show("Activity paused", ToastAndroid.LONG);
+        setMode("preview");
+        await activityTrackingService.pause();
     };
 
     const resume = async () => {
         if (status !== "paused") return;
         setStatus("active");
-        activityTrackingService.resume();
-        ToastAndroid.show("Activity resumed", ToastAndroid.LONG);
+        setMode("recording");
+        await activityTrackingService.resume();
     };
 
     const stop = async () => {
+        setMode("preview");
         clearActivity();
         const newActivity = await activityTrackingService.stop();
         addActivity(newActivity);
-        ToastAndroid.show("Activity stopped", ToastAndroid.LONG);
     };
 
     const reset = async () => {
+        setMode("preview");
         clearActivity();
-        activityTrackingService.discard();
-        ToastAndroid.show("Activity reset", ToastAndroid.LONG);
+        await activityTrackingService.discard();
     };
 
     return {

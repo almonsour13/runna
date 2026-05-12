@@ -10,10 +10,9 @@ import Text from "./ui/Text";
 
 export default function ActivityButton() {
     const navigation = useNavigation();
-    const activity = useActivityTrackingStore((s) => s.activity);
-    const duration = activity.duration;
+    const duration = useActivityTrackingStore((s) => s.duration);
     const time = formatDurationHHMMSS(duration);
-    const status = activity.status;
+    const status = useActivityTrackingStore((s) => s.status);
     const isIdle = status === "idle";
     const isActive = status === "active";
     const isPaused = status === "paused";
