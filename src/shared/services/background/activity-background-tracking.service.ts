@@ -2,19 +2,7 @@ import { ACTIVITY_BACKGROUND_TASK } from "@/shared/constant/constant";
 import { logger } from "@/shared/utils/logger";
 import * as ExpoLocation from "expo-location";
 import * as TaskManager from "expo-task-manager";
-
-console.log("[BGTask] Imports done, about to defineTask...");
-type EmitFn = (location: ExpoLocation.LocationObject) => void;
-
-let emitLocation: EmitFn = () => {
-    logger.warn(
-        "[BGTask] emitLocation called before LocationService registered it",
-    );
-};
-
-export function registerBackgroundEmitter(fn: EmitFn): void {
-    emitLocation = fn;
-}
+import { locationService } from "../location/location.service";
 
 TaskManager.defineTask(ACTIVITY_BACKGROUND_TASK, async ({ data, error }) => {
     logger.log("[BGTask] Called");
@@ -38,14 +26,5 @@ TaskManager.defineTask(ACTIVITY_BACKGROUND_TASK, async ({ data, error }) => {
 
     logger.log(`[BGTask] Received ${locations.length} location(s)`);
 
-    locations.forEach((loc) => emitLocation(loc));
+    locations.forEach((loc) => locationService.emitBackgroundLocation(loc));
 });
-
-TaskManager.getRegisteredTasksAsync().then((tasks) => {
-    console.log(
-        "[BGTask] Tasks after defineTask:",
-        JSON.stringify(tasks, null, 2),
-    );
-});
-
-console.log("[BGTask] defineTask complete");

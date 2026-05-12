@@ -10,7 +10,6 @@ import { Coordinate, Location } from "../../types/type";
 import { KalmanFilter } from "../../utils/kalman-filter";
 import { logger } from "../../utils/logger";
 import { preprocessLocation } from "../../utils/preprocess-location";
-import { registerBackgroundEmitter } from "../background/activity-background-tracking.service";
 import { fakeLocationTrackingService } from "./fake-location-tracking.service";
 
 type LocationCallback = (
@@ -32,13 +31,6 @@ class LocationService {
     private lastCoord: Coordinate | null = null;
     private lastGeocodeTime = 0;
 
-    constructor() {
-        // Inject emitter into sub-services here — no circular imports needed
-        fakeLocationTrackingService.setEmitter((loc) =>
-            this.emitBackgroundLocation(loc),
-        );
-        registerBackgroundEmitter((loc) => this.emitBackgroundLocation(loc));
-    }
     // ======================
     // Permissions
     // ======================

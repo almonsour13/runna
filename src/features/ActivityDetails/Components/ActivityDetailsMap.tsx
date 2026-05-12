@@ -1,3 +1,4 @@
+import Text from "@/shared/components/ui/Text";
 import { OPEN_FREE_MAP_STYLES } from "@/shared/constant/constant";
 import {
     Camera,
@@ -10,8 +11,9 @@ import { useMemo } from "react";
 import { View } from "react-native";
 import { useActivityDetails } from "../context/ActivityDetailsContext";
 
+const MAP_PADDING = 20;
 export default function ActivityDetailsMap() {
-    const { activity } = useActivityDetails();
+    const { activity, splits } = useActivityDetails();
     const coordinates = activity.coordinates;
 
     const startPoint = coordinates[0];
@@ -54,23 +56,37 @@ export default function ActivityDetailsMap() {
             north + latPadding,
         ] as [number, number, number, number];
     }, [coordinates]);
+    const kmMarkers = splits.map((s) => ({ km: s.km, coord: s.coord }));
 
     return (
-        <View className="flex-1 aspect-video">
+        <View className="h-68">
             <Map
                 mapStyle={OPEN_FREE_MAP_STYLES[4].style}
                 logo={false}
                 attribution={false}
                 compass={false}
+                dragPan={false}
+                touchRotate={false}
+                touchZoom={false}
+                doubleTapZoom={false}
+                doubleTapHoldZoom={false}
             >
                 {bounds && (
                     <Camera
-                        initialViewState={{ bounds }}
+                        initialViewState={{
+                            bounds,
+                            padding: {
+                                top: MAP_PADDING,
+                                bottom: MAP_PADDING,
+                                left: MAP_PADDING,
+                                right: MAP_PADDING,
+                            },
+                        }}
                         padding={{
-                            top: 40,
-                            bottom: 40,
-                            left: 40,
-                            right: 40,
+                            top: MAP_PADDING,
+                            bottom: MAP_PADDING,
+                            left: MAP_PADDING,
+                            right: MAP_PADDING,
                         }}
                     />
                 )}
@@ -115,6 +131,20 @@ export default function ActivityDetailsMap() {
                         <View className="h-4 w-4 border-2 border-white rounded-full bg-red-600" />
                     </ViewAnnotation>
                 )}
+
+                {kmMarkers.map(({ km, coord }) => {
+                    return (
+                        <ViewAnnotation
+                            key={km}
+                            id={`km-${km}`}
+                            lngLat={[coord.longitude, coord.latitude]}
+                        >
+                            <View className="h-4 w-4 border-2 border-white rounded-full bg-card-foreground justify-center items-center">
+                                <Text className="km">{km}</Text>
+                            </View>
+                        </ViewAnnotation>
+                    );
+                })}
             </Map>
         </View>
     );

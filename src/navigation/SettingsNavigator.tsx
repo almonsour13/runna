@@ -17,7 +17,10 @@ export default function SettingsNavigator() {
                     animation: "slide_from_right",
                 }}
             >
-                <Stack.Screen name="Settings" component={SettingsScreen} />
+                <Stack.Screen
+                    name="SettingsScreen"
+                    component={SettingsScreen}
+                />
                 <Stack.Screen name="Theme" component={ThemeScreen} />
                 <Stack.Screen name="Unit" component={UnitsScreen} />
             </Stack.Navigator>

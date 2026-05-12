@@ -18,7 +18,7 @@ export default function ActivityDetailsHeader() {
 
     return (
         <>
-            <RowView className="px-4 pt-4 gap-2 items-center">
+            <RowView className="bg-background sticky top-0 p-4 border-b border-border gap-2 items-center">
                 <RowView className="flex-1 gap-4 items-center">
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={24} />

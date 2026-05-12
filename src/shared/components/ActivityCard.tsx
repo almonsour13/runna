@@ -10,7 +10,7 @@ import { cn } from "../utils/cn";
 import { computeTotalDistance } from "../utils/compute";
 import { convertMtoKm } from "../utils/convert";
 import { capitalize } from "../utils/utils";
-import RouteMap from "./RouteMap";
+import VectorRouteMap from "./VectorRouteMap";
 import ActivityActionDrawer, {
     ActivityActionDrawerHandle,
 } from "./drawer/ActivityActionDrawer";
@@ -62,7 +62,7 @@ export default function ActivityCard({
                 <Card key={activity.id} className={cn("", className)}>
                     <RowView className="gap-4">
                         <View className="h-12 aspect-square justify-center items-center rounded">
-                            <RouteMap
+                            <VectorRouteMap
                                 coordinates={activity.coordinates}
                                 type={activity.type}
                                 strokeWidth={2}

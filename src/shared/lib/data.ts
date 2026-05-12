@@ -118,9 +118,12 @@ export const generateActivities = ({
             start.setMinutes(randomInt(0, 59));
             start.setSeconds(randomInt(0, 59));
             start.setMilliseconds(0);
-
+            // minimum 30 mins = 1800 seconds
+            // run pace ~3.5 m/s → min 6300m, walk pace ~1.4 m/s → min 2520m
             const distance =
-                type === "run" ? randomInt(3000, 12000) : randomInt(1000, 4000);
+                type === "run"
+                    ? randomInt(6300, 18000)
+                    : randomInt(3000, 12000);
 
             const activityStartLat = baseLatitude + random(-0.01, 0.01);
             const activityStartLng = baseLongitude + random(-0.01, 0.01);

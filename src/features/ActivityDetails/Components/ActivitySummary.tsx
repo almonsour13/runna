@@ -130,7 +130,7 @@ export default function ActivitySummary() {
     }, [activity, profile?.weight]);
 
     return (
-        <ColView className="flex-1 px-4 gap-4">
+        <ColView className="px-4 gap-4">
             <RowView className="justify-between">
                 <ColView className="gap-1">
                     <RowView className="gap-1 items-center">
@@ -144,7 +144,7 @@ export default function ActivitySummary() {
                         </Text>
                     </RowView>
                     <Text className="text-6xl font-bold">
-                        {totalDistanceKm.toFixed(1)}{" "}
+                        {totalDistanceKm.toFixed(2)}{" "}
                         <Text className="text-muted-foreground font-medium text-2xl">
                             / {goalDistanceKm.toFixed(1)} km
                         </Text>

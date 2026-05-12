@@ -28,7 +28,7 @@ function hexToRgba(hex: string, alpha: number): string {
     return `rgba(${r},${g},${b},${alpha})`;
 }
 
-export default function RouteMap({
+export default function VectorRouteMap({
     coordinates,
     type,
     size,

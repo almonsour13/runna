@@ -1,7 +1,9 @@
 import { View, ViewProps } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { cn } from "../utils/cn";
 
 interface SafeScreenProps extends ViewProps {
+    className?: string;
     top?: boolean;
     bottom?: boolean;
     left?: boolean;
@@ -9,6 +11,7 @@ interface SafeScreenProps extends ViewProps {
 }
 
 export default function SafeScreen({
+    className,
     children,
     top = true,
     bottom = true,
@@ -21,6 +24,7 @@ export default function SafeScreen({
 
     return (
         <View
+            className={cn(className)}
             style={[
                 {
                     flex: 1,

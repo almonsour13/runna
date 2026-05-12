@@ -14,7 +14,7 @@ class ActivityService {
 
             // const activities = (await this.storage.get()) ?? [];
             const activities = generateActivities({
-                months: 12,
+                months: 4,
             });
             this.cachedActivities = activities;
             logger.log("[ActivityStorage] get → success");
@@ -35,6 +35,7 @@ class ActivityService {
             throw error;
         }
     }
+
     async save(activity: Activity): Promise<void> {
         try {
             const activities = await this.get(); // ensures cache is populated
