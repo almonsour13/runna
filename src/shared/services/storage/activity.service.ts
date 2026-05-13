@@ -1,5 +1,4 @@
 import { STORAGE_KEYS } from "@/shared/constant/constant";
-import { generateActivities } from "@/shared/lib/data";
 import { Activity } from "@/shared/types/type";
 import { logger } from "@/shared/utils/logger";
 import { StorageService } from "./storage.service";
@@ -12,10 +11,10 @@ class ActivityService {
         try {
             if (this.cachedActivities) return this.cachedActivities;
 
-            // const activities = (await this.storage.get()) ?? [];
-            const activities = generateActivities({
-                months: 4,
-            });
+            const activities = (await this.storage.get()) ?? [];
+            // const activities = generateActivities({
+            //     months: 4,
+            // });
             this.cachedActivities = activities;
             logger.log("[ActivityStorage] get → success");
             return activities;

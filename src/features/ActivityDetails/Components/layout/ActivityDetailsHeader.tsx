@@ -43,7 +43,10 @@ export default function ActivityDetailsHeader() {
                     </TouchableOpacity>
                 </RowView>
             </RowView>
-            <ActivityActionDrawer ref={activityActionDrawerRef} />
+            <ActivityActionDrawer
+                ref={activityActionDrawerRef}
+                hide_action={["view details"]}
+            />
         </>
     );
 }

@@ -6,8 +6,11 @@ export const useActivityPreviewTracking = () => {
     const setPreviewCoordinate = useActivityTrackingStore(
         (s) => s.setPreviewCoordinate,
     );
+    const status = useActivityTrackingStore((s) => s.status);
+    const mode = useActivityTrackingStore((s) => s.mode);
 
     useEffect(() => {
+        if (status === "active" || mode !== "preview") return;
         locationService.startPreview();
 
         const unsubscribe = locationService.onLocationUpdate(

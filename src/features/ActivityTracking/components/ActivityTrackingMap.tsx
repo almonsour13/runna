@@ -14,7 +14,7 @@ import {
 import { useEffect, useMemo, useRef } from "react";
 import { Animated, Easing, TouchableOpacity, View } from "react-native";
 
-const MAP_HEIGHT = 320;
+const MAP_HEIGHT = 270;
 const DURATION = 380;
 
 export default function ActivityTrackingMap() {
@@ -143,20 +143,7 @@ export default function ActivityTrackingMap() {
                                 currentLocation.latitude,
                             ]}
                         >
-                            <View
-                                style={{
-                                    width: 20,
-                                    height: 20,
-                                    borderRadius: 10,
-                                    backgroundColor: "#3b82f6",
-                                    borderWidth: 3,
-                                    borderColor: "white",
-                                    shadowColor: "#000",
-                                    shadowOpacity: 0.3,
-                                    shadowRadius: 4,
-                                    elevation: 5,
-                                }}
-                            />
+                            <View className="h-4 w-4 border-2 border-white rounded-full bg-blue-600" />
                         </ViewAnnotation>
                     )}
                 </Map>

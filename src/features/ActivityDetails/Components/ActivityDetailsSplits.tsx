@@ -3,7 +3,6 @@ import Text from "@/shared/components/ui/Text";
 import { computePace, computeTotalDistance } from "@/shared/utils/compute";
 import { convertMsToS } from "@/shared/utils/convert";
 import { formatDuration } from "@/shared/utils/format";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { View } from "react-native";
 import { useActivityDetails } from "../context/ActivityDetailsContext";
 
@@ -27,13 +26,10 @@ export default function ActivitySplits() {
     const avgPaceVal = computePace(distance, durationSec);
     return (
         <ColView className="px-4 gap-2">
-            <RowView className="gap-1 items-center">
-                <Ionicons
-                    name="flag-outline"
-                    size={12}
-                    className="text-primary"
-                />
-                <Text className="text-sm text-muted-foreground">Km Splits</Text>
+            <RowView className="items-center">
+                <Text className="text-base text-foreground font-medium">
+                    Km Splits
+                </Text>
             </RowView>
 
             {/* Column headers */}
@@ -50,7 +46,7 @@ export default function ActivitySplits() {
                 </Text>
             </RowView>
 
-            <View className="border-b border-border/20" />
+            <View className="border-b border-border/40" />
 
             {splits.map((split, i) => {
                 const isFastest = fastestSplit?.km === split.km;
@@ -92,7 +88,7 @@ export default function ActivitySplits() {
                                 {diffLabel}
                             </Text>
                         </RowView>
-                        <View className="border-b border-border/20" />
+                        <View className="border-b border-border/40" />
                     </ColView>
                 );
             })}

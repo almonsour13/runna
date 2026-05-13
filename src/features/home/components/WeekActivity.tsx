@@ -285,7 +285,7 @@ function WeekActivity() {
                                                     <Text className="text-xs text-muted-foreground">
                                                         {stat.label}
                                                     </Text>
-                                                    <Text className="text-xl">
+                                                    <Text className="text-xl font-medium">
                                                         {stat.value}
                                                     </Text>
                                                     {/* <Text className="text-[6px] text-muted-foreground">

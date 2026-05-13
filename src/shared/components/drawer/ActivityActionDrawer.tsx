@@ -16,9 +16,10 @@ export type ActivityActionDrawerHandle = DrawerHandle & {
 const ActivityActionDrawer = forwardRef<
     ActivityActionDrawerHandle,
     {
+        hide_action?: string[];
         onClose?: () => void;
     }
->(({ onClose }, ref) => {
+>(({ hide_action, onClose }, ref) => {
     const navigation = useNavigation<NavigationProp>();
     const drawerRef = useRef<ActivityActionDrawerHandle>(null);
     const deleteActivity = useActivityStore((s) => s.deleteActivity);
@@ -74,6 +75,7 @@ const ActivityActionDrawer = forwardRef<
                                 deleteActivity(activityId);
                                 activityService.delete(activityId);
                                 drawerRef.current?.close();
+                                onClose?.();
                             },
                         },
                     ],
@@ -88,30 +90,35 @@ const ActivityActionDrawer = forwardRef<
         <>
             <Drawer ref={drawerRef}>
                 <ColView className="gap-1 py-4">
-                    {CARD_ACTIONS.filter((action) => action.visible).map(
-                        (action) => {
-                            return (
-                                <TouchableOpacity
-                                    key={action.label}
-                                    onPress={() => action.onPress()}
-                                    className={cn(
-                                        "p-4 px-8 h-16 justify-center",
-                                    )}
-                                >
-                                    <RowView className="justify-between">
-                                        <Text
-                                            className={cn(
-                                                "text-lg",
-                                                action.danger && "text-red-500",
-                                            )}
-                                        >
-                                            {action.label}
-                                        </Text>
-                                    </RowView>
-                                </TouchableOpacity>
-                            );
-                        },
-                    )}
+                    {CARD_ACTIONS.filter(
+                        (action) =>
+                            action.visible &&
+                            (!hide_action?.length ||
+                                !hide_action.includes(
+                                    action.label.toLowerCase(),
+                                )),
+                    ).map((action) => {
+                        return (
+                            <TouchableOpacity
+                                key={action.label}
+                                onPress={() => {
+                                    action.onPress();
+                                }}
+                                className={cn("p-4 px-8 h-16 justify-center")}
+                            >
+                                <RowView className="justify-between">
+                                    <Text
+                                        className={cn(
+                                            "text-lg",
+                                            action.danger && "text-red-500",
+                                        )}
+                                    >
+                                        {action.label}
+                                    </Text>
+                                </RowView>
+                            </TouchableOpacity>
+                        );
+                    })}
                 </ColView>
             </Drawer>
         </>

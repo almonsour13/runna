@@ -1,4 +1,5 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import {
     computePace,
@@ -32,17 +33,12 @@ export default function ActivityHighlights() {
     if (!fastestSplit || !slowestSplit) return null;
     return (
         <ColView className="px-4 gap-2">
-            <RowView className="gap-1 items-center">
-                <Ionicons
-                    name="trophy-outline"
-                    size={12}
-                    className="text-primary"
-                />
-                <Text className="text-sm text-muted-foreground">
+            <RowView className="items-center">
+                <Text className="text-base text-foreground font-medium">
                     Highlights
                 </Text>
             </RowView>
-            <RowView className="gap-2">
+            <RowView className="gap-1">
                 {[
                     {
                         icon: "flash-outline" as const,
@@ -63,25 +59,26 @@ export default function ActivityHighlights() {
                         sub: formatPace(slowestSplit.paceMinkm) + " /km",
                     },
                 ].map((h) => (
-                    <ColView
-                        key={h.label}
-                        className="flex-1 gap-1 bg-muted/40 rounded-lg p-3"
-                    >
-                        <Ionicons
-                            name={h.icon}
-                            size={14}
-                            className="text-primary"
-                        />
-                        <Text className="text-xs text-muted-foreground mt-1">
-                            {h.label}
-                        </Text>
-                        <Text className="text-base font-semibold">
-                            {h.value}
-                        </Text>
-                        <Text className="text-[10px] text-muted-foreground">
-                            {h.sub}
-                        </Text>
-                    </ColView>
+                    <Card key={h.label} className="flex-1">
+                        <ColView className="gap-1">
+                            <RowView className="items-center gap-1">
+                                <Ionicons
+                                    name={h.icon}
+                                    size={10}
+                                    className="text-primary"
+                                />
+                                <Text className="text-xs text-muted-foreground">
+                                    {h.label}
+                                </Text>
+                            </RowView>
+                            <Text className="text-xl font-medium">
+                                {h.value}
+                            </Text>
+                            <Text className="text-[10px] text-muted-foreground">
+                                {h.sub}
+                            </Text>
+                        </ColView>
+                    </Card>
                 ))}
             </RowView>
         </ColView>
