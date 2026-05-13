@@ -44,7 +44,7 @@ export default function HomeHeader() {
         <RowView className="px-4 pt-8 gap-4 justify-between items-start">
             <ColView className="flex-1 gap-0">
                 <Text className="text-2xl text-foreground">
-                    Good {greeting}, {profile?.name.split(" ")[0]}
+                    Good {greeting}, {profile?.name}
                 </Text>
                 <Text className="text-lg text-muted-foreground">
                     {randomPhrase}

@@ -1,14 +1,16 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
-import { UnitMode, useSettingsStore } from "@/shared/stores/use-settings-store";
+import { useSettingsStore } from "@/shared/stores/use-settings-store";
+import { UnitMode } from "@/shared/types/type";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { TouchableOpacity, View } from "react-native";
 
 export default function UnitsScreen() {
     const navigation = useNavigation();
-    const unit = useSettingsStore((s) => s.preferences.unit);
+    const preferences = useSettingsStore((s) => s.settings?.preferences);
+    const unit = preferences?.unit || "metric";
     const setUnit = useSettingsStore((s) => s.setUnit);
 
     const UNIT_MODE: {

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
-import Svg, { Defs, LinearGradient, Path, Stop } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
 import { Coordinate } from "../types/type";
 
 interface RouteMapProps {
@@ -32,7 +32,7 @@ export default function VectorRouteMap({
     coordinates,
     type,
     size,
-    color = "#006239",
+    color = "#02a963",
     strokeWidth = 8,
 }: RouteMapProps) {
     const screenWidth = Dimensions.get("window").width - 32;
@@ -96,7 +96,7 @@ export default function VectorRouteMap({
     return (
         <View style={[styles.wrapper, { width, height }]}>
             <Svg width={width} height={height}>
-                <Defs>
+                {/* <Defs>
                     <LinearGradient
                         id={gradientId}
                         x1={startX}
@@ -108,7 +108,7 @@ export default function VectorRouteMap({
                         <Stop offset="0" stopColor={color} stopOpacity={0.6} />
                         <Stop offset="1" stopColor={color} stopOpacity={1} />
                     </LinearGradient>
-                </Defs>
+                </Defs> */}
 
                 {/* Glow */}
                 <Path
@@ -123,7 +123,7 @@ export default function VectorRouteMap({
                 {/* Route */}
                 <Path
                     d={pathD}
-                    stroke={`url(#${gradientId})`}
+                    stroke={color}
                     strokeWidth={strokeWidth}
                     strokeLinejoin="round"
                     strokeLinecap="round"

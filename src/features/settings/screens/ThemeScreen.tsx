@@ -1,17 +1,17 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
-import {
-    ThemeMode,
-    useSettingsStore,
-} from "@/shared/stores/use-settings-store";
+import { settingsService } from "@/shared/services/storage/settings.service";
+import { useSettingsStore } from "@/shared/stores/use-settings-store";
+import { ThemeMode } from "@/shared/types/type";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { TouchableOpacity, View } from "react-native";
 
 export default function ThemeScreen() {
     const navigation = useNavigation();
-    const theme = useSettingsStore((s) => s.preferences.theme);
+    const preferences = useSettingsStore((s) => s.settings?.preferences);
+    const theme = preferences?.theme || "system";
     const setTheme = useSettingsStore((s) => s.setTheme);
 
     const THEME_MODE: {
@@ -36,6 +36,20 @@ export default function ThemeScreen() {
         },
     ];
 
+    const handleSelectTheme = async (theme: ThemeMode) => {
+        await settingsService
+            .update({
+                preferences: {
+                    ...preferences,
+                    theme,
+                },
+            })
+            .then(() => {
+                setTheme(theme);
+                navigation.goBack();
+            });
+    };
+
     return (
         <ColView className="flex-1 gap-4">
             <RowView className="px-4 pt-8 ">
@@ -56,7 +70,7 @@ export default function ThemeScreen() {
                     return (
                         <TouchableOpacity
                             key={i}
-                            onPress={() => setTheme(item.value)}
+                            onPress={() => handleSelectTheme(item.value)}
                         >
                             <Card className="justify-center h-18">
                                 <RowView className="justify-between items-center">

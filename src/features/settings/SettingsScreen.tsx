@@ -16,7 +16,7 @@ const version = Constants.expoConfig?.version;
 export default function SettingsScreen() {
     const navigation = useNavigation<NavigationProp>();
     const profile = useProfileStore((s) => s.profile);
-    const preferences = useSettingsStore((s) => s.preferences);
+    const preferences = useSettingsStore((s) => s.settings?.preferences);
 
     const sections = [
         {
@@ -52,7 +52,7 @@ export default function SettingsScreen() {
                     label: "Theme",
                     description: "Light, dark, or system mode",
                     icon: "moon",
-                    value: capitalize(preferences.theme),
+                    value: capitalize(preferences?.theme || "system"),
                     type: "nav",
                     onPress: () => navigation.navigate("Theme" as never),
                     danger: false,
@@ -62,7 +62,7 @@ export default function SettingsScreen() {
                     label: "Units",
                     description: "Metric or imperial",
                     icon: "speedometer",
-                    value: capitalize(preferences.unit),
+                    value: capitalize(preferences?.unit || "metric"),
                     type: "nav",
                     onPress: () => navigation.navigate("Unit" as never),
                     danger: false,

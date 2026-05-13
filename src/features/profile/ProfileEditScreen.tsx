@@ -2,6 +2,7 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
+import { profileService } from "@/shared/services/storage/profile.service";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
 import { Profile } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
@@ -19,10 +20,20 @@ import WeightDrawer from "../../shared/components/drawer/WeightDrawer";
 
 export default function ProfileEditScreen() {
     const navigation = useNavigation();
+    const [isUpdating, setIsUpdating] = useState(false);
     const profile = useProfileStore((s) => s.profile);
     const updateProfile = useProfileStore((s) => s.updateProfile);
 
-    const [newProfile, setNewProfile] = useState<Profile | null>(profile);
+    const [newProfile, setNewProfile] = useState<Profile | null>(
+        profile || {
+            name: "",
+            age: 0,
+            gender: null,
+            height: 0,
+            weight: 0,
+            goal: 0,
+        },
+    );
 
     const ageDrawerRef = useRef<DrawerHandle>(null);
     const genderDrawerRef = useRef<DrawerHandle>(null);
@@ -31,17 +42,34 @@ export default function ProfileEditScreen() {
     const goalDrawerRef = useRef<DrawerHandle>(null);
 
     const handleChange = (key: keyof Profile, value: any) => {
+        console.log(key, value);
         setNewProfile((prev) => {
-            if (!prev) return prev;
-            return { ...prev, [key]: value };
+            if (!prev) return null;
+
+            return {
+                ...prev,
+                [key]: value,
+            };
         });
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (newProfile) {
-            updateProfile(newProfile);
+            const updated = {
+                ...newProfile,
+                updatedAt: Date.now().toString(),
+            };
+            setIsUpdating(true);
+            profileService
+                .update(updated)
+                .then(() => {
+                    updateProfile(updated);
+                    navigation.goBack();
+                })
+                .catch(() => {
+                    setIsUpdating(false);
+                });
         }
-        navigation.goBack();
     };
 
     const isDirty =
@@ -170,12 +198,12 @@ export default function ProfileEditScreen() {
                     <TouchableOpacity
                         className={cn(
                             "h-18 rounded-full bg-primary justify-center items-center",
-                            !canSave && "opacity-30",
+                            (!canSave || isUpdating) && "opacity-30",
                         )}
-                        disabled={!canSave}
+                        disabled={!canSave || isUpdating}
                         onPress={() => handleSave()}
                     >
-                        <Text>Save</Text>
+                        <Text>{isUpdating ? "Updating..." : "Save"}</Text>
                     </TouchableOpacity>
                 </ColView>
             </ColView>

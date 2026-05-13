@@ -1,42 +1,73 @@
 import { create } from "zustand";
+import { Settings, ThemeMode } from "../types/type";
 
-export type ThemeMode = "light" | "dark" | "system";
 export type UnitMode = "metric" | "imperial";
 
-type Preferences = {
-    theme: ThemeMode;
-    unit: UnitMode;
-};
-
 type SettingsStore = {
-    isLoading: boolean;
-    setIsLoading: (isLoading: boolean) => void;
+    settings: Settings;
 
-    preferences: Preferences;
+    setSettings: (settings: Settings | null) => void;
+
+    updateSettings: (partial: Partial<Settings>) => void;
+
     setTheme: (theme: ThemeMode) => void;
+
     setUnit: (unit: UnitMode) => void;
 };
 
-const INITIAL_VALUE: Pick<SettingsStore, "isLoading" | "preferences"> = {
-    isLoading: false,
+const defaultSettings: Settings = {
     preferences: {
         theme: "system",
         unit: "metric",
     },
 };
 
-export const useSettingsStore = create<SettingsStore>((set) => ({
-    ...INITIAL_VALUE,
+export const useSettingsStore = create<SettingsStore>((set, get) => ({
+    settings: defaultSettings,
 
-    setIsLoading: (isLoading) => set({ isLoading }),
+    setSettings: (settings) => {
+        set({
+            settings: settings ?? defaultSettings,
+        });
+    },
+
+    updateSettings: (partial) => {
+        const current = get().settings;
+
+        const updated: Settings = {
+            ...current,
+            ...partial,
+
+            preferences: {
+                ...current.preferences,
+                ...partial.preferences,
+            },
+        };
+
+        set({
+            settings: updated,
+        });
+    },
 
     setTheme: (theme) =>
         set((state) => ({
-            preferences: { ...state.preferences, theme },
+            settings: {
+                ...state.settings,
+                preferences: {
+                    ...state.settings.preferences,
+                    theme,
+                },
+            },
         })),
 
     setUnit: (unit) =>
         set((state) => ({
-            preferences: { ...state.preferences, unit },
+            settings: {
+                ...state.settings,
+                preferences: {
+                    ...state.settings.preferences,
+                    unit,
+                },
+            },
         })),
 }));

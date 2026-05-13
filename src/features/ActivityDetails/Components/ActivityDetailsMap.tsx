@@ -114,7 +114,7 @@ export default function ActivityDetailsMap() {
                         <Layer
                             type="line"
                             style={{
-                                lineColor: "#1d4ed8",
+                                lineColor: "#02a963",
                                 lineWidth: 8,
                                 lineJoin: "round",
                                 lineCap: "round",
@@ -124,7 +124,7 @@ export default function ActivityDetailsMap() {
                         <Layer
                             type="line"
                             style={{
-                                lineColor: "#3b82f6",
+                                lineColor: "#02a963",
                                 lineWidth: 4,
                                 lineJoin: "round",
                                 lineCap: "round",

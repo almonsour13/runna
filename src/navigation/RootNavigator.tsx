@@ -1,5 +1,6 @@
 import ActivityDetailsScreen from "@/features/ActivityDetails/ActivityDetailsScreen";
 import ActivityTrackingScreen from "@/features/ActivityTracking/ActivityTrackingScreen";
+import { useAppInit } from "@/shared/hooks/use-app-init";
 import { RootStackParamList } from "@/shared/types/type";
 import {
     DMSans_400Regular,
@@ -23,6 +24,7 @@ export default function RootNavigator() {
         DMSans_600SemiBold,
         DMSans_700Bold,
     });
+    const { isLoading, error } = useAppInit();
     if (!loaded) {
         return null;
     }

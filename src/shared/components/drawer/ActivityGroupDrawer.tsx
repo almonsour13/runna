@@ -99,13 +99,15 @@ const ActivityGroupDrawer = forwardRef<
                                     : "Activities"}
                             </Text>
                         </RowView>
-                        {activityGroupActivities.map((activity) => (
-                            <ActivityCard
-                                key={activity.id}
-                                activity={activity}
-                                className="border border-border/40"
-                            />
-                        ))}
+                        <ColView className="gap-1">
+                            {activityGroupActivities.map((activity) => (
+                                <ActivityCard
+                                    key={activity.id}
+                                    activity={activity}
+                                    className="border border-border/40"
+                                />
+                            ))}
+                        </ColView>
                     </ColView>
                 </ColView>
             </Drawer>

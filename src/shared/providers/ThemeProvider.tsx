@@ -8,7 +8,9 @@ export default function ThemeProvider({
 }: {
     children: React.ReactNode;
 }) {
-    const theme = useSettingsStore((s) => s.preferences.theme);
+    const settings = useSettingsStore((s) => s.settings);
+    const preferences = settings?.preferences;
+    const theme = preferences?.theme || "system";
     const deviceTheme = useDeviceColorScheme();
 
     const activeTheme = theme === "system" ? (deviceTheme ?? "light") : theme;

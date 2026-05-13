@@ -62,10 +62,19 @@ export type Profile = {
     height: number; // cm
     weight: number; // kg
     age: number; // years
-    gender: Gender | null;
+    gender: Gender;
     goal: number;
     createdAt?: string; // ISO 8601
     updatedAt?: string;
 };
 
-export type Gender = "male" | "female" | "other";
+export type Gender = "male" | "female" | null;
+
+export type ThemeMode = "light" | "dark" | "system";
+export type UnitMode = "metric" | "imperial";
+export type Settings = {
+    preferences: {
+        theme: ThemeMode;
+        unit: UnitMode;
+    };
+};
