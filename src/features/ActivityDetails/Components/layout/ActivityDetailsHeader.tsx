@@ -46,6 +46,7 @@ export default function ActivityDetailsHeader() {
             <ActivityActionDrawer
                 ref={activityActionDrawerRef}
                 hide_action={["view details"]}
+                onClose={() => navigation.goBack()}
             />
         </>
     );

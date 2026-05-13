@@ -72,10 +72,11 @@ const ActivityActionDrawer = forwardRef<
                         {
                             text: "Delete",
                             onPress: async () => {
-                                deleteActivity(activityId);
-                                activityService.delete(activityId);
+                                activityService.delete(activityId).then(() => {
+                                    deleteActivity(activityId);
+                                    onClose?.();
+                                });
                                 drawerRef.current?.close();
-                                onClose?.();
                             },
                         },
                     ],

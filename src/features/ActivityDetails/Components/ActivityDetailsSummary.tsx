@@ -33,7 +33,6 @@ export default function ActivitySummary() {
         totalDistanceM,
         totalDistanceKm,
 
-        goalDistanceM,
         goalDistanceKm,
 
         goalCompletionPct,
@@ -42,6 +41,7 @@ export default function ActivitySummary() {
 
         activityStats,
     } = useMemo(() => {
+        // ── Labels ──────────────────────────────────────────
         const dateLabel = [
             formatRelativeDateLabel(new Date(activity.startTime)),
             format(activity.startTime, "EEE"),
@@ -55,28 +55,29 @@ export default function ActivitySummary() {
             format(activity.endTime, "h:mm a"),
         ].join(" - ");
 
+        // ── Distance ────────────────────────────────────────
         const totalDistanceM = computeTotalDistance(activity.coordinates);
-
         const totalDistanceKm = Number(convertMtoKm(totalDistanceM));
+        const goalDistanceKm = Number(convertMtoKm(activity.goal));
 
-        const goalDistanceM = activity.goal;
-
-        const goalDistanceKm = Number(convertMtoKm(goalDistanceM));
-
+        // ── Goal ────────────────────────────────────────────
         const goalCompletionPct =
-            goalDistanceKm > 0 ? (totalDistanceKm / goalDistanceKm) * 100 : 0;
+            goalDistanceKm > 0
+                ? Math.min((totalDistanceKm / goalDistanceKm) * 100, 100)
+                : 0;
+        const goalReached = totalDistanceKm >= goalDistanceKm;
+        const remainingKm = Math.max(goalDistanceKm - totalDistanceKm, 0);
+        const exceededKm = Math.max(totalDistanceKm - goalDistanceKm, 0);
 
+        // ── Duration ────────────────────────────────────────
         const totalDurationSec = convertMsToS(activity.duration);
+
+        // ── Stats — use new utils ────────────────────────────
 
         const pace =
             totalDistanceKm > 0.01
-                ? formatPace(
-                      computePace(
-                          totalDistanceM,
-                          convertMsToS(totalDurationSec),
-                      ),
-                  )
-                : "00:00";
+                ? formatPace(computePace(totalDistanceM, totalDurationSec))
+                : "--:--";
 
         const activityStats = [
             {
@@ -114,8 +115,6 @@ export default function ActivitySummary() {
             timeRangeLabel,
             totalDistanceM,
             totalDistanceKm,
-
-            goalDistanceM,
             goalDistanceKm,
 
             goalCompletionPct,

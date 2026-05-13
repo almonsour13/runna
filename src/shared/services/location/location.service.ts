@@ -144,7 +144,7 @@ class LocationService {
         }
 
         this.kalman.reset();
-        this.lastCoord = null;
+        const seedCoord = this.lastCoord;
 
         await this.stopPreview();
 
@@ -165,6 +165,20 @@ class LocationService {
         } else {
             await this.stopBackgroundTracking();
             await this.startForegroundTracking();
+        }
+
+        if (seedCoord) {
+            logger.log(
+                "[Location] Seeding first recording coord from preview",
+                {
+                    lat: seedCoord.latitude,
+                    lng: seedCoord.longitude,
+                },
+            );
+            this.lastCoord = seedCoord;
+            this.locationUpdateCallbacks.forEach((cb) =>
+                cb(seedCoord, null, "recording"),
+            );
         }
 
         logger.log("[Location] State", {
@@ -318,33 +332,32 @@ class LocationService {
             altitude: location.coords.altitude,
             heading: location.coords.heading ?? null,
         };
-
-        if (this.mode === "preview") {
-            const label = await this.tryReverseGeocodeThrottled(coord);
-
-            logger.log("[Location] Preview emit", {
-                lat: coord.latitude,
-                lng: coord.longitude,
-                accuracy: coord.accuracy,
-                label,
-            });
-
-            this.locationUpdateCallbacks.forEach((cb) =>
-                cb(coord, label, this.mode),
-            );
-            return;
-        }
-
-        // Recording
         const processedCoord = preprocessLocation(coord, this.lastCoord);
 
         if (!processedCoord) {
-            logger.log("[Location] Recording coord dropped by filter", {
+            logger.log("[Location] Coord dropped by filter", {
                 lat: coord.latitude,
                 lng: coord.longitude,
                 accuracy: coord.accuracy,
                 lastCoord: this.lastCoord,
             });
+            return;
+        }
+
+        if (this.mode === "preview") {
+            const label = await this.tryReverseGeocodeThrottled(processedCoord);
+
+            logger.log("[Location] Preview emit", {
+                lat: processedCoord.latitude,
+                lng: processedCoord.longitude,
+                accuracy: coord.accuracy,
+                label,
+            });
+
+            this.lastCoord = processedCoord;
+            this.locationUpdateCallbacks.forEach((cb) =>
+                cb(coord, label, this.mode),
+            );
             return;
         }
 

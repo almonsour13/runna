@@ -44,8 +44,9 @@ export const computePace = (distance: number, duration: number) => {
     if (distance === 0) return 0;
 
     const distanceKm = distance / 1000;
-    return duration / distanceKm; // sec/km
+    return duration / distanceKm;
 };
+
 export function computeKmSplits(coordinates: Coordinate[]) {
     const splits: {
         km: number;
