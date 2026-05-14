@@ -62,9 +62,7 @@ export default function ActivitySummary() {
 
         // ── Goal ────────────────────────────────────────────
         const goalCompletionPct =
-            goalDistanceKm > 0
-                ? Math.min((totalDistanceKm / goalDistanceKm) * 100, 100)
-                : 0;
+            goalDistanceKm > 0 ? (totalDistanceKm / goalDistanceKm) * 100 : 0;
         const goalReached = totalDistanceKm >= goalDistanceKm;
         const remainingKm = Math.max(goalDistanceKm - totalDistanceKm, 0);
         const exceededKm = Math.max(totalDistanceKm - goalDistanceKm, 0);

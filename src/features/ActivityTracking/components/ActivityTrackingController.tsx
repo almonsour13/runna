@@ -1,17 +1,25 @@
 import AnimatedActiveButtonIndicator from "@/shared/components/AnimatedActiveButtonIndicator";
-import { RowView } from "@/shared/components/CustomView";
+import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import { useAcitivityTrackingController } from "@/shared/hooks/use-activity-tracking-controller";
 import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
+import { cn } from "@/shared/utils/cn";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useEffect, useRef } from "react";
-import { Animated, TouchableOpacity } from "react-native";
+import { useEffect, useMemo, useRef } from "react";
+import { ActivityIndicator, Animated, TouchableOpacity } from "react-native";
 
 export default function ActivityTrackingController() {
     const { start, resume, pause, stop, reset } =
         useAcitivityTrackingController();
     const status = useActivityTrackingStore((s) => s.status);
-
+    const coordinates = useActivityTrackingStore((s) => s.coordinates);
+    const previewCoordinate = useActivityTrackingStore(
+        (s) => s.previewCoordinate,
+    );
+    const currentLocation = useMemo(
+        () => coordinates[coordinates.length - 1] ?? previewCoordinate,
+        [coordinates, previewCoordinate],
+    );
     const isIdle = status === "idle";
     const isActive = status === "active";
     const isPaused = status === "paused";
@@ -64,50 +72,65 @@ export default function ActivityTrackingController() {
     }, [isDisable]);
 
     return (
-        <RowView className="px-4 pb-8 items-center justify-center">
-            <Animated.View
-                style={{
-                    transform: [{ scale: resetScale }],
-                    opacity: resetOpacity,
-                }}
-            >
-                <TouchableOpacity disabled={isDisable} onPress={reset}>
-                    <Card className="h-20 aspect-square bg-muted items-center justify-center">
-                        <Ionicons
-                            name="refresh"
-                            size={24}
-                            className="text-muted-foreground"
-                        />
-                    </Card>
-                </TouchableOpacity>
-            </Animated.View>
-            <TouchableOpacity className="" onPress={mainAction}>
-                <Card className="relative h-20 aspect-square bg-primary  items-center justify-center">
-                    <Ionicons
-                        name={mainIcon as any}
-                        size={24}
-                        className="text-white"
-                    />
+        <ColView className="py-4 gap-4">
+            <RowView className="px-4 items-center justify-center">
+                <Animated.View
+                    style={{
+                        transform: [{ scale: resetScale }],
+                        opacity: resetOpacity,
+                    }}
+                >
+                    <TouchableOpacity disabled={isDisable} onPress={reset}>
+                        <Card className="h-16 aspect-square bg-muted items-center justify-center">
+                            <Ionicons
+                                name="refresh"
+                                size={24}
+                                className="text-muted-foreground"
+                            />
+                        </Card>
+                    </TouchableOpacity>
+                </Animated.View>
+                <TouchableOpacity
+                    disabled={!currentLocation}
+                    className=""
+                    onPress={mainAction}
+                >
+                    <Card
+                        className={cn(
+                            "relative h-16 aspect-square bg-primary  items-center justify-center",
+                            !currentLocation && "opacity-50",
+                        )}
+                    >
+                        {!currentLocation ? (
+                            <ActivityIndicator />
+                        ) : (
+                            <Ionicons
+                                name={mainIcon as any}
+                                size={24}
+                                className="text-white"
+                            />
+                        )}
 
-                    <AnimatedActiveButtonIndicator />
-                </Card>
-            </TouchableOpacity>
-            <Animated.View
-                style={{
-                    transform: [{ scale: resetScale }],
-                    opacity: resetOpacity,
-                }}
-            >
-                <TouchableOpacity disabled={isDisable} onPress={stop}>
-                    <Card className="h-20 aspect-square bg-muted items-center justify-center">
-                        <Ionicons
-                            name="checkmark"
-                            size={24}
-                            className="text-white"
-                        />
+                        <AnimatedActiveButtonIndicator />
                     </Card>
                 </TouchableOpacity>
-            </Animated.View>
-        </RowView>
+                <Animated.View
+                    style={{
+                        transform: [{ scale: resetScale }],
+                        opacity: resetOpacity,
+                    }}
+                >
+                    <TouchableOpacity disabled={isDisable} onPress={stop}>
+                        <Card className="h-16 aspect-square bg-muted items-center justify-center">
+                            <Ionicons
+                                name="checkmark"
+                                size={24}
+                                className="text-white"
+                            />
+                        </Card>
+                    </TouchableOpacity>
+                </Animated.View>
+            </RowView>
+        </ColView>
     );
 }

@@ -8,7 +8,6 @@ type ActivityTrackingStore = {
     coordinates: Coordinate[];
     label: string | null;
     mode: "preview" | "recording";
-    isMapExpanded: boolean;
 
     setDuration: (duration: number) => void;
     setStatus: (status: ActivityTrackingStatus) => void;
@@ -17,7 +16,6 @@ type ActivityTrackingStore = {
     addCoordinate: (coordinate: Coordinate) => void;
     setLabel: (label: string | null) => void;
     setMode: (mode: "preview" | "recording") => void;
-    setIsMapExpanded: (isMapExpanded: boolean) => void;
     clearActivity: () => void;
 };
 
@@ -33,7 +31,6 @@ const INITIAL_STATE = {
 export const useActivityTrackingStore = create<ActivityTrackingStore>(
     (set) => ({
         ...INITIAL_STATE,
-        isMapExpanded: false,
 
         setDuration: (duration) => set({ duration }),
         setStatus: (status) => set({ status }),
@@ -45,7 +42,6 @@ export const useActivityTrackingStore = create<ActivityTrackingStore>(
             })),
         setLabel: (label) => set({ label }),
         setMode: (mode) => set({ mode }),
-        setIsMapExpanded: (isMapExpanded) => set({ isMapExpanded }),
         clearActivity: () => set(INITIAL_STATE),
     }),
 );

@@ -1,7 +1,11 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import GoalDrawer from "@/shared/components/drawer/GoalDrawer";
+import Card from "@/shared/components/ui/Card";
+import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
 import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
+import { cn } from "@/shared/utils/cn";
 import {
     computeCalories,
     computePace,
@@ -14,16 +18,18 @@ import {
     formatPace,
 } from "@/shared/utils/format";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import { TouchableOpacity } from "react-native";
 
 export default function ActivityTrackingSummary() {
     const profile = useProfileStore((s) => s.profile);
+    const goal = profile?.goal || 0;
+    const setField = useProfileStore((s) => s.setField);
     const duration = useActivityTrackingStore((s) => s.duration);
     const coordinates = useActivityTrackingStore((s) => s.coordinates);
-
-    const goal = profile?.goal || 0;
-
     const time = formatDurationHHMMSS(duration);
+    const isMapExpanded = useActivityTrackingStore((s) => s.isMapExpanded);
+    const goalDrawerRef = useRef<DrawerHandle>(null);
 
     const { stats } = useMemo(() => {
         const distance = computeTotalDistance(coordinates);
@@ -43,67 +49,104 @@ export default function ActivityTrackingSummary() {
                 value: distanceKm.toFixed(2).padStart(2, "0"),
                 unit: "km",
                 icon: "location-outline" as const,
+                color: "text-blue-500",
             },
             {
                 label: "Calories",
                 value: calories,
                 unit: "kcal",
                 icon: "flame-outline" as const,
+                color: "text-orange-500",
             },
             {
                 label: "Pace",
                 value: pace,
-                unit: "min/km",
+                unit: "/km",
                 icon: "timer-outline" as const,
+                color: "text-purple-500",
             },
         ];
         return { stats };
     }, [coordinates, duration, profile?.weight]);
 
     return (
-        <ColView className="flex-1 p-4 gap-4 justify-center items-center">
-            <RowView className="justify-center items-center">
+        <>
+            <ColView
+                className={cn(
+                    "flex-1 px-4 gap-4 justify-center items-center",
+                    // !isMapExpanded && "flex-1",
+                )}
+            >
+                <RowView className="gap-4 items-center">
+                    <TouchableOpacity
+                        onPress={() => goalDrawerRef.current?.open()}
+                    >
+                        <Card className="px-3 py-1.5">
+                            <RowView className="gap-1.5">
+                                <Ionicons
+                                    name="flag"
+                                    size={12}
+                                    className="text-primary"
+                                />
+                                <Text className="text-xs ">
+                                    {convertMtoKm(goal)} km
+                                </Text>
+                            </RowView>
+                        </Card>
+                    </TouchableOpacity>
+                </RowView>
                 <ColView className="gap-1 items-center">
+                    <Text className="text-6xl font-bold">{time}</Text>
                     <RowView className="gap-1 items-center">
                         <Ionicons
                             name="time-outline"
                             size={12}
-                            className="text-primary"
+                            className="hidden text-primary"
                         />
-                        <Text className="text-sm text-muted-foreground">
-                            Duration {coordinates.length}
+                        <Text className="text-xs text-muted-foreground">
+                            Duration
                         </Text>
                     </RowView>
-                    <Text className="text-7xl font-bold">{time}</Text>
                 </ColView>
-            </RowView>
-            <RowView>
-                {stats.map((stat, i) => (
-                    <ColView
-                        key={stat.label}
-                        className="flex-1 gap-1 justify-center items-center"
-                    >
-                        <RowView className="gap-1 items-center">
-                            <Ionicons
-                                name={stat.icon}
-                                size={12}
-                                className="text-primary"
-                            />
-                            <Text className="text-xs text-muted-foreground">
-                                {stat.label}
-                            </Text>
-                        </RowView>
-                        <Text className="text-4xl font-medium">
-                            {stat.value}
-                        </Text>
-                        {stat.unit && (
-                            <Text className="text-[8px] font-medium text-muted-foreground">
-                                {stat.unit}
-                            </Text>
-                        )}
-                    </ColView>
-                ))}
-            </RowView>
-        </ColView>
+                <RowView className="w-full justify-between">
+                    {stats.map((stat, i) => (
+                        <ColView
+                            key={stat.label}
+                            className="gap-1 items-center"
+                        >
+                            <RowView className="items-end">
+                                <Text className="text-3xl leading-4 font-medium ">
+                                    {stat.value}
+                                </Text>
+                            </RowView>
+                            <RowView className="gap-1 items-center">
+                                <Ionicons
+                                    name={stat.icon}
+                                    size={12}
+                                    className="hidden text-primary"
+                                />
+                                <Text className="text-xs text-muted-foreground">
+                                    {stat.label} (
+                                    {stat.unit && (
+                                        <Text className=" text-xs font-medium text-muted-foreground">
+                                            {stat.unit}
+                                        </Text>
+                                    )}
+                                    )
+                                </Text>
+                            </RowView>
+                        </ColView>
+                    ))}
+                </RowView>
+            </ColView>
+
+            <GoalDrawer
+                ref={goalDrawerRef}
+                value={goal}
+                onChange={(v) => {
+                    setField("goal", v);
+                }}
+            />
+        </>
     );
 }

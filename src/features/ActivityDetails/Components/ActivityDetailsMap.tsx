@@ -1,7 +1,7 @@
 import { RowView } from "@/shared/components/CustomView";
 import Text from "@/shared/components/ui/Text";
-import { OPEN_FREE_MAP_STYLES } from "@/shared/constant/constant";
 import { cn } from "@/shared/utils/cn";
+import { getMapStyle } from "@/shared/utils/map-style";
 import { Ionicons } from "@expo/vector-icons";
 import {
     Camera,
@@ -19,7 +19,7 @@ export default function ActivityDetailsMap() {
     const { activity, splits } = useActivityDetails();
     const coordinates = activity.coordinates;
     const cameraRef = useRef<React.ElementRef<typeof Camera> | null>(null);
-
+    const mapStyle = getMapStyle();
     const startPoint = coordinates[0];
     const endPoint = coordinates[coordinates.length - 1];
 
@@ -75,15 +75,15 @@ export default function ActivityDetailsMap() {
                     bottom: MAP_PADDING,
                     left: MAP_PADDING,
                 },
+                duration: 500,
             },
-            500,
         );
     };
 
     return (
         <View className="h-68 relative">
             <Map
-                mapStyle={OPEN_FREE_MAP_STYLES[4].style}
+                mapStyle={mapStyle}
                 logo={false}
                 attribution={false}
                 compass={false}
@@ -157,7 +157,7 @@ export default function ActivityDetailsMap() {
                             id={`km-${km}`}
                             lngLat={[coord.longitude, coord.latitude]}
                         >
-                            <View className="h-5 w-5 rounded-full bg-card justify-center items-center">
+                            <View className="h-4 w-4 rounded-full bg-card justify-center items-center">
                                 <Text className="text-[8px]">{km}</Text>
                             </View>
                         </ViewAnnotation>
@@ -171,25 +171,21 @@ export default function ActivityDetailsMap() {
                 >
                     <Ionicons
                         name="scan-outline"
-                        size={12}
+                        size={16}
                         className="text-foreground"
                     />
                 </TouchableOpacity>
-
                 <TouchableOpacity
                     className={cn(
                         "h-8 aspect-square rounded-full bg-card justify-center items-center",
-                        // isKmMarkersVisible && "bg-primary",
+                        isKmMarkersVisible && "bg-primary",
                     )}
                     onPress={() => setIsKmMarkersVisible((prev) => !prev)}
                 >
                     <Ionicons
                         name="flag"
-                        size={12}
-                        className={cn(
-                            "text-foreground",
-                            isKmMarkersVisible && "text-primary",
-                        )}
+                        size={16}
+                        className={cn("text-foreground")}
                     />
                 </TouchableOpacity>
             </RowView>

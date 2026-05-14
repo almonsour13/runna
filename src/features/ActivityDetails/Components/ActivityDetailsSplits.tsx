@@ -41,9 +41,6 @@ export default function ActivitySplits() {
                 <Text className="text-xs text-muted-foreground flex-1 text-right">
                     Pace
                 </Text>
-                <Text className="text-xs text-muted-foreground w-16 text-right">
-                    vs avg
-                </Text>
             </RowView>
 
             <View className="border-b border-border/40" />
@@ -52,11 +49,6 @@ export default function ActivitySplits() {
                 const isFastest = fastestSplit?.km === split.km;
                 const isSlowest = slowestSplit?.km === split.km;
                 const diff = split.paceMinkm - avgPaceVal;
-                const diffLabel =
-                    diff > 0
-                        ? `+${formatPaceMin(Math.abs(diff))}`
-                        : `-${formatPaceMin(Math.abs(diff))}`;
-                const isAhead = diff < 0;
 
                 return (
                     <ColView key={i} className="gap-1">
@@ -77,15 +69,6 @@ export default function ActivitySplits() {
                             </Text>
                             <Text className="text-sm font-medium flex-1 text-right">
                                 {formatPaceMin(split.paceMinkm)}
-                            </Text>
-                            <Text
-                                className={`text-xs w-16 text-right ${
-                                    isAhead
-                                        ? "text-primary"
-                                        : "text-muted-foreground"
-                                }`}
-                            >
-                                {diffLabel}
                             </Text>
                         </RowView>
                         <View className="border-b border-border/40" />

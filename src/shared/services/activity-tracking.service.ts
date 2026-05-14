@@ -153,7 +153,6 @@ class ActivityTrackingService {
             };
 
             this.startSession();
-            await locationService.stopPreview();
             await locationService.start();
             this.startLocationListener();
             this.activityStorage.set(this.activity);
@@ -188,7 +187,6 @@ class ActivityTrackingService {
         this.stopSession();
         this.stopLocationListener();
         await locationService.stop();
-        await locationService.startPreview();
         this.activityStorage.set(this.activity);
 
         logger.log("[ActivityService] Activity paused", {
@@ -224,7 +222,6 @@ class ActivityTrackingService {
 
         this.activity.status = "active";
         this.startSession();
-        await locationService.stopPreview();
         await locationService.start();
         this.startLocationListener();
 
@@ -257,7 +254,7 @@ class ActivityTrackingService {
                 endTime,
                 duration: finalDuration,
                 coordinates: finalCoordinates,
-                status: "active",
+                status: "completed",
                 type: "run",
                 goal: 5000,
                 updatedAt: new Date().toISOString(),
@@ -273,7 +270,6 @@ class ActivityTrackingService {
             this.stopSession();
             this.stopLocationListener();
             await locationService.stop();
-            await locationService.startPreview();
             this.activity = null;
             this.activityStorage.remove();
             logger.log("[ActivityService] Activity stopped");
@@ -303,7 +299,6 @@ class ActivityTrackingService {
             this.stopSession();
             this.stopLocationListener();
             await locationService.stop();
-            await locationService.startPreview();
             this.activity = null;
             this.activityStorage.remove();
 
@@ -329,7 +324,6 @@ class ActivityTrackingService {
 
             if (storedActivity.status === "active") {
                 this.startSession();
-                await locationService.stopPreview();
                 await locationService.start();
                 this.startLocationListener();
             } else {

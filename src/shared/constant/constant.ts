@@ -34,25 +34,19 @@ export const STORAGE_KEYS = {
 
 export const ACTIVITY_BACKGROUND_TASK = "ACTIVITY_BACKGROUND_TASK";
 
-export const OPEN_FREE_MAP_STYLES = [
+export const MAP_STYLES = [
     {
-        name: "Liberty",
-        style: "https://tiles.openfreemap.org/styles/liberty",
+        name: "Streets",
+        style: {
+            light: "https://api.maptiler.com/maps/streets-v4/style.json?key=oanYTqJDReVoeo0ZLIK4",
+            dark: "https://api.maptiler.com/maps/streets-v4-dark/style.json?key=oanYTqJDReVoeo0ZLIK4",
+        },
     },
     {
-        name: "Positron (Clean Light)",
-        style: "https://tiles.openfreemap.org/styles/positron",
-    },
-    {
-        name: "Bright",
-        style: "https://tiles.openfreemap.org/styles/bright",
-    },
-    {
-        name: "Dark",
-        style: "https://tiles.openfreemap.org/styles/dark",
-    },
-    {
-        name: "Fiord",
-        style: "https://tiles.openfreemap.org/styles/fiord",
+        name: "Open Streets Map",
+        style: {
+            light: "https://api.maptiler.com/maps/openstreetmap/style.json?key=oanYTqJDReVoeo0ZLIK4",
+            dark: "https://api.maptiler.com/maps/openstreetmap-dark/style.json?key=oanYTqJDReVoeo0ZLIK4",
+        },
     },
 ];

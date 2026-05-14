@@ -34,9 +34,9 @@ const GoalDrawer = forwardRef<DrawerHandle, Props>(
             close: () => drawerRef.current?.close(),
         }));
 
-        const minGoal = 5;
+        const minGoal = 1;
         const maxGoal = 100;
-        const interval = 5;
+        const interval = 1;
         const goals = Array.from(
             { length: (maxGoal - minGoal) / interval + 1 },
             (_, i) => minGoal + i * interval,

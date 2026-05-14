@@ -11,9 +11,9 @@ export default function ActivityTrackingScreen() {
     useActivityPreviewTracking();
     return (
         <SafeScreen>
-            <ColView className="flex-1 gap-8">
+            <ColView className="relative flex-1 gap-4">
                 <ActivityTrackingHeader />
-                <ColView className="relative flex-1 gap-8">
+                <ColView className="relative flex-1 gap-4">
                     <ActivityTrackingSummary />
                     <ActivityTrackingMap />
                 </ColView>

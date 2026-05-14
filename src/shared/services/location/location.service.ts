@@ -1,6 +1,6 @@
-import Constants from "expo-constants";
 import * as ExpoLocation from "expo-location";
 import * as TaskManager from "expo-task-manager";
+import { AppState, AppStateStatus } from "react-native";
 import {
     ACTIVITY_BACKGROUND_TASK,
     GPS_BACKGROUND_TRACKING_CONFIG,
@@ -10,7 +10,6 @@ import { Coordinate, Location } from "../../types/type";
 import { KalmanFilter } from "../../utils/kalman-filter";
 import { logger } from "../../utils/logger";
 import { preprocessLocation } from "../../utils/preprocess-location";
-import { fakeLocationTrackingService } from "./fake-location-tracking.service";
 
 type LocationCallback = (
     coord: Coordinate,
@@ -18,9 +17,6 @@ type LocationCallback = (
     mode: "preview" | "recording" | null,
 ) => void;
 type TrackingMode = "preview" | "recording";
-
-// true when running inside Expo Go (appOwnership === "expo")
-const IS_EXPO_GO = Constants.appOwnership === "expo";
 
 class LocationService {
     private subscription: ExpoLocation.LocationSubscription | null = null;
@@ -30,17 +26,15 @@ class LocationService {
     private kalman = new KalmanFilter();
     private lastCoord: Coordinate | null = null;
     private lastGeocodeTime = 0;
+    private appStateSubscription: ReturnType<
+        typeof AppState.addEventListener
+    > | null = null;
+    private appState: AppStateStatus = AppState.currentState;
 
     // ======================
     // Permissions
     // ======================
     async requestPermissions(): Promise<boolean> {
-        // Expo Go can't request native permissions — skip
-        if (IS_EXPO_GO) {
-            logger.log("[Location] Expo Go detected — skipping permissions");
-            return true;
-        }
-
         const { status: fg } =
             await ExpoLocation.requestForegroundPermissionsAsync();
 
@@ -67,19 +61,6 @@ class LocationService {
     async getCurrentPosition(): Promise<Location | null> {
         logger.log("[Location] Getting current position");
 
-        if (IS_EXPO_GO) {
-            // Return the fake base position
-            return {
-                latitude: 6.891719,
-                longitude: 126.074069,
-                timestamp: Date.now(),
-                altitude: 45.0,
-                accuracy: 5,
-                speed: 0,
-                heading: 0,
-            };
-        }
-
         const location = await ExpoLocation.getCurrentPositionAsync({
             accuracy: ExpoLocation.Accuracy.BestForNavigation,
         });
@@ -104,11 +85,6 @@ class LocationService {
         this.subscription?.remove();
         this.lastCoord = null;
 
-        if (IS_EXPO_GO) {
-            await fakeLocationTrackingService.startPreview();
-            return;
-        }
-
         this.subscription = await ExpoLocation.watchPositionAsync(
             {
                 accuracy: GPS_CONFIG.LOCATION_ACCURACY,
@@ -124,13 +100,46 @@ class LocationService {
     async stopPreview(): Promise<void> {
         logger.log("[Location] Stop preview mode");
 
-        if (IS_EXPO_GO) {
-            await fakeLocationTrackingService.stopPreview();
-            return;
-        }
-
         this.subscription?.remove();
         this.subscription = null;
+    }
+
+    // ======================
+    // AppState Listener
+    // ======================
+    private setupAppStateListener(): void {
+        this.teardownAppStateListener();
+
+        this.appStateSubscription = AppState.addEventListener(
+            "change",
+            (state: AppStateStatus) => {
+                if (this.mode !== "recording" || !this.useBackgroundTracking) {
+                    return;
+                }
+
+                if (state === "background" || state === "inactive") {
+                    logger.log(
+                        "[Location] App went background — stopping foreground tracking, background task takes over",
+                    );
+                    this.stopForegroundTracking();
+                } else if (state === "active") {
+                    logger.log(
+                        "[Location] App came foreground — reclaiming high-accuracy foreground tracking",
+                    );
+                    this.startForegroundTracking();
+                }
+            },
+        );
+
+        logger.log("[Location] AppState listener set up");
+    }
+
+    private teardownAppStateListener(): void {
+        if (this.appStateSubscription) {
+            this.appStateSubscription.remove();
+            this.appStateSubscription = null;
+            logger.log("[Location] AppState listener torn down");
+        }
     }
 
     // ======================
@@ -151,20 +160,17 @@ class LocationService {
         this.mode = "recording";
         this.useBackgroundTracking = enableBackground;
         logger.log(
-            `[Location] Start tracking (${IS_EXPO_GO ? "fake" : enableBackground ? "background" : "foreground"})`,
+            `[Location] Start tracking (${enableBackground ? "background" : "foreground"})`,
         );
 
-        if (IS_EXPO_GO) {
-            await fakeLocationTrackingService.start();
-            return;
-        }
+        // Always start foreground tracking first for best accuracy
+        await this.startForegroundTracking();
 
         if (enableBackground) {
-            await this.stopForegroundTracking();
+            // Register background task so it's ready when app goes background
             await this.startBackgroundTracking();
-        } else {
-            await this.stopBackgroundTracking();
-            await this.startForegroundTracking();
+            // Listen for app state changes to hand off between fg/bg
+            this.setupAppStateListener();
         }
 
         if (seedCoord) {
@@ -190,12 +196,12 @@ class LocationService {
     async stop(): Promise<void> {
         logger.log("[Location] Stop tracking");
 
-        if (IS_EXPO_GO) {
-            await fakeLocationTrackingService.stop();
-        } else if (this.useBackgroundTracking) {
+        this.teardownAppStateListener();
+
+        await this.stopForegroundTracking();
+
+        if (this.useBackgroundTracking) {
             await this.stopBackgroundTracking();
-        } else {
-            await this.stopForegroundTracking();
         }
 
         this.subscription?.remove();
@@ -203,6 +209,7 @@ class LocationService {
         this.mode = "preview";
         this.kalman.reset();
         this.lastCoord = null;
+        this.startPreview();
 
         logger.log("[Location] Back to preview mode");
     }
@@ -211,6 +218,14 @@ class LocationService {
     // Foreground Tracking
     // ======================
     private async startForegroundTracking(): Promise<void> {
+        // Avoid duplicate subscription
+        if (this.subscription) {
+            logger.log(
+                "[Location] Foreground subscription already active, skipping",
+            );
+            return;
+        }
+
         logger.log("[Location] Foreground tracking started");
 
         this.subscription = await ExpoLocation.watchPositionAsync(
@@ -226,8 +241,9 @@ class LocationService {
     }
 
     private async stopForegroundTracking(): Promise<void> {
+        if (!this.subscription) return;
         logger.log("[Location] Foreground tracking stopped");
-        this.subscription?.remove();
+        this.subscription.remove();
         this.subscription = null;
     }
 
@@ -269,11 +285,11 @@ class LocationService {
                         GPS_BACKGROUND_TRACKING_CONFIG.DEFERRED_UPDATES_DISTANCE,
                 },
             );
-            const isRegistered = await TaskManager.isTaskRegisteredAsync(
+            const isRegisteredNow = await TaskManager.isTaskRegisteredAsync(
                 ACTIVITY_BACKGROUND_TASK,
             );
 
-            logger.log("[Location] isRegistered:", isRegistered);
+            logger.log("[Location] isRegistered:", isRegisteredNow);
             logger.log("[Location] Background tracking started");
         } catch (error) {
             logger.error("[Location] Failed to start background tracking", {
@@ -332,6 +348,23 @@ class LocationService {
             altitude: location.coords.altitude,
             heading: location.coords.heading ?? null,
         };
+
+        if (this.mode === "preview") {
+            const label = await this.tryReverseGeocodeThrottled(coord);
+
+            logger.log("[Location] Preview emit", {
+                lat: coord.latitude,
+                lng: coord.longitude,
+                accuracy: coord.accuracy,
+            });
+
+            this.lastCoord = coord;
+            this.locationUpdateCallbacks.forEach((cb) =>
+                cb(coord, label, this.mode),
+            );
+            return;
+        }
+
         const processedCoord = preprocessLocation(coord, this.lastCoord);
 
         if (!processedCoord) {
@@ -339,25 +372,7 @@ class LocationService {
                 lat: coord.latitude,
                 lng: coord.longitude,
                 accuracy: coord.accuracy,
-                lastCoord: this.lastCoord,
             });
-            return;
-        }
-
-        if (this.mode === "preview") {
-            const label = await this.tryReverseGeocodeThrottled(processedCoord);
-
-            logger.log("[Location] Preview emit", {
-                lat: processedCoord.latitude,
-                lng: processedCoord.longitude,
-                accuracy: coord.accuracy,
-                label,
-            });
-
-            this.lastCoord = processedCoord;
-            this.locationUpdateCallbacks.forEach((cb) =>
-                cb(coord, label, this.mode),
-            );
             return;
         }
 
@@ -367,14 +382,13 @@ class LocationService {
             lat: processedCoord.latitude,
             lng: processedCoord.longitude,
             accuracy: processedCoord.accuracy,
-            label,
-            totalCallbacks: this.locationUpdateCallbacks.length,
         });
 
         this.locationUpdateCallbacks.forEach((cb) =>
             cb(processedCoord, label, this.mode),
         );
     }
+
     private async tryReverseGeocodeThrottled(
         coord: Coordinate,
     ): Promise<string | null> {
@@ -408,6 +422,15 @@ class LocationService {
     }
 
     emitBackgroundLocation(location: ExpoLocation.LocationObject): void {
+        // Guard: only emit if actively recording
+        if (this.mode !== "recording") {
+            logger.warn(
+                "[Location] emitBackgroundLocation called outside recording mode — ignoring",
+            );
+            return;
+        }
+
+        if (this.appState === "active") return;
         this.emitLocation(location, true);
     }
 
