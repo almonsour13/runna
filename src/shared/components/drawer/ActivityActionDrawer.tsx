@@ -1,4 +1,3 @@
-import { exportActivity } from "@/shared/services/export-activity.service";
 import { activityService } from "@/shared/services/storage/activity.service";
 import { useActivityStore } from "@/shared/stores/use-activity.store";
 import { NavigationProp } from "@/shared/types/type";
@@ -11,7 +10,7 @@ import Drawer, { DrawerHandle } from "../ui/Drawer";
 import Text from "../ui/Text";
 
 export type ActivityActionDrawerHandle = DrawerHandle & {
-    openWithActivityId: (id: string) => void;
+    openWithActivityId: (id: number) => void;
 };
 const ActivityActionDrawer = forwardRef<
     ActivityActionDrawerHandle,
@@ -23,12 +22,12 @@ const ActivityActionDrawer = forwardRef<
     const navigation = useNavigation<NavigationProp>();
     const drawerRef = useRef<ActivityActionDrawerHandle>(null);
     const deleteActivity = useActivityStore((s) => s.deleteActivity);
-    const [activityId, setActivityId] = useState("");
+    const [activityId, setActivityId] = useState(0);
 
     useImperativeHandle(ref, () => ({
         open: () => drawerRef.current?.open(),
         close: () => drawerRef.current?.close(),
-        openWithActivityId: (id: string) => {
+        openWithActivityId: (id: number) => {
             setActivityId(id);
             drawerRef.current?.open();
         },
@@ -53,7 +52,7 @@ const ActivityActionDrawer = forwardRef<
         {
             label: "Export",
             onPress: () => {
-                exportActivity(activityId);
+                // exportActivity(activityId);
                 drawerRef.current?.close();
             },
             visible: false,

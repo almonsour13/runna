@@ -5,7 +5,7 @@ import { Coordinate } from "../types/type";
 
 interface RouteMapProps {
     coordinates: Coordinate[];
-    type: "walk" | "run";
+    type: "walk" | "run" | string;
     size?: number;
     color?: string;
     strokeWidth?: number;

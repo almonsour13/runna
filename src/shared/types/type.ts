@@ -16,7 +16,7 @@ export type RootStackParamList = {
     };
 
     ActivityDetails: {
-        activityId: string;
+        activityId: number;
     };
 
     Profile: {
@@ -57,16 +57,16 @@ export type ActivityTrackingStatus = "idle" | "active" | "paused";
 export type ActivityType = "walk" | "run";
 
 export type Activity = {
-    id: string;
-    type: ActivityType;
+    id: number;
+    type: string;
     status: string;
     duration: number;
     goal: number;
     startTime: string;
     endTime: string;
-    coordinates: Coordinate[];
-    createdAt: string;
-    updatedAt: string;
+    coordinates?: Coordinate[];
+    createdAt: Date;
+    updatedAt: Date;
 };
 
 export type Profile = {

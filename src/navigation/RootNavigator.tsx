@@ -1,5 +1,7 @@
 import ActivityDetailsScreen from "@/features/ActivityDetails/ActivityDetailsScreen";
 import ActivityTrackingScreen from "@/features/ActivityTracking/ActivityTrackingScreen";
+import { db } from "@/shared/db";
+import migrations from "@/shared/db/migrations/migrations";
 import { useAppInit } from "@/shared/hooks/use-app-init";
 import { RootStackParamList } from "@/shared/types/type";
 import {
@@ -11,6 +13,7 @@ import {
 } from "@expo-google-fonts/dm-sans";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import MainNavigator from "./MainNavigator";
 import ProfileNavigator from "./ProfileNavigator";
 import SettingsNavigator from "./SettingsNavigator";
@@ -18,14 +21,16 @@ import SettingsNavigator from "./SettingsNavigator";
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
-    const [loaded] = useFonts({
+    const { success, error: migrationError } = useMigrations(db, migrations);
+    const [loaded, error] = useFonts({
         DMSans_400Regular,
         DMSans_500Medium,
         DMSans_600SemiBold,
         DMSans_700Bold,
     });
-    const { isLoading, error } = useAppInit();
-    if (!loaded) {
+    const { isLoading, error: appInitError } = useAppInit();
+
+    if (!loaded || !success || isLoading) {
         return null;
     }
     return (

@@ -10,7 +10,7 @@ type ActivityStore = {
     setActivities: (activities: Activity[]) => void;
     addActivity: (activity: Activity) => void;
     updateActivity: (activity: Activity) => void;
-    deleteActivity: (id: string) => void;
+    deleteActivity: (id: number) => void;
     clearActivities: () => void;
 };
 

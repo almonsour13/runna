@@ -71,7 +71,7 @@ function WeekActivity() {
 
             const totalDayDistance = dayActivities.reduce(
                 (sum, activity) =>
-                    sum + computeTotalDistance(activity.coordinates),
+                    sum + computeTotalDistance(activity.coordinates || []),
                 0,
             );
 

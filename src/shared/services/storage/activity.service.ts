@@ -1,21 +1,14 @@
-import { STORAGE_KEYS } from "@/shared/constant/constant";
+import { activityRepository } from "@/shared/db/repositories/activity.repository";
 import { Activity } from "@/shared/types/type";
 import { logger } from "@/shared/utils/logger";
-import { StorageService } from "./storage.service";
 
 class ActivityService {
-    private storage = new StorageService(STORAGE_KEYS.activity);
-    private cachedActivities: Activity[] | null = null;
-
     async get(): Promise<Activity[]> {
         try {
-            if (this.cachedActivities) return this.cachedActivities;
-
-            const activities = (await this.storage.get()) ?? [];
+            const activities = await activityRepository.getAll();
             // const activities = generateActivities({
             //     months: 2,
             // });
-            this.cachedActivities = activities;
             logger.log("[ActivityStorage] get → success");
             return activities;
         } catch (error) {
@@ -23,24 +16,20 @@ class ActivityService {
             throw error;
         }
     }
-    async getById(id: string): Promise<Activity | null> {
+    async getById(id: number): Promise<Activity | null> {
         try {
-            const activities = await this.get();
-            const activity = activities.find((a) => a.id === id);
+            const activity = await activityRepository.getById(id);
             logger.log("[ActivityStorage] getById → success");
-            return activity ?? null;
+            return activity;
         } catch (error) {
             logger.error("[ActivityStorage] getById → error:", error);
             throw error;
         }
     }
 
-    async save(activity: Activity): Promise<void> {
+    async create(activity: Activity): Promise<void> {
         try {
-            const activities = await this.get(); // ensures cache is populated
-            const updated = [...activities, activity];
-            this.cachedActivities = updated;
-            await this.storage.set(updated);
+            await activityRepository.create(activity);
             logger.log("[ActivityStorage] save → success");
         } catch (error) {
             logger.error("[ActivityStorage] save → error:", error);
@@ -48,12 +37,9 @@ class ActivityService {
         }
     }
 
-    async delete(id: string): Promise<void> {
+    async delete(id: number): Promise<void> {
         try {
-            const activities = await this.get();
-            const filtered = activities.filter((a) => a.id !== id);
-            this.cachedActivities = filtered;
-            await this.storage.set(filtered);
+            await activityRepository.delete(id);
             logger.log("[ActivityStorage] delete → success");
         } catch (error) {
             logger.error("[ActivityStorage] delete → error:", error);
@@ -62,8 +48,7 @@ class ActivityService {
     }
     async clear(): Promise<void> {
         try {
-            this.cachedActivities = null;
-            await this.storage.remove();
+            await activityRepository.clear();
             logger.log("[ActivityStorage] clear → success");
         } catch (error) {
             logger.error("[ActivityStorage] clear → error:", error);

@@ -52,7 +52,8 @@ export default function TodayActivity() {
         );
 
         const totalDistanceMeters = todayActivities.reduce(
-            (sum, activity) => sum + computeTotalDistance(activity.coordinates),
+            (sum, activity) =>
+                sum + computeTotalDistance(activity.coordinates || []),
             0,
         );
 

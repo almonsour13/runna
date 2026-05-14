@@ -27,7 +27,9 @@ export default function ActivityCard({
 
     const { distanceKm, goalKm, pct, timeRange } = useMemo(() => {
         const distanceKm = convertMtoKm(
-            computeTotalDistance(activity.coordinates),
+            activity.coordinates
+                ? computeTotalDistance(activity.coordinates)
+                : 0,
         );
         const goalKm = convertMtoKm(activity.goal);
         const pct = goalKm > 0 ? (distanceKm / goalKm) * 100 : 0;
@@ -62,12 +64,14 @@ export default function ActivityCard({
                 <Card key={activity.id} className={cn("", className)}>
                     <RowView className="gap-4">
                         <View className="h-12 aspect-square justify-center items-center rounded">
-                            <VectorRouteMap
-                                coordinates={activity.coordinates}
-                                type={activity.type}
-                                strokeWidth={2}
-                                size={120}
-                            />
+                            {activity.coordinates && (
+                                <VectorRouteMap
+                                    coordinates={activity.coordinates}
+                                    type={activity.type}
+                                    strokeWidth={2}
+                                    size={120}
+                                />
+                            )}
                         </View>
                         <ColView className="flex-1 gap-1 justify-between">
                             <RowView className="justify-between items-center">
