@@ -1,19 +1,11 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
-import RingChart from "@/shared/components/ui/RingChart";
 import Text from "@/shared/components/ui/Text";
-import { useProfileStore } from "@/shared/stores/use-profile.store";
+import { Activity } from "@/shared/db/repositories/activity.repository";
 import { cn } from "@/shared/utils/cn";
-import {
-    computeCalories,
-    computePace,
-    computeSpeed,
-    computeTotalDistance,
-} from "@/shared/utils/compute";
 import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
 import {
     formatCalories,
     formatDuration,
-    formatPace,
     formatRelativeDateLabel,
     formatSpeed,
 } from "@/shared/utils/format";
@@ -21,28 +13,34 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { format } from "date-fns";
 import { useMemo } from "react";
 import { View } from "react-native";
-import { useActivityDetails } from "../context/ActivityDetailsContext";
 
-export default function ActivitySummary() {
-    const profile = useProfileStore((s) => s.profile);
-    const { activity } = useActivityDetails();
+export default function ActivitySummary({ activity }: { activity: Activity }) {
+    const { distanceKm, durationSec, calories, goalKm, pace, speed } =
+        useMemo(() => {
+            const distance = activity?.distance ?? 0;
+            const duration = activity?.duration ?? 0;
+            const calories = activity?.calories ?? 0;
+            const goal = activity?.goal ?? 0;
+            const pace = activity?.avgPace ?? 0;
+            const speed = activity?.avgSpeed ?? 0;
 
-    const {
-        dateLabel,
-        timeRangeLabel,
-        totalDistanceM,
-        totalDistanceKm,
+            const distanceKm = convertMtoKm(activity?.distance ?? 0);
+            const goalKm = convertMtoKm(goal);
+            const durationSec = convertMsToS(duration);
 
-        goalDistanceKm,
+            return {
+                distanceKm,
+                durationSec,
+                goalKm,
+                calories,
+                pace,
+                speed,
+            };
+        }, [activity]);
 
-        goalCompletionPct,
-
-        totalDurationSec,
-
-        activityStats,
-    } = useMemo(() => {
-        // ── Labels ──────────────────────────────────────────
-        const dateLabel = [
+    const dateLabel =
+        activity &&
+        [
             formatRelativeDateLabel(new Date(activity.startTime)),
             format(activity.startTime, "EEE"),
             format(activity.startTime, "MMM d, yyy"),
@@ -50,78 +48,39 @@ export default function ActivitySummary() {
             .filter(Boolean)
             .join(" • ");
 
-        const timeRangeLabel = [
+    const timeRangeLabel =
+        activity &&
+        [
             format(activity.startTime, "h:mm a"),
             format(activity.endTime, "h:mm a"),
         ].join(" - ");
 
-        // ── Distance ────────────────────────────────────────
-        const totalDistanceM = computeTotalDistance(activity.coordinates);
-        const totalDistanceKm = Number(convertMtoKm(totalDistanceM));
-        const goalDistanceKm = Number(convertMtoKm(activity.goal));
-
-        // ── Goal ────────────────────────────────────────────
-        const goalCompletionPct =
-            goalDistanceKm > 0 ? (totalDistanceKm / goalDistanceKm) * 100 : 0;
-        const goalReached = totalDistanceKm >= goalDistanceKm;
-        const remainingKm = Math.max(goalDistanceKm - totalDistanceKm, 0);
-        const exceededKm = Math.max(totalDistanceKm - goalDistanceKm, 0);
-
-        // ── Duration ────────────────────────────────────────
-        const totalDurationSec = convertMsToS(activity.duration);
-
-        // ── Stats — use new utils ────────────────────────────
-
-        const pace =
-            totalDistanceKm > 0.01
-                ? formatPace(computePace(totalDistanceM, totalDurationSec))
-                : "--:--";
-
-        const activityStats = [
-            {
-                label: "Duration",
-                value: formatDuration(totalDurationSec),
-                unit: "hh:mm",
-                icon: "time-outline" as const,
-            },
-            {
-                label: "Calories",
-                value: formatCalories(
-                    computeCalories(totalDistanceM, profile?.weight ?? 70),
-                ),
-                unit: "kcal",
-                icon: "flame-outline" as const,
-            },
-            {
-                label: "Pace",
-                value: pace,
-                unit: "min/km",
-                icon: "timer-outline" as const,
-            },
-            {
-                label: "Speed",
-                value: formatSpeed(
-                    computeSpeed(totalDistanceM, totalDurationSec),
-                ),
-                unit: "km/h",
-                icon: "speedometer-outline" as const,
-            },
-        ];
-
-        return {
-            dateLabel,
-            timeRangeLabel,
-            totalDistanceM,
-            totalDistanceKm,
-            goalDistanceKm,
-
-            goalCompletionPct,
-
-            totalDurationSec,
-
-            activityStats,
-        };
-    }, [activity, profile?.weight]);
+    const stats = [
+        {
+            label: "Duration",
+            value: formatDuration(durationSec),
+            unit: "hh:mm",
+            icon: "time-outline" as const,
+        },
+        {
+            label: "Calories",
+            value: formatCalories(calories),
+            unit: "kcal",
+            icon: "flame-outline" as const,
+        },
+        {
+            label: "Pace",
+            value: "5:22",
+            unit: "min/km",
+            icon: "timer-outline" as const,
+        },
+        {
+            label: "Speed",
+            value: formatSpeed(speed),
+            unit: "km/h",
+            icon: "speedometer-outline" as const,
+        },
+    ];
     return (
         <ColView className="px-4 gap-4">
             <RowView className="justify-between items-end">
@@ -145,29 +104,14 @@ export default function ActivitySummary() {
                         </Text>
                     </RowView>
                     <Text className="text-6xl font-bold">
-                        {totalDistanceKm.toFixed(2)}
+                        {distanceKm.toFixed(2)}
                         <Text className="font-medium text-2xl">km</Text>
                     </Text>
                 </ColView>
-                <View className="items-center justify-center">
-                    <RingChart
-                        pct={goalCompletionPct}
-                        radius={28}
-                        strokeWidth={8}
-                        strokeLinecap="round"
-                        trackColor="rgba(128,128,128,0.08)"
-                    />
-                    <Text className="absolute text-[11px] font-medium text-foreground">
-                        {goalCompletionPct.toFixed(0)}
-                        <Text className="text-[9px] text-muted-foreground">
-                            %
-                        </Text>
-                    </Text>
-                </View>
             </RowView>
             <View className="border-b border-border/40" />
             <RowView>
-                {activityStats.map((stat, i) => (
+                {stats.map((stat, i) => (
                     <ColView
                         key={stat.label}
                         className={cn(

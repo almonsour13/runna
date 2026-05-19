@@ -28,7 +28,6 @@ export default function ActivityTrackingSummary() {
     const duration = useActivityTrackingStore((s) => s.duration);
     const coordinates = useActivityTrackingStore((s) => s.coordinates);
     const time = formatDurationHHMMSS(duration);
-    const isMapExpanded = useActivityTrackingStore((s) => s.isMapExpanded);
     const goalDrawerRef = useRef<DrawerHandle>(null);
 
     const { stats } = useMemo(() => {
@@ -42,7 +41,6 @@ export default function ActivityTrackingSummary() {
             distanceKm > 0.01
                 ? formatPace(computePace(distance, convertMsToS(duration)))
                 : "00:00";
-        const pct = Math.min((distanceKm / goal) * 100, 100) || 0;
         const stats = [
             {
                 label: "Distance",
@@ -72,10 +70,7 @@ export default function ActivityTrackingSummary() {
     return (
         <>
             <ColView
-                className={cn(
-                    "flex-1 px-4 gap-4 justify-center items-center",
-                    // !isMapExpanded && "flex-1",
-                )}
+                className={cn("flex-1 px-4 gap-4 justify-center items-center")}
             >
                 <RowView className="gap-4 items-center">
                     <TouchableOpacity

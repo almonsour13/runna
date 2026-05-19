@@ -1,18 +1,19 @@
 import { create } from "zustand";
-import { ActivityTrackingStatus, Coordinate } from "../types/type";
-
+import { Coordinate } from "../db/repositories/coordinate.repository";
+import { ActivityTrackingStatus } from "../types/type";
+type TrackedCoordinate = Omit<Coordinate, "id" | "activityId">;
 type ActivityTrackingStore = {
     status: ActivityTrackingStatus;
     duration: number;
-    previewCoordinate: Coordinate | null;
-    coordinates: Coordinate[];
+    previewCoordinate: TrackedCoordinate | null;
+    coordinates: TrackedCoordinate[];
     label: string | null;
     mode: "preview" | "recording";
 
     setDuration: (duration: number) => void;
     setStatus: (status: ActivityTrackingStatus) => void;
-    setPreviewCoordinate: (coordinate: Coordinate | null) => void;
-    setCoordinates: (coordinates: Coordinate[]) => void;
+    setPreviewCoordinate: (coordinate: TrackedCoordinate | null) => void;
+    setCoordinates: (coordinates: TrackedCoordinate[]) => void;
     addCoordinate: (coordinate: Coordinate) => void;
     setLabel: (label: string | null) => void;
     setMode: (mode: "preview" | "recording") => void;

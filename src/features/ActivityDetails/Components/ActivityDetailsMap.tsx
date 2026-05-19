@@ -1,27 +1,32 @@
 import { RowView } from "@/shared/components/CustomView";
 import Text from "@/shared/components/ui/Text";
+import { Coordinate } from "@/shared/db/repositories/coordinate.repository";
+import { useMapStyle } from "@/shared/hooks/use-map-style";
 import { cn } from "@/shared/utils/cn";
-import { getMapStyle } from "@/shared/utils/map-style";
 import { Ionicons } from "@expo/vector-icons";
 import {
     Camera,
     GeoJSONSource,
     Layer,
     Map,
-    ViewAnnotation,
+    Marker
 } from "@maplibre/maplibre-react-native";
 import { useMemo, useRef, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
-import { useActivityDetails } from "../context/ActivityDetailsContext";
+import { KmSplits } from "../ActivityDetailsScreen";
 
 const MAP_PADDING = 20;
-export default function ActivityDetailsMap() {
-    const { activity, splits } = useActivityDetails();
-    const coordinates = activity.coordinates;
+export default function ActivityDetailsMap({
+    kmSplits,
+    coordinates,
+}: {
+    kmSplits: KmSplits;
+    coordinates: Coordinate[];
+}) {
     const cameraRef = useRef<React.ElementRef<typeof Camera> | null>(null);
-    const mapStyle = getMapStyle();
-    const startPoint = coordinates[0];
-    const endPoint = coordinates[coordinates.length - 1];
+    const [isMapReady, setIsMapReady] = useState(false);
+    const [isKmMarkersVisible, setIsKmMarkersVisible] = useState(true);
+    const mapStyle = useMapStyle();
 
     const geoJson = useMemo(
         (): GeoJSON.Feature<GeoJSON.LineString> => ({
@@ -61,8 +66,15 @@ export default function ActivityDetailsMap() {
         ] as [number, number, number, number];
     }, [coordinates]);
 
-    const [isKmMarkersVisible, setIsKmMarkersVisible] = useState(true);
-    const kmMarkers = splits.map((s) => ({ km: s.km, coord: s.coord }));
+    const kmMarkers = useMemo(
+        () => kmSplits.map((s) => ({ km: s.km, coord: s.coord })),
+        [kmSplits],
+    );
+
+    if (!coordinates.length) return null;
+
+    const startPoint = coordinates[0];
+    const endPoint = coordinates[coordinates.length - 1];
 
     const fitBounds = () => {
         if (!bounds) return;
@@ -81,12 +93,20 @@ export default function ActivityDetailsMap() {
     };
 
     return (
-        <View className="h-68 relative">
+        <View
+            style={{
+                height: coordinates.length ? undefined : 0,
+                overflow: "hidden",
+            }}
+            className="h-68 relative"
+        >
             <Map
                 mapStyle={mapStyle}
                 logo={false}
                 attribution={false}
                 compass={false}
+                onDidFinishLoadingMap={() => setIsMapReady(true)}
+                className="relative"
             >
                 {bounds && (
                     <Camera
@@ -134,25 +154,25 @@ export default function ActivityDetailsMap() {
                 )}
 
                 {startPoint && (
-                    <ViewAnnotation
+                    <Marker
                         id="start-point"
                         lngLat={[startPoint.longitude, startPoint.latitude]}
                     >
                         <View className="h-4 w-4 border-2 border-white rounded-full bg-green-600" />
-                    </ViewAnnotation>
+                    </Marker>
                 )}
                 {endPoint && (
-                    <ViewAnnotation
+                    <Marker
                         id="end-point"
                         lngLat={[endPoint.longitude, endPoint.latitude]}
                     >
                         <View className="h-4 w-4 border-2 border-white rounded-full bg-red-600" />
-                    </ViewAnnotation>
+                    </Marker>
                 )}
 
                 {isKmMarkersVisible &&
                     kmMarkers.map(({ km, coord }) => (
-                        <ViewAnnotation
+                        <Marker
                             key={km}
                             id={`km-${km}`}
                             lngLat={[coord.longitude, coord.latitude]}
@@ -160,7 +180,7 @@ export default function ActivityDetailsMap() {
                             <View className="h-4 w-4 rounded-full bg-card justify-center items-center">
                                 <Text className="text-[8px]">{km}</Text>
                             </View>
-                        </ViewAnnotation>
+                        </Marker>
                     ))}
             </Map>
 

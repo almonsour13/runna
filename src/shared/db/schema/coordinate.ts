@@ -14,4 +14,5 @@ export const coordinate = sqliteTable("coordinate", {
     accuracy: real("accuracy"),
     speed: real("speed"),
     heading: real("heading"),
+    timestamp: integer("timestamp").notNull(),
 });

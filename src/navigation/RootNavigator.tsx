@@ -2,6 +2,7 @@ import ActivityDetailsScreen from "@/features/ActivityDetails/ActivityDetailsScr
 import ActivityTrackingScreen from "@/features/ActivityTracking/ActivityTrackingScreen";
 import { db } from "@/shared/db";
 import migrations from "@/shared/db/migrations/migrations";
+import { seed } from "@/shared/db/seed";
 import { useAppInit } from "@/shared/hooks/use-app-init";
 import { RootStackParamList } from "@/shared/types/type";
 import {
@@ -14,6 +15,7 @@ import {
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
+import { useEffect } from "react";
 import MainNavigator from "./MainNavigator";
 import ProfileNavigator from "./ProfileNavigator";
 import SettingsNavigator from "./SettingsNavigator";
@@ -30,6 +32,16 @@ export default function RootNavigator() {
     });
     const { isLoading, error: appInitError } = useAppInit();
 
+    useEffect(() => {
+        async function init() {
+            await seed({
+                days: 30,
+                sessionMinPerDay: 2,
+                sessionMaxPerDay: 3,
+            });
+        }
+        // init();
+    }, []);
     if (!loaded || !success || isLoading) {
         return null;
     }

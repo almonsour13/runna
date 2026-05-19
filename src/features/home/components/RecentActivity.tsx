@@ -2,35 +2,35 @@ import ActivityCard from "@/shared/components/ActivityCard";
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
-import { useActivityStore } from "@/shared/stores/use-activity.store";
+import { homeService } from "@/shared/services/storage/home.service";
 import { NavigationProp } from "@/shared/types/type";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { TouchableOpacity } from "react-native";
 
 export default function RecentActivities() {
     const navigation = useNavigation<NavigationProp>();
-    const isLoading = useActivityStore((s) => s.isLoading);
-    const activities = useActivityStore((s) => s.activities);
+    const {
+        data: activities = [],
+        isLoading,
+        error,
+    } = useQuery({
+        queryKey: ["home", "recent"],
+        queryFn: async () => {
+            const data = await homeService.getRecentActivity();
+            return data;
+        },
+        staleTime: 0,
+    });
 
-    const recentActivities = useMemo(() => {
-        return [...activities]
-            .sort(
-                (a, b) =>
-                    new Date(b.createdAt).getTime() -
-                    new Date(a.createdAt).getTime(),
-            )
-            .slice(0, 5);
-    }, [activities]);
-
-    const hasActivities = recentActivities.length > 0;
+    const hasActivities = activities.length > 0;
 
     return (
         <ColView>
             <RowView className="px-4 justify-between items-end">
                 <Text className="text-lg font-medium">Recent</Text>
-                {recentActivities.length > 0 && (
+                {activities.length > 0 && (
                     <TouchableOpacity
                         onPress={() =>
                             navigation.navigate("History", {
@@ -47,7 +47,7 @@ export default function RecentActivities() {
             {isLoading ? (
                 <ColView className="px-4 gap-1">
                     {Array.from({ length: 5 }).map((_, i) => (
-                        <Card key={i} className="h-26" />
+                        <Card key={i} className="h-22" />
                     ))}
                 </ColView>
             ) : !hasActivities ? (
@@ -66,7 +66,7 @@ export default function RecentActivities() {
                 </ColView>
             ) : (
                 <ColView className="px-4 gap-1">
-                    {recentActivities.map((activity) => (
+                    {activities.map((activity) => (
                         <ActivityCard key={activity.id} activity={activity} />
                     ))}
                 </ColView>

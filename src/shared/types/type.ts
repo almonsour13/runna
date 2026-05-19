@@ -1,4 +1,5 @@
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { activity, coordinate } from "../db/schema";
 
 export type RootStackParamList = {
     Main: undefined;
@@ -32,42 +33,13 @@ export type UnitMode = "metric" | "imperial";
 
 export type Gender = "male" | "female" | null;
 
-export type Location = {
-    latitude: number;
-    longitude: number;
-    altitude: number | null;
-    accuracy: number;
-    timestamp: number;
-    speed: number | null;
-    heading: number | null;
-};
-
-export type Coordinate = {
-    latitude: number;
-    longitude: number;
-    altitude: number | null;
-    accuracy: number;
-    timestamp: number;
-    speed: number;
-    heading?: number | null;
-};
-
 export type ActivityTrackingStatus = "idle" | "active" | "paused";
 
 export type ActivityType = "walk" | "run";
 
-export type Activity = {
-    id: number;
-    type: string;
-    status: string;
-    duration: number;
-    goal: number;
-    startTime: string;
-    endTime: string;
-    coordinates?: Coordinate[];
-    createdAt: Date;
-    updatedAt: Date;
-};
+export type Activity = typeof activity.$inferSelect;
+export type Coordinate = typeof coordinate.$inferSelect;
+export type RawCoordinate = Omit<Coordinate, "id" | "activityId">;
 
 export type Profile = {
     id?: string;

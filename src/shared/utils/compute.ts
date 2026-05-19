@@ -1,6 +1,7 @@
 import { Coordinate } from "../types/type";
 
-export const computeDistance = (a: Coordinate, b: Coordinate) => {
+type C = Omit<Coordinate, "id" | "activityId">;
+export const computeDistance = (a: C, b: C) => {
     const R = 6_371_000;
     const toRad = (deg: number) => (deg * Math.PI) / 180;
 
@@ -16,7 +17,7 @@ export const computeDistance = (a: Coordinate, b: Coordinate) => {
     return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 };
 
-export const computeTotalDistance = (coordinates: Coordinate[]) => {
+export const computeTotalDistance = (coordinates: C[]) => {
     let total = 0;
 
     for (let i = 1; i < coordinates.length; i++) {

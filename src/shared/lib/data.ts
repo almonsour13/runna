@@ -1,5 +1,4 @@
 import { Activity, Coordinate } from "../types/type";
-import { generateId } from "../utils/utils";
 
 function random(min: number, max: number) {
     return Math.random() * (max - min) + min;
@@ -147,7 +146,7 @@ export const generateActivities = ({
             const end = new Date(lastTs);
 
             activities.push({
-                id: generateId(),
+                id: activities.length + 1,
 
                 startTime: start.toISOString(),
                 endTime: end.toISOString(),
@@ -163,8 +162,8 @@ export const generateActivities = ({
 
                 goal,
 
-                createdAt: start.toISOString(),
-                updatedAt: end.toISOString(),
+                createdAt: start,
+                updatedAt: end,
             });
         }
     }

@@ -1,5 +1,5 @@
+import { useActivityMutations } from "@/shared/hooks/use-activity-mutation";
 import { activityService } from "@/shared/services/storage/activity.service";
-import { useActivityStore } from "@/shared/stores/use-activity.store";
 import { NavigationProp } from "@/shared/types/type";
 import { useNavigation } from "@react-navigation/native";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
@@ -21,8 +21,8 @@ const ActivityActionDrawer = forwardRef<
 >(({ hide_action, onClose }, ref) => {
     const navigation = useNavigation<NavigationProp>();
     const drawerRef = useRef<ActivityActionDrawerHandle>(null);
-    const deleteActivity = useActivityStore((s) => s.deleteActivity);
     const [activityId, setActivityId] = useState(0);
+    const { deleteActivity } = useActivityMutations();
 
     useImperativeHandle(ref, () => ({
         open: () => drawerRef.current?.open(),
@@ -72,7 +72,7 @@ const ActivityActionDrawer = forwardRef<
                             text: "Delete",
                             onPress: async () => {
                                 activityService.delete(activityId).then(() => {
-                                    deleteActivity(activityId);
+                                    deleteActivity.mutate(activityId);
                                     onClose?.();
                                 });
                                 drawerRef.current?.close();

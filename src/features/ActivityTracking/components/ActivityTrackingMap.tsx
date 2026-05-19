@@ -1,8 +1,8 @@
 import { RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
+import { useMapStyle } from "@/shared/hooks/use-map-style";
 import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
-import { getMapStyle } from "@/shared/utils/map-style";
 import { capitalize } from "@/shared/utils/utils";
 import { Camera, Map } from "@maplibre/maplibre-react-native";
 import { useEffect, useMemo, useRef } from "react";
@@ -27,7 +27,7 @@ export default function ActivityTrackingMap() {
     const setIsMapReady = useMapControlStore((s) => s.setIsMapReady);
     const pitch = useMapControlStore((s) => s.pitch);
 
-    const mapStyle = getMapStyle();
+    const mapStyle = useMapStyle();
     const coordinates = useActivityTrackingStore((s) => s.coordinates);
     const previewCoordinate = useActivityTrackingStore(
         (s) => s.previewCoordinate,
@@ -117,7 +117,7 @@ export default function ActivityTrackingMap() {
                 </Map>
                 <MapControls cameraRef={cameraRef} />
 
-                <RowView className="absolute top-4 left-4">
+                <RowView className="hidden absolute top-4 left-4">
                     <Text className="text-sm">{capitalize(mode)}</Text>
                 </RowView>
             </Animated.View>

@@ -6,13 +6,13 @@ import {
     GPS_BACKGROUND_TRACKING_CONFIG,
     GPS_CONFIG,
 } from "../../constant/constant";
-import { Coordinate, Location } from "../../types/type";
+import { RawCoordinate } from "../../types/type";
 import { KalmanFilter } from "../../utils/kalman-filter";
 import { logger } from "../../utils/logger";
 import { preprocessLocation } from "../../utils/preprocess-location";
 
 type LocationCallback = (
-    coord: Coordinate,
+    coord: RawCoordinate,
     label: string | null,
     mode: "preview" | "recording" | null,
 ) => void;
@@ -24,7 +24,7 @@ class LocationService {
     private mode: TrackingMode = "preview";
     private useBackgroundTracking = false;
     private kalman = new KalmanFilter();
-    private lastCoord: Coordinate | null = null;
+    private lastCoord: RawCoordinate | null = null;
     private lastGeocodeTime = 0;
     private appStateSubscription: ReturnType<
         typeof AppState.addEventListener
@@ -58,7 +58,7 @@ class LocationService {
     // ======================
     // One-time location
     // ======================
-    async getCurrentPosition(): Promise<Location | null> {
+    async getCurrentPosition(): Promise<RawCoordinate | null> {
         logger.log("[Location] Getting current position");
 
         const location = await ExpoLocation.getCurrentPositionAsync({
@@ -146,7 +146,6 @@ class LocationService {
     // Start / Stop Tracking
     // ======================
     async start(enableBackground = true): Promise<void> {
-        await this.requestPermissions();
         if (this.mode === "recording") {
             logger.warn("[Location] Already recording, ignoring start()");
             return;
@@ -339,7 +338,7 @@ class LocationService {
                   location.coords.accuracy ?? 10,
               )
             : raw;
-        const coord: Coordinate = {
+        const coord: RawCoordinate = {
             latitude: smoothed.latitude,
             longitude: smoothed.longitude,
             timestamp: location.timestamp,
@@ -390,7 +389,7 @@ class LocationService {
     }
 
     private async tryReverseGeocodeThrottled(
-        coord: Coordinate,
+        coord: RawCoordinate,
     ): Promise<string | null> {
         const now = Date.now();
         if (

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { Coordinate } from "../types/type";
+import { Coordinate } from "../db/repositories/coordinate.repository";
 
 interface RouteMapProps {
     coordinates: Coordinate[];

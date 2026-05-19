@@ -1,11 +1,16 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Text from "@/shared/components/ui/Text";
+import { Activity, Coordinate } from "@/shared/types/type";
 import { capitalize } from "@/shared/utils/utils";
 import { format } from "date-fns";
-import { useActivityDetails } from "../context/ActivityDetailsContext";
 
-export default function ActivityAbout() {
-    const { activity } = useActivityDetails();
+export default function ActivityDetailsAbout({
+    activity,
+    coordinates,
+}: {
+    activity: Activity;
+    coordinates: Coordinate[];
+}) {
     return (
         <ColView className="px-4 gap-2 pb-8">
             <RowView className="items-center">
@@ -24,7 +29,7 @@ export default function ActivityAbout() {
                 },
                 {
                     label: "GPS points",
-                    value: activity.coordinates.length.toLocaleString(),
+                    value: coordinates.length.toLocaleString(),
                 },
                 {
                     label: "Status",

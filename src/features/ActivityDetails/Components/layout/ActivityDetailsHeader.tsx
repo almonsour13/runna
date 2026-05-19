@@ -3,16 +3,19 @@ import ActivityActionDrawer, {
     ActivityActionDrawerHandle,
 } from "@/shared/components/drawer/ActivityActionDrawer";
 import Text from "@/shared/components/ui/Text";
+import { Activity } from "@/shared/db/repositories/activity.repository";
 import { capitalize, timeSession } from "@/shared/utils/utils";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { useRef } from "react";
 import { TouchableOpacity } from "react-native";
-import { useActivityDetails } from "../../context/ActivityDetailsContext";
 
-export default function ActivityDetailsHeader() {
+export default function ActivityDetailsHeader({
+    activity,
+}: {
+    activity: Activity | null;
+}) {
     const navigation = useNavigation();
-    const { activity } = useActivityDetails();
 
     const activityActionDrawerRef = useRef<ActivityActionDrawerHandle>(null);
 
@@ -23,25 +26,33 @@ export default function ActivityDetailsHeader() {
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={24} />
                     </TouchableOpacity>
-                    <ColView className="gap-0">
-                        <Text className="text-lg font-medium">
-                            {capitalize(timeSession(activity.startTime))}{" "}
-                            {capitalize(activity.type)}
-                        </Text>
-                    </ColView>
+                    {activity && (
+                        <ColView className="gap-0">
+                            <Text className="text-lg font-medium">
+                                {capitalize(
+                                    timeSession(
+                                        activity.startTime.toDateString(),
+                                    ),
+                                )}{" "}
+                                {capitalize(activity.type)}
+                            </Text>
+                        </ColView>
+                    )}
                 </RowView>
-                <RowView className="gap-4">
-                    <Ionicons name="share-social" size={24} />
-                    <TouchableOpacity
-                        onPress={() =>
-                            activityActionDrawerRef.current?.openWithActivityId(
-                                activity.id,
-                            )
-                        }
-                    >
-                        <Ionicons name="ellipsis-vertical" size={24} />
-                    </TouchableOpacity>
-                </RowView>
+                {activity && (
+                    <RowView className="gap-4">
+                        <Ionicons name="share-social" size={24} />
+                        <TouchableOpacity
+                            onPress={() =>
+                                activityActionDrawerRef.current?.openWithActivityId(
+                                    activity.id,
+                                )
+                            }
+                        >
+                            <Ionicons name="ellipsis-vertical" size={24} />
+                        </TouchableOpacity>
+                    </RowView>
+                )}
             </RowView>
             <ActivityActionDrawer
                 ref={activityActionDrawerRef}

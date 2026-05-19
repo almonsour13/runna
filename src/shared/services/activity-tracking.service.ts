@@ -1,15 +1,24 @@
 import { STORAGE_KEYS } from "../constant/constant";
-import { Activity, ActivityTrackingStatus, Coordinate } from "../types/type";
+import { Activity, ActivityTrackingStatus, RawCoordinate } from "../types/type";
+import {
+    computeCalories,
+    computePace,
+    computeSpeed,
+    computeTotalDistance,
+} from "../utils/compute";
 import { logger } from "../utils/logger";
 import { generateId } from "../utils/utils";
 import { locationService } from "./location/location.service";
 import { activityService } from "./storage/activity.service";
+import { profileService } from "./storage/profile.service";
 import { StorageService } from "./storage/storage.service";
+
+type DraftActivity = Omit<Activity, "id">;
 
 type Metrics = {
     duration: number;
     status?: ActivityTrackingStatus;
-    coordinates?: Coordinate[] | [];
+    coordinates?: RawCoordinate[] | [];
 };
 
 type ActivityTracking = {
@@ -18,7 +27,7 @@ type ActivityTracking = {
     pausedTime: number;
     lastPauseTime: number | null;
     status: ActivityTrackingStatus;
-    coordinates: Coordinate[] | [];
+    coordinates: RawCoordinate[] | [];
 };
 
 class ActivityTrackingService {
@@ -107,7 +116,7 @@ class ActivityTrackingService {
         this.stopLocationListener();
 
         this.removeLocationListener = locationService.onLocationUpdate(
-            async (coord: Coordinate, _label, mode) => {
+            async (coord: RawCoordinate, _label, mode) => {
                 if (!this.activity || this.activity.status !== "active") return;
                 if (mode !== "recording") return;
                 this.activity = {
@@ -232,7 +241,8 @@ class ActivityTrackingService {
         });
     }
 
-    async stop(): Promise<Activity> {
+    async stop() {
+        const profile = await profileService.get();
         if (!this.activity) {
             logger.warn("[ActivityService] Stop called but no active activity");
             throw new Error("No activity in progress");
@@ -247,34 +257,44 @@ class ActivityTrackingService {
 
             const finalDuration = this.getElapsedMs();
             const finalCoordinates = this.activity.coordinates;
-            const endTime = new Date().toISOString();
-            const formattedNewActivity: Activity = {
-                id: this.activity.id,
-                startTime: new Date(this.activity.startTime).toISOString(),
+            const startTime = new Date(this.activity.startTime);
+            const endTime = new Date();
+
+            const distance = computeTotalDistance(finalCoordinates);
+            const calories = computeCalories(distance, profile?.weight || 75);
+            const avgPace = computePace(distance, finalDuration);
+            const avgSpeed = computeSpeed(distance, finalDuration);
+
+            const newActivity: DraftActivity = {
+                startTime,
                 endTime,
                 duration: finalDuration,
-                coordinates: finalCoordinates,
-                status: "completed",
+                distance: distance,
+                calories: calories,
+                avgPace: avgPace,
+                avgSpeed: avgSpeed,
+                goal: profile?.goal || 5000,
+                status: "Completed",
                 type: "run",
-                goal: 5000,
-                updatedAt: new Date().toISOString(),
-                createdAt: new Date().toISOString(),
+                createdAt: startTime,
+                updatedAt: endTime,
             };
-            logger.log(
-                "[ActivityService] Activity stopped",
-                formattedNewActivity,
-            );
+            logger.log("New Activity: ", newActivity);
 
-            await activityService.save(formattedNewActivity);
+            const savedActivity = await activityService.create(newActivity);
+            await activityService.createCoordinates(
+                finalCoordinates.map((coord) => ({
+                    ...coord,
+                    activityId: savedActivity.id,
+                })),
+            );
 
             this.stopSession();
             this.stopLocationListener();
             await locationService.stop();
             this.activity = null;
-            this.activityStorage.remove();
+            // this.activityStorage.remove();
             logger.log("[ActivityService] Activity stopped");
-
-            return formattedNewActivity;
         } catch (error) {
             logger.error("[ActivityService] Error stopping activity", {
                 error,

@@ -2,50 +2,61 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { useNavigation } from "@react-navigation/native";
+import { useQuery } from "@tanstack/react-query";
 import { format, isToday, isYesterday } from "date-fns";
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import { TouchableOpacity, View } from "react-native";
-import { Activity, NavigationProp } from "../types/type";
+import { activityService } from "../services/storage/activity.service";
+import { Activity, Coordinate, NavigationProp } from "../types/type";
 import { cn } from "../utils/cn";
-import { computeTotalDistance } from "../utils/compute";
 import { convertMtoKm } from "../utils/convert";
+import { simplifyCoordinates } from "../utils/simplify-coordinates";
 import { capitalize } from "../utils/utils";
-import VectorRouteMap from "./VectorRouteMap";
 import ActivityActionDrawer, {
     ActivityActionDrawerHandle,
 } from "./drawer/ActivityActionDrawer";
+import VectorRouteMap from "./VectorRouteMap";
 
 export default function ActivityCard({
     activity,
     className,
 }: {
-    activity: Activity;
+    activity: Activity & {
+        coordinates?: Coordinate[];
+    };
     className?: string;
 }) {
     const navigation = useNavigation<NavigationProp>();
     const activityActionDrawerRef = useRef<ActivityActionDrawerHandle>(null);
 
-    const { distanceKm, goalKm, pct, timeRange } = useMemo(() => {
-        const distanceKm = convertMtoKm(
-            activity.coordinates
-                ? computeTotalDistance(activity.coordinates)
-                : 0,
-        );
-        const goalKm = convertMtoKm(activity.goal);
-        const pct = goalKm > 0 ? (distanceKm / goalKm) * 100 : 0;
-        const date = isToday(activity.startTime)
-            ? "Today"
-            : isYesterday(activity.startTime)
-              ? "Yesterday"
-              : format(activity.startTime, "MMM d");
-        const timeRange = [
-            date,
-            format(activity.startTime, "p"),
-            activity.endTime ? format(activity.endTime, "p") : "Ongoing",
-        ].join(" • ");
+    const date = isToday(activity.startTime)
+        ? "Today"
+        : isYesterday(activity.startTime)
+          ? "Yesterday"
+          : format(activity.startTime, "MMM d");
+    const timeRange = [
+        date,
+        format(activity.startTime, "p"),
+        activity.endTime ? format(activity.endTime, "p") : "Ongoing",
+    ].join(" • ");
 
-        return { distanceKm, goalKm, pct, timeRange };
-    }, [activity]);
+    const distance = activity.distance;
+    const distanceKm = convertMtoKm(distance);
+    const goal = activity.goal;
+    const goalKm = convertMtoKm(goal);
+    const pct = (distance / goal) * 100;
+
+    const { data: coordinates, isLoading: isCoordinatesLoading } = useQuery({
+        queryKey: ["coordinates", activity.id],
+        queryFn: async () => {
+            const data = await activityService.getCoordinatesByActivityId(
+                activity.id,
+            );
+            const s = simplifyCoordinates(data, 0.0001, false);
+            activity.coordinates = s;
+            return s;
+        },
+    });
 
     return (
         <>
@@ -64,9 +75,9 @@ export default function ActivityCard({
                 <Card key={activity.id} className={cn("", className)}>
                     <RowView className="gap-4">
                         <View className="h-12 aspect-square justify-center items-center rounded">
-                            {activity.coordinates && (
+                            {coordinates && (
                                 <VectorRouteMap
-                                    coordinates={activity.coordinates}
+                                    coordinates={coordinates}
                                     type={activity.type}
                                     strokeWidth={2}
                                     size={120}
@@ -76,7 +87,7 @@ export default function ActivityCard({
                         <ColView className="flex-1 gap-1 justify-between">
                             <RowView className="justify-between items-center">
                                 <Text className="text-xs text-muted-foreground">
-                                    {timeRange}
+                                    {timeRange} {coordinates?.length}
                                 </Text>
                                 <Text className="text-xs font-medium text-primary">
                                     {capitalize(activity.type)}

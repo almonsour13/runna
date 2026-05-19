@@ -1,5 +1,6 @@
 import { db } from ".";
 import { Coordinate } from "../types/type";
+import { logger } from "../utils/logger";
 import { activity, coordinate } from "./schema";
 
 function random(min: number, max: number) {
@@ -24,10 +25,11 @@ function generateEarthCoordinates(
     totalDistance: number,
     startTimestamp: number,
     type: "walk" | "run",
-): Coordinate[] {
-    const coordinates: Coordinate[] = [];
+): Omit<Coordinate, "activityId" | "id">[] {
+    // ✅ correct Omit syntax on the element type
+    const coordinates: Omit<Coordinate, "activityId" | "id">[] = [];
 
-    const basePace = type === "run" ? random(2.5, 4.2) : random(1.2, 1.6);
+    const baseSpeed = type === "run" ? random(2.5, 4.2) : random(1.2, 1.6); // ✅ renamed: this is m/s, not pace
     const intervalMs = 5000;
 
     let heading = random(0, 360);
@@ -36,9 +38,10 @@ function generateEarthCoordinates(
     let lat = startLat;
     let lng = startLng;
     let distanceCovered = 0;
+    let stepIndex = 0; // ✅ explicit counter instead of relying on coordinates.length at push time
 
     while (distanceCovered < totalDistance) {
-        const speed = basePace * random(0.92, 1.08);
+        const speed = baseSpeed * random(0.92, 1.08);
         const distanceStep = speed * 5;
 
         stepsUntilTurn--;
@@ -58,7 +61,7 @@ function generateEarthCoordinates(
         coordinates.push({
             latitude: Number(lat.toFixed(6)),
             longitude: Number(lng.toFixed(6)),
-            timestamp: startTimestamp + coordinates.length * intervalMs,
+            timestamp: startTimestamp + stepIndex * intervalMs, // ✅ Date object to match schema mode: "timestamp"
             altitude: 0,
             accuracy: 5,
             speed: 0,
@@ -66,28 +69,34 @@ function generateEarthCoordinates(
         });
 
         distanceCovered += distanceStep;
+        stepIndex++; // ✅ increment after push
     }
 
     return coordinates;
 }
 
 export const seed = async ({
-    months = 2,
+    days = 10,
     goal = 5000,
     sessionMinPerDay = 2,
     sessionMaxPerDay = 3,
 }) => {
     const now = new Date();
+    await db.delete(coordinate);
+    await db.delete(activity);
 
     const startDate = new Date();
-    startDate.setMonth(now.getMonth() - months);
+    startDate.setDate(now.getDate() - days);
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
 
     const baseLat = 6.891719;
     const baseLng = 126.074069;
+    logger.log("[Seed] start seeding");
 
     for (
         let day = new Date(startDate);
-        day <= now;
+        day <= endOfToday;
         day.setDate(day.getDate() + 1)
     ) {
         const sessionCount = randomInt(sessionMinPerDay, sessionMaxPerDay);
@@ -118,22 +127,34 @@ export const seed = async ({
                 type,
             );
 
+            // ✅ .timestamp is now a Date, so .getTime() works correctly
             const firstTs = coords[0].timestamp;
             const lastTs = coords[coords.length - 1].timestamp;
-
             const end = new Date(lastTs);
+
+            const durationMs = lastTs - firstTs;
+            const durationSec = durationMs / 1000;
+            const distanceKm = distance / 1000;
+            const avgSpeed = distanceKm / (durationSec / 3600);
+            const avgPace = durationSec / 60 / distanceKm;
+            const calories =
+                type === "run" ? distance * 0.063 : distance * 0.04;
 
             const [act] = await db
                 .insert(activity)
                 .values({
-                    startTime: start.toISOString(),
-                    endTime: end.toISOString(),
-                    duration: lastTs - firstTs,
+                    startTime: start,
+                    endTime: end,
+                    duration: durationMs,
+                    distance,
+                    calories,
+                    avgPace,
+                    avgSpeed,
                     goal,
                     type,
                     status: "completed",
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
+                    createdAt: start,
+                    updatedAt: start,
                 })
                 .returning();
 
@@ -145,4 +166,5 @@ export const seed = async ({
             );
         }
     }
+    logger.log("[Seed] seeding complete");
 };

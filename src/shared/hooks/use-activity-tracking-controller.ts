@@ -1,14 +1,13 @@
 import { activityTrackingService } from "../services/activity-tracking.service";
 import { useActivityTrackingStore } from "../stores/use-activity-tracking.store";
-import { useActivityStore } from "../stores/use-activity.store";
+import { useActivityMutations } from "./use-activity-mutation";
 
 export const useAcitivityTrackingController = () => {
     const status = useActivityTrackingStore((s) => s.status);
     const setStatus = useActivityTrackingStore((s) => s.setStatus);
     const setMode = useActivityTrackingStore((s) => s.setMode);
-    const addActivity = useActivityStore((s) => s.addActivity);
     const clearActivity = useActivityTrackingStore((s) => s.clearActivity);
-
+    const { invalidate } = useActivityMutations();
     const start = async () => {
         if (status !== "idle") return;
         setStatus("active");
@@ -33,8 +32,9 @@ export const useAcitivityTrackingController = () => {
     const stop = async () => {
         setMode("preview");
         clearActivity();
-        const newActivity = await activityTrackingService.stop();
-        addActivity(newActivity);
+        await activityTrackingService.stop().then(() => {
+            invalidate();
+        });
     };
 
     const reset = async () => {

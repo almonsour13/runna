@@ -1,29 +1,33 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Text from "@/shared/components/ui/Text";
-import { computePace, computeTotalDistance } from "@/shared/utils/compute";
+import { Activity } from "@/shared/db/repositories/activity.repository";
 import { convertMsToS } from "@/shared/utils/convert";
 import { formatDuration } from "@/shared/utils/format";
 import { View } from "react-native";
-import { useActivityDetails } from "../context/ActivityDetailsContext";
+import { KmSplits } from "../ActivityDetailsScreen";
 
 function formatPaceMin(paceMinkm: number): string {
     const min = Math.floor(paceMinkm);
     const sec = Math.round((paceMinkm - min) * 60);
     return `${min}:${String(sec).padStart(2, "0")}`;
 }
-export default function ActivitySplits() {
-    const { activity, splits } = useActivityDetails();
-
-    const fastestSplit = splits.length
-        ? splits.reduce((a, b) => (a.paceMinkm < b.paceMinkm ? a : b))
+export default function ActivityDetailsSplits({
+    activity,
+    kmSplits,
+}: {
+    activity: Activity;
+    kmSplits: KmSplits;
+}) {
+    if (!activity) return null;
+    const fastestSplit = kmSplits.length
+        ? kmSplits.reduce((a, b) => (a.paceMinkm < b.paceMinkm ? a : b))
         : null;
-    const slowestSplit = splits.length
-        ? splits.reduce((a, b) => (a.paceMinkm > b.paceMinkm ? a : b))
+    const slowestSplit = kmSplits.length
+        ? kmSplits.reduce((a, b) => (a.paceMinkm > b.paceMinkm ? a : b))
         : null;
 
-    const distance = computeTotalDistance(activity.coordinates);
+    const distance = activity?.distance ?? 0;
     const durationSec = convertMsToS(activity.duration);
-    const avgPaceVal = computePace(distance, durationSec);
     return (
         <ColView className="px-4 gap-2">
             <RowView className="items-center">
@@ -45,10 +49,9 @@ export default function ActivitySplits() {
 
             <View className="border-b border-border/40" />
 
-            {splits.map((split, i) => {
+            {kmSplits.map((split, i) => {
                 const isFastest = fastestSplit?.km === split.km;
                 const isSlowest = slowestSplit?.km === split.km;
-                const diff = split.paceMinkm - avgPaceVal;
 
                 return (
                     <ColView key={i} className="gap-1">

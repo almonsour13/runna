@@ -2,7 +2,6 @@ import HistoryScreen from "@/features/history/HistoryScreen";
 import HomeScreen from "@/features/home/HomeScreen";
 import MainTabBar from "@/shared/components/layout/MainTabBar";
 import SafeScreen from "@/shared/components/SafeScreen";
-import { useActivity } from "@/shared/hooks/use-activity";
 import { useActivityTracking } from "@/shared/hooks/use-activity-tracking";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React from "react";
@@ -10,7 +9,6 @@ import React from "react";
 const Tab = createBottomTabNavigator();
 
 export default function MainNavigator() {
-    useActivity();
     useActivityTracking();
     return (
         <SafeScreen>

@@ -4,137 +4,104 @@ import ActivityGroupDrawer, {
 } from "@/shared/components/drawer/ActivityGroupDrawer";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
-import { useActivityStore } from "@/shared/stores/use-activity.store";
-import { useProfileStore } from "@/shared/stores/use-profile.store";
-import { NavigationProp } from "@/shared/types/type";
+import { homeService } from "@/shared/services/storage/home.service";
 import { cn } from "@/shared/utils/cn";
-import {
-    computeCalories,
-    computePace,
-    computeSpeed,
-    computeTotalDistance,
-} from "@/shared/utils/compute";
 import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
-import {
-    formatCalories,
-    formatDuration,
-    formatPace,
-} from "@/shared/utils/format";
+import { formatCalories, formatDuration } from "@/shared/utils/format";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useNavigation } from "@react-navigation/native";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useMemo, useRef } from "react";
-import { TouchableOpacity, View } from "react-native";
+import { TouchableOpacity } from "react-native";
 
 export default function TodayActivity() {
-    const navigation = useNavigation<NavigationProp>();
-    const isLoading = useActivityStore((s) => s.isLoading);
-    const activities = useActivityStore((s) => s.activities);
-    const profile = useProfileStore((s) => s.profile);
     const activityGrouperDrawer = useRef<ActivityGroupDrawerHandle>(null);
+    const {
+        data: activities = [],
+        isLoading,
+        error,
+    } = useQuery({
+        queryKey: ["home", "today"],
+        queryFn: async () => {
+            const data = await homeService.getTodayActivity();
+            return data;
+        },
+    });
 
     const date = useMemo(() => new Date(), []);
 
-    const {
-        todayActivities,
-        totalDistanceKm,
-        totalGoalKm,
-        goalCompletionPct,
-        totalDurationSec,
-        averageSpeed,
-        averagePace,
-        totalCalories,
-    } = useMemo(() => {
-        const todayActivities = activities.filter(
-            (activity) =>
-                new Date(activity.createdAt).toDateString() ===
-                date.toDateString(),
-        );
-
-        const totalDistanceMeters = todayActivities.reduce(
-            (sum, activity) =>
-                sum + computeTotalDistance(activity.coordinates || []),
+    const { distanceKm, durationSec, calories } = useMemo(() => {
+        const distance = activities.reduce(
+            (sum, activity) => sum + activity.distance,
             0,
         );
-
-        const totalDistanceKm = convertMtoKm(totalDistanceMeters);
-
-        const totalDurationSec = todayActivities.reduce(
-            (sum, activity) => sum + convertMsToS(activity.duration),
+        const calories = activities.reduce(
+            (sum, activity) => sum + activity.calories,
             0,
         );
-
-        const totalGoalMeters = todayActivities.reduce(
+        const duration = activities.reduce(
+            (sum, activity) => sum + activity.duration,
+            0,
+        );
+        const goal = activities.reduce(
             (sum, activity) => sum + activity.goal,
             0,
         );
+        const pace = activities.reduce(
+            (sum, activity) => sum + activity.avgPace,
+            0,
+        );
+        const speed = activities.reduce(
+            (sum, activity) => sum + activity.avgSpeed,
+            0,
+        );
 
-        const totalGoalKm = convertMtoKm(totalGoalMeters);
-
-        const goalCompletionPct =
-            totalGoalKm > 0
-                ? (Number(totalDistanceKm) / Number(totalGoalKm)) * 100
-                : 0;
+        const distanceKm = convertMtoKm(distance);
+        const goalKm = convertMtoKm(goal);
+        const durationSec = convertMsToS(duration);
 
         return {
-            todayActivities,
-
-            totalDistanceKm,
-            totalGoalKm,
-            goalCompletionPct,
-
-            totalDurationSec,
-
-            averageSpeed: computeSpeed(totalDistanceMeters, totalDurationSec),
-
-            averagePace: computePace(totalDistanceMeters, totalDurationSec),
-
-            totalCalories: computeCalories(
-                totalDistanceMeters,
-                profile?.weight ?? 70,
-            ),
+            distanceKm,
+            durationSec,
+            goalKm,
+            calories,
+            pace,
+            speed,
         };
-    }, [activities, date, profile]);
-
-    const isGoalReached = goalCompletionPct >= 100;
-
-    const remainingDistanceKm = Math.max(
-        Number(totalGoalKm) - Number(totalDistanceKm),
-        0,
-    );
+    }, [activities]);
 
     const stats = [
         {
             label: "Distance",
-            value: totalDistanceKm.toFixed(1),
+            value: distanceKm.toFixed(1),
             unit: "km",
             icon: "navigate-outline",
             visible: true,
         },
         {
             label: "Duration",
-            value: formatDuration(totalDurationSec),
+            value: formatDuration(durationSec),
             unit: "hh:mm",
             icon: "time-outline",
             visible: true,
         },
         {
             label: "Calories",
-            value: formatCalories(totalCalories),
+            value: formatCalories(calories),
             unit: "kcal",
             icon: "flame-outline",
             visible: true,
         },
         {
             label: "Pace",
-            value: formatPace(averagePace),
+            value: "asd",
             unit: "min/km",
             icon: "timer-outline",
             visible: false,
         },
     ];
 
-    const hasActivities = todayActivities.length > 0;
+    const hasActivities = activities.length > 0;
 
     return (
         <>
@@ -150,14 +117,14 @@ export default function TodayActivity() {
                     <TouchableOpacity
                         onPress={() =>
                             activityGrouperDrawer.current?.openWithActivityDate(
-                                date.toDateString(),
+                                date,
                             )
                         }
                     >
                         {hasActivities && (
                             <Text className="text-base text-primary font-medium">
-                                {todayActivities.length}{" "}
-                                {todayActivities.length === 1
+                                {activities.length}{" "}
+                                {activities.length === 1
                                     ? "Activity"
                                     : "Activities"}
                             </Text>
@@ -207,27 +174,6 @@ export default function TodayActivity() {
                                             </Card>
                                         ))}
                                 </RowView>
-                                <ColView className="hidden gap-2">
-                                    <View className="h-1 bg-muted rounded-full overflow-hidden">
-                                        <View
-                                            style={{
-                                                width: `${goalCompletionPct}%`,
-                                            }}
-                                            className="h-1 bg-primary rounded"
-                                        />
-                                    </View>
-                                    <RowView className="justify-between">
-                                        <Text className="text-xs">
-                                            {totalDistanceKm.toFixed(1)}km
-                                        </Text>
-                                        <Text className="text-xs">
-                                            {goalCompletionPct.toFixed(0)}%
-                                        </Text>
-                                        <Text className="text-xs">
-                                            {totalGoalKm}km
-                                        </Text>
-                                    </RowView>
-                                </ColView>
                             </ColView>
                         </Card>
                     )}
