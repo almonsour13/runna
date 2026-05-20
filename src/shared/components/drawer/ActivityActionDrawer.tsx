@@ -1,5 +1,5 @@
 import { useActivityMutations } from "@/shared/hooks/use-activity-mutation";
-import { activityService } from "@/shared/services/storage/activity.service";
+import { activityActionService } from "@/shared/services/activity-action.service";
 import { NavigationProp } from "@/shared/types/type";
 import { useNavigation } from "@react-navigation/native";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
@@ -10,7 +10,7 @@ import Drawer, { DrawerHandle } from "../ui/Drawer";
 import Text from "../ui/Text";
 
 export type ActivityActionDrawerHandle = DrawerHandle & {
-    openWithActivityId: (id: number) => void;
+    openWithActivityId: (id: string) => void;
 };
 const ActivityActionDrawer = forwardRef<
     ActivityActionDrawerHandle,
@@ -21,13 +21,13 @@ const ActivityActionDrawer = forwardRef<
 >(({ hide_action, onClose }, ref) => {
     const navigation = useNavigation<NavigationProp>();
     const drawerRef = useRef<ActivityActionDrawerHandle>(null);
-    const [activityId, setActivityId] = useState(0);
+    const [activityId, setActivityId] = useState("");
     const { deleteActivity } = useActivityMutations();
 
     useImperativeHandle(ref, () => ({
         open: () => drawerRef.current?.open(),
         close: () => drawerRef.current?.close(),
-        openWithActivityId: (id: number) => {
+        openWithActivityId: (id: string) => {
             setActivityId(id);
             drawerRef.current?.open();
         },
@@ -36,6 +36,7 @@ const ActivityActionDrawer = forwardRef<
     const CARD_ACTIONS = [
         {
             label: "View Details",
+            icon: "eye",
             onPress: () => {
                 navigation.navigate("ActivityDetails", {
                     activityId,
@@ -46,19 +47,25 @@ const ActivityActionDrawer = forwardRef<
         },
         {
             label: "Share",
-            onPress: () => {},
-            visible: false,
-        },
-        {
-            label: "Export",
-            onPress: () => {
-                // exportActivity(activityId);
+            icon: "share",
+            onPress: async () => {
+                await activityActionService.share(activityId);
                 drawerRef.current?.close();
             },
-            visible: false,
+            visible: true,
+        },
+        {
+            label: "Download",
+            icon: "download",
+            onPress: async () => {
+                await activityActionService.download(activityId);
+                drawerRef.current?.close();
+            },
+            visible: true,
         },
         {
             label: "Delete",
+            icon: "trash",
             onPress: () => {
                 Alert.alert(
                     "Delete Activity",
@@ -71,9 +78,11 @@ const ActivityActionDrawer = forwardRef<
                         {
                             text: "Delete",
                             onPress: async () => {
-                                activityService.delete(activityId).then(() => {
-                                    deleteActivity.mutate(activityId);
-                                    onClose?.();
+                                deleteActivity.mutate(activityId, {
+                                    onSuccess: () => {
+                                        onClose?.();
+                                        drawerRef.current?.close();
+                                    },
                                 });
                                 drawerRef.current?.close();
                             },
@@ -104,7 +113,7 @@ const ActivityActionDrawer = forwardRef<
                                 onPress={() => {
                                     action.onPress();
                                 }}
-                                className={cn("p-4 px-8 h-16 justify-center")}
+                                className={cn(" px-8 h-14 justify-center")}
                             >
                                 <RowView className="justify-between">
                                     <Text

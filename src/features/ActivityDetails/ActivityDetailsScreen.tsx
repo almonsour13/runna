@@ -28,7 +28,7 @@ export type KmSplits = {
 export default function ActivityDetailsScreen() {
     const route = useRoute();
     const { activityId } = route.params as { activityId: string };
-    const id = Number(activityId);
+    const id = activityId;
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [activityQuery, coordinatesQuery] = useQueries({
         queries: [

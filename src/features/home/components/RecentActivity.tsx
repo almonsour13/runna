@@ -2,7 +2,7 @@ import ActivityCard from "@/shared/components/ActivityCard";
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
-import { homeService } from "@/shared/services/storage/home.service";
+import { activityService } from "@/shared/services/storage/activity.service";
 import { NavigationProp } from "@/shared/types/type";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -18,7 +18,7 @@ export default function RecentActivities() {
     } = useQuery({
         queryKey: ["home", "recent"],
         queryFn: async () => {
-            const data = await homeService.getRecentActivity();
+            const data = await activityService.get({ limit: 5, offset: 0 });
             return data;
         },
         staleTime: 0,
@@ -39,7 +39,7 @@ export default function RecentActivities() {
                         }
                     >
                         <Text className="text-base font-medium text-primary">
-                            See All
+                            View All
                         </Text>
                     </TouchableOpacity>
                 )}

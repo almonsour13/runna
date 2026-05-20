@@ -87,16 +87,23 @@ export default function ActivityCard({
                         <ColView className="flex-1 gap-1 justify-between">
                             <RowView className="justify-between items-center">
                                 <Text className="text-xs text-muted-foreground">
-                                    {timeRange} {coordinates?.length}
+                                    {timeRange}
                                 </Text>
-                                <Text className="text-xs font-medium text-primary">
-                                    {capitalize(activity.type)}
-                                </Text>
+                                <RowView className="items-center gap-2">
+                                    {activity.isImported && (
+                                        <Text className="text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                                            Imported
+                                        </Text>
+                                    )}
+                                    <Text className="text-xs font-medium text-primary">
+                                        {capitalize(activity.type)}
+                                    </Text>
+                                </RowView>
                             </RowView>
                             <RowView className="justify-between items-end">
-                                <Text className="text-2xl font-medium">
+                                <Text className="text-2xl font-bold">
                                     {distanceKm.toFixed(1)}{" "}
-                                    <Text className="text-sm text-muted-foreground">
+                                    <Text className="text-sm font-medium  text-muted-foreground">
                                         / {goalKm.toFixed(1)} km
                                     </Text>
                                 </Text>

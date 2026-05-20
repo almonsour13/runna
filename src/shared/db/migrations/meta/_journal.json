@@ -22,6 +22,27 @@
       "when": 1778833050813,
       "tag": "0002_nasty_namorita",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1779196586068,
+      "tag": "0003_burly_sugar_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1779199216518,
+      "tag": "0004_white_lila_cheney",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1779199438984,
+      "tag": "0005_living_pestilence",
+      "breakpoints": true
     }
   ]
 }

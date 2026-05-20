@@ -1,7 +1,40 @@
 import { isToday, isYesterday } from "date-fns";
+import { convertMsToS, convertMtoKm } from "./convert";
 
 const pad = (n: number) => n.toString().padStart(2, "0");
 
+export const formatStats = ({
+    distance,
+    calories,
+    duration,
+}: {
+    distance: number;
+    duration: number;
+    calories: number;
+}) => {
+    const distanceKm = convertMtoKm(distance);
+    const durationSec = convertMsToS(duration);
+    return [
+        {
+            label: "Distance",
+            value: distanceKm.toFixed(1),
+            unit: "km",
+            icon: "navigate",
+        },
+        {
+            label: "Duration",
+            value: formatDuration(durationSec),
+            unit: null,
+            icon: "time",
+        },
+        {
+            label: "Calories",
+            value: formatCalories(calories),
+            unit: "kcal",
+            icon: "flame",
+        },
+    ];
+};
 export const formatRelativeDateLabel = (date: Date) => {
     if (isToday(date)) return "Today";
     if (isYesterday(date)) return "Yesterday";

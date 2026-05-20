@@ -17,7 +17,7 @@ export type RootStackParamList = {
     };
 
     ActivityDetails: {
-        activityId: number;
+        activityId: string;
     };
 
     Profile: {

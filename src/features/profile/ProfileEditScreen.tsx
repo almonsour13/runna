@@ -107,7 +107,7 @@ export default function ProfileEditScreen() {
                 <ColView className="px-4 gap-4">
                     <ColView>
                         <Text>Name</Text>
-                        <Card className="h-18">
+                        <Card className="h-16 py-2">
                             <TextInput
                                 placeholder="Enter your name"
                                 value={newProfile?.name}
@@ -122,7 +122,7 @@ export default function ProfileEditScreen() {
                             <TouchableOpacity
                                 onPress={() => ageDrawerRef.current?.open()}
                             >
-                                <Card className="h-18 justify-center">
+                                <Card className="h-16 justify-center">
                                     <Text>
                                         {newProfile?.age
                                             ? newProfile.age
@@ -136,7 +136,7 @@ export default function ProfileEditScreen() {
                             <TouchableOpacity
                                 onPress={() => genderDrawerRef.current?.open()}
                             >
-                                <Card className="h-18 justify-center">
+                                <Card className="h-16 justify-center">
                                     <Text>
                                         {newProfile?.gender
                                             ? capitalize(newProfile.gender)
@@ -153,7 +153,7 @@ export default function ProfileEditScreen() {
                             <TouchableOpacity
                                 onPress={() => heightDrawerRef.current?.open()}
                             >
-                                <Card className="h-18 justify-center">
+                                <Card className="h-16 justify-center">
                                     <Text>
                                         {newProfile?.height
                                             ? formatCmToftIn(newProfile.height)
@@ -167,7 +167,7 @@ export default function ProfileEditScreen() {
                             <TouchableOpacity
                                 onPress={() => weightDrawerRef.current?.open()}
                             >
-                                <Card className="h-18 justify-center">
+                                <Card className="h-16 justify-center">
                                     <Text>
                                         {newProfile?.weight
                                             ? `${newProfile.weight} kg`
@@ -183,7 +183,7 @@ export default function ProfileEditScreen() {
                         <TouchableOpacity
                             onPress={() => goalDrawerRef.current?.open()}
                         >
-                            <Card className="h-18 justify-center">
+                            <Card className="h-16 justify-center">
                                 <Text>
                                     {newProfile?.goal
                                         ? `${newProfile.goal / 1000} km`
@@ -197,13 +197,15 @@ export default function ProfileEditScreen() {
                 <ColView className="flex-1 justify-end p-4 pb-8">
                     <TouchableOpacity
                         className={cn(
-                            "h-18 rounded-full bg-primary justify-center items-center",
+                            "h-16 rounded-full bg-primary justify-center items-center",
                             (!canSave || isUpdating) && "opacity-30",
                         )}
                         disabled={!canSave || isUpdating}
                         onPress={() => handleSave()}
                     >
-                        <Text>{isUpdating ? "Updating..." : "Save"}</Text>
+                        <Text className="text-white">
+                            {isUpdating ? "Updating..." : "Save"}
+                        </Text>
                     </TouchableOpacity>
                 </ColView>
             </ColView>

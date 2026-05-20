@@ -83,7 +83,7 @@ export default function MapControls({ cameraRef }: Props) {
         <RowView className="absolute right-4 top-4">
             <TouchableOpacity
                 className={cn(
-                    "h-8 w-8 aspect-square rounded-full bg-card justify-center items-center",
+                    "h-8 w-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40",
                     isFollowingUser && "bg-primary",
                 )}
                 onPress={recenter}
@@ -91,13 +91,16 @@ export default function MapControls({ cameraRef }: Props) {
                 <Ionicons
                     name="locate-outline"
                     size={16}
-                    className="text-foreground"
+                    className={cn(
+                        "text-foreground",
+                        isFollowingUser && "text-white",
+                    )}
                 />
             </TouchableOpacity>
 
             {coordinates.length >= 2 && (
                 <TouchableOpacity
-                    className="h-8 aspect-square rounded-full bg-card justify-center items-center"
+                    className="h-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40"
                     onPress={fitRoute}
                 >
                     <Ionicons
@@ -110,7 +113,7 @@ export default function MapControls({ cameraRef }: Props) {
 
             <TouchableOpacity
                 className={cn(
-                    "hidden h-8 w-8 aspect-square rounded-full bg-card justify-center items-center",
+                    "hidden h-8 w-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40",
                     is3D && "bg-primary",
                 )}
                 onPress={toggle3D}

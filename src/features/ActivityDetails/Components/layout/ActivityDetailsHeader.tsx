@@ -3,7 +3,7 @@ import ActivityActionDrawer, {
     ActivityActionDrawerHandle,
 } from "@/shared/components/drawer/ActivityActionDrawer";
 import Text from "@/shared/components/ui/Text";
-import { Activity } from "@/shared/db/repositories/activity.repository";
+import { Activity } from "@/shared/types/type";
 import { capitalize, timeSession } from "@/shared/utils/utils";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
@@ -41,7 +41,6 @@ export default function ActivityDetailsHeader({
                 </RowView>
                 {activity && (
                     <RowView className="gap-4">
-                        <Ionicons name="share-social" size={24} />
                         <TouchableOpacity
                             onPress={() =>
                                 activityActionDrawerRef.current?.openWithActivityId(
@@ -49,7 +48,7 @@ export default function ActivityDetailsHeader({
                                 )
                             }
                         >
-                            <Ionicons name="ellipsis-vertical" size={24} />
+                            <Ionicons name="ellipsis-vertical" size={20} />
                         </TouchableOpacity>
                     </RowView>
                 )}

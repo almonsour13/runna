@@ -1,6 +1,7 @@
 import { db } from ".";
 import { Coordinate } from "../types/type";
 import { logger } from "../utils/logger";
+import { generateId } from "../utils/utils";
 import { activity, coordinate } from "./schema";
 
 function random(min: number, max: number) {
@@ -82,8 +83,8 @@ export const seed = async ({
     sessionMaxPerDay = 3,
 }) => {
     const now = new Date();
-    await db.delete(coordinate);
-    await db.delete(activity);
+    // await db.delete(coordinate);
+    // await db.delete(activity);
 
     const startDate = new Date();
     startDate.setDate(now.getDate() - days);
@@ -100,6 +101,7 @@ export const seed = async ({
         day.setDate(day.getDate() + 1)
     ) {
         const sessionCount = randomInt(sessionMinPerDay, sessionMaxPerDay);
+        const isImportedBatch = Math.random() > 0.7;
 
         for (let i = 0; i < sessionCount; i++) {
             const type = Math.random() > 0.5 ? "walk" : "run";
@@ -127,7 +129,6 @@ export const seed = async ({
                 type,
             );
 
-            // ✅ .timestamp is now a Date, so .getTime() works correctly
             const firstTs = coords[0].timestamp;
             const lastTs = coords[coords.length - 1].timestamp;
             const end = new Date(lastTs);
@@ -143,6 +144,7 @@ export const seed = async ({
             const [act] = await db
                 .insert(activity)
                 .values({
+                    id: generateId(),
                     startTime: start,
                     endTime: end,
                     duration: durationMs,
@@ -153,6 +155,8 @@ export const seed = async ({
                     goal,
                     type,
                     status: "completed",
+                    isImported: isImportedBatch, // 👈 whole day's batch
+                    importedAt: isImportedBatch ? new Date(start) : null,
                     createdAt: start,
                     updatedAt: start,
                 })
@@ -161,6 +165,7 @@ export const seed = async ({
             await db.insert(coordinate).values(
                 coords.map((c) => ({
                     ...c,
+                    id: generateId(),
                     activityId: act.id,
                 })),
             );

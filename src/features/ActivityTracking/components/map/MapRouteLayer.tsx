@@ -24,10 +24,11 @@ export default function MapRouteLayer() {
             <Layer
                 type="line"
                 style={{
-                    lineColor: "#3b82f6",
+                    lineColor: "#02a963",
                     lineWidth: 4,
                     lineJoin: "round",
                     lineCap: "round",
+                    lineOpacity: 1,
                 }}
             />
         </GeoJSONSource>

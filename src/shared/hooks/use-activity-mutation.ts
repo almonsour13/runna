@@ -14,7 +14,7 @@ export const useActivityMutations = () => {
         ]);
 
     const deleteActivity = useMutation({
-        mutationFn: (id: number) => activityService.delete(id),
+        mutationFn: (id: string) => activityService.delete(id),
         onSuccess: invalidate,
     });
 

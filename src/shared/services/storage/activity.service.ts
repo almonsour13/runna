@@ -2,12 +2,36 @@ import { db } from "@/shared/db";
 import { activity, coordinate } from "@/shared/db/schema";
 import { Activity, Coordinate } from "@/shared/types/type";
 import { logger } from "@/shared/utils/logger";
-import { and, eq, gte, lt } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lt, lte } from "drizzle-orm";
 
 class ActivityService {
-    async get(): Promise<Activity[]> {
+    async get({
+        limit,
+        offset,
+        orderBy = "createdAt",
+        orderDirection = "desc",
+    }: {
+        limit?: number;
+        offset?: number;
+        orderBy?: keyof Activity;
+        orderDirection?: "asc" | "desc";
+    }): Promise<Activity[]> {
         try {
-            const activities = await db.select().from(activity);
+            const query = db
+                .select()
+                .from(activity)
+                .orderBy(
+                    orderDirection === "desc"
+                        ? desc(activity[orderBy])
+                        : asc(activity[orderBy]),
+                );
+            if (limit !== undefined) {
+                query.limit(limit);
+            }
+            if (offset !== undefined) {
+                query.offset(offset);
+            }
+            const activities = await query;
             logger.log("[ActivityStorage] get → success");
             return activities;
         } catch (error) {
@@ -15,7 +39,7 @@ class ActivityService {
             throw error;
         }
     }
-    async getById(id: number): Promise<Activity | null> {
+    async getById(id: string): Promise<Activity | null> {
         try {
             const data = await db
                 .select()
@@ -52,8 +76,36 @@ class ActivityService {
             throw error;
         }
     }
+    async getWeekActivity(): Promise<Activity[]> {
+        try {
+            const today = new Date();
 
-    async getCoordinatesByActivityId(id: number): Promise<Coordinate[]> {
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - 6);
+            startOfWeek.setHours(0, 0, 0, 0);
+
+            const endOfDay = new Date(today);
+            endOfDay.setHours(23, 59, 59, 999);
+
+            const data = await db
+                .select()
+                .from(activity)
+                .where(
+                    and(
+                        gte(activity.createdAt, startOfWeek),
+                        lte(activity.createdAt, endOfDay),
+                    ),
+                );
+
+            logger.log("[HomeService] getWeekActivity → success");
+            return data;
+        } catch (error) {
+            logger.error("[HomeService] getWeekActivity → error:", error);
+            return [];
+        }
+    }
+
+    async getCoordinatesByActivityId(id: string): Promise<Coordinate[]> {
         try {
             const data = await db
                 .select()
@@ -72,7 +124,9 @@ class ActivityService {
         }
     }
 
-    async create(activityInput: Omit<Activity, "id">): Promise<Activity> {
+    async create(
+        activityInput: Omit<Activity, "isImported" | "importedAt">,
+    ): Promise<Activity> {
         try {
             const data = await db
                 .insert(activity)
@@ -85,9 +139,7 @@ class ActivityService {
             throw error;
         }
     }
-    async createCoordinates(
-        coordinates: Omit<Coordinate, "id">[],
-    ): Promise<Coordinate[]> {
+    async createCoordinates(coordinates: Coordinate[]): Promise<Coordinate[]> {
         if (coordinates.length === 0) {
             logger.warn(
                 "[ActivityStorage] createCoordinates → skipping, no coordinates",
@@ -107,7 +159,7 @@ class ActivityService {
         }
     }
 
-    async delete(id: number): Promise<void> {
+    async delete(id: string): Promise<void> {
         try {
             await db.delete(activity).where(eq(activity.id, id));
             logger.log("[ActivityStorage] delete → success");

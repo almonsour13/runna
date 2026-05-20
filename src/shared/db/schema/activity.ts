@@ -1,7 +1,7 @@
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const activity = sqliteTable("activity", {
-    id: integer("id").primaryKey({ autoIncrement: true }),
+    id: text("id").primaryKey(),
     startTime: integer("start_time", { mode: "timestamp" }).notNull(),
     endTime: integer("end_time", { mode: "timestamp" }).notNull(),
 
@@ -14,6 +14,11 @@ export const activity = sqliteTable("activity", {
     goal: integer("goal").notNull(),
     type: text("type").notNull(),
     status: text("status").notNull(),
+
+    isImported: integer("is_imported", { mode: "boolean" })
+        .notNull()
+        .default(false),
+    importedAt: integer("imported_at", { mode: "timestamp" }),
 
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),

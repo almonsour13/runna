@@ -1,12 +1,10 @@
 import ActivityCard from "@/shared/components/ActivityCard";
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Text from "@/shared/components/ui/Text";
-import { db } from "@/shared/db";
-import { activity } from "@/shared/db/schema";
+import { activityService } from "@/shared/services/storage/activity.service";
 import { RootStackParamList } from "@/shared/types/type";
 import { RouteProp } from "@react-navigation/native";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { asc, desc } from "drizzle-orm";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, FlatList } from "react-native";
 import FilterButton from "./components/FilterButton";
@@ -25,16 +23,12 @@ export default function HistoryScreen() {
         useInfiniteQuery({
             queryKey: ["history", "activities", selectedSortOrder],
             queryFn: async ({ pageParam = 0 }) => {
-                return await db
-                    .select()
-                    .from(activity)
-                    .orderBy(
-                        selectedSortOrder === "Newest"
-                            ? desc(activity.createdAt)
-                            : asc(activity.createdAt),
-                    )
-                    .limit(PAGE_LIMIT)
-                    .offset(pageParam * PAGE_LIMIT);
+                return await activityService.get({
+                    limit: PAGE_LIMIT,
+                    offset: pageParam * PAGE_LIMIT,
+                    orderDirection:
+                        selectedSortOrder === "Newest" ? "desc" : "asc",
+                });
             },
             getNextPageParam: (lastPage, allPages) =>
                 lastPage.length === PAGE_LIMIT ? allPages.length : undefined,
@@ -88,7 +82,13 @@ export default function HistoryScreen() {
             ListFooterComponent={
                 isFetchingNextPage ? (
                     <RowView className="justify-center py-4">
-                        <ActivityIndicator size="large" />
+                        <ActivityIndicator size="small" />
+                    </RowView>
+                ) : !hasNextPage && activities.length > 0 ? (
+                    <RowView className="justify-center py-4">
+                        <Text className="text-muted-foreground">
+                            No more activities
+                        </Text>
                     </RowView>
                 ) : null
             }

@@ -1,9 +1,9 @@
-import { integer, real, sqliteTable } from "drizzle-orm/sqlite-core";
+import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { activity } from "./activity";
 
 export const coordinate = sqliteTable("coordinate", {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    activityId: integer("activity_id")
+    id: text("id").primaryKey(),
+    activityId: text("activity_id")
         .notNull()
         .references(() => activity.id, {
             onDelete: "cascade",

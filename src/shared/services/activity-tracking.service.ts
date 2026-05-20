@@ -13,7 +13,7 @@ import { activityService } from "./storage/activity.service";
 import { profileService } from "./storage/profile.service";
 import { StorageService } from "./storage/storage.service";
 
-type DraftActivity = Omit<Activity, "id">;
+type DraftActivity = Omit<Activity, "isImported" | "importedAt">;
 
 type Metrics = {
     duration: number;
@@ -266,6 +266,7 @@ class ActivityTrackingService {
             const avgSpeed = computeSpeed(distance, finalDuration);
 
             const newActivity: DraftActivity = {
+                id: generateId(),
                 startTime,
                 endTime,
                 duration: finalDuration,
@@ -285,6 +286,7 @@ class ActivityTrackingService {
             await activityService.createCoordinates(
                 finalCoordinates.map((coord) => ({
                     ...coord,
+                    id: generateId(),
                     activityId: savedActivity.id,
                 })),
             );

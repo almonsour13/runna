@@ -1,7 +1,7 @@
 import { RowView } from "@/shared/components/CustomView";
 import Text from "@/shared/components/ui/Text";
-import { Coordinate } from "@/shared/db/repositories/coordinate.repository";
 import { useMapStyle } from "@/shared/hooks/use-map-style";
+import { Coordinate } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -9,7 +9,7 @@ import {
     GeoJSONSource,
     Layer,
     Map,
-    Marker
+    Marker,
 } from "@maplibre/maplibre-react-native";
 import { useMemo, useRef, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
@@ -98,7 +98,7 @@ export default function ActivityDetailsMap({
                 height: coordinates.length ? undefined : 0,
                 overflow: "hidden",
             }}
-            className="h-68 relative"
+            className="h-80 relative"
         >
             <Map
                 mapStyle={mapStyle}
@@ -135,19 +135,10 @@ export default function ActivityDetailsMap({
                             type="line"
                             style={{
                                 lineColor: "#02a963",
-                                lineWidth: 8,
-                                lineJoin: "round",
-                                lineCap: "round",
-                                lineOpacity: 0.3,
-                            }}
-                        />
-                        <Layer
-                            type="line"
-                            style={{
-                                lineColor: "#02a963",
                                 lineWidth: 4,
                                 lineJoin: "round",
                                 lineCap: "round",
+                                lineOpacity: 1,
                             }}
                         />
                     </GeoJSONSource>
@@ -158,7 +149,7 @@ export default function ActivityDetailsMap({
                         id="start-point"
                         lngLat={[startPoint.longitude, startPoint.latitude]}
                     >
-                        <View className="h-4 w-4 border-2 border-white rounded-full bg-green-600" />
+                        <View className="h-5 w-5 border-2 border-white rounded-full bg-green-600" />
                     </Marker>
                 )}
                 {endPoint && (
@@ -166,7 +157,7 @@ export default function ActivityDetailsMap({
                         id="end-point"
                         lngLat={[endPoint.longitude, endPoint.latitude]}
                     >
-                        <View className="h-4 w-4 border-2 border-white rounded-full bg-red-600" />
+                        <View className="h-5 w-5 border-2 border-white rounded-full bg-red-600" />
                     </Marker>
                 )}
 
@@ -177,8 +168,10 @@ export default function ActivityDetailsMap({
                             id={`km-${km}`}
                             lngLat={[coord.longitude, coord.latitude]}
                         >
-                            <View className="h-4 w-4 rounded-full bg-card justify-center items-center">
-                                <Text className="text-[8px]">{km}</Text>
+                            <View className="h-5 w-5 rounded-full bg-card justify-center items-center border border-border/40">
+                                <Text className="text-[8px] font-medium">
+                                    {km}
+                                </Text>
                             </View>
                         </Marker>
                     ))}
@@ -186,7 +179,7 @@ export default function ActivityDetailsMap({
 
             <RowView className="absolute right-4 bottom-4 gap-2">
                 <TouchableOpacity
-                    className="h-8 aspect-square rounded-full bg-card justify-center items-center"
+                    className="h-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40"
                     onPress={fitBounds}
                 >
                     <Ionicons
@@ -197,7 +190,7 @@ export default function ActivityDetailsMap({
                 </TouchableOpacity>
                 <TouchableOpacity
                     className={cn(
-                        "h-8 aspect-square rounded-full bg-card justify-center items-center",
+                        "h-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40",
                         isKmMarkersVisible && "bg-primary",
                     )}
                     onPress={() => setIsKmMarkersVisible((prev) => !prev)}
@@ -205,7 +198,7 @@ export default function ActivityDetailsMap({
                     <Ionicons
                         name="flag"
                         size={16}
-                        className={cn("text-foreground")}
+                        className={cn("text-white")}
                     />
                 </TouchableOpacity>
             </RowView>

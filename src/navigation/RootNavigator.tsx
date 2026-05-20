@@ -15,11 +15,13 @@ import {
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
+import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import MainNavigator from "./MainNavigator";
 import ProfileNavigator from "./ProfileNavigator";
 import SettingsNavigator from "./SettingsNavigator";
 
+SplashScreen.preventAutoHideAsync();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
@@ -32,6 +34,14 @@ export default function RootNavigator() {
     });
     const { isLoading, error: appInitError } = useAppInit();
 
+    const isReady = loaded && success && !isLoading;
+
+    useEffect(() => {
+        if (isReady) {
+            SplashScreen.hideAsync();
+        }
+    }, [isReady]);
+
     useEffect(() => {
         async function init() {
             await seed({
@@ -42,9 +52,7 @@ export default function RootNavigator() {
         }
         // init();
     }, []);
-    if (!loaded || !success || isLoading) {
-        return null;
-    }
+
     return (
         <NavigationContainer>
             <Stack.Navigator

@@ -22,14 +22,12 @@ function generateEarthCoordinates(
     totalDistance: number,
     startTimestamp: number,
     type: "walk" | "run",
-): Coordinate[] {
-    const coordinates: Coordinate[] = [];
+): Omit<Coordinate, "activityId" | "id">[] {
+    // ✅ correct Omit syntax on the element type
+    const coordinates: Omit<Coordinate, "activityId" | "id">[] = [];
 
-    const basePace = type === "run" ? random(2.5, 4.2) : random(1.2, 1.6);
-
-    // GPS sample every 5 seconds
-    const intervalSeconds = 5;
-    const intervalMs = intervalSeconds * 1000;
+    const baseSpeed = type === "run" ? random(2.5, 4.2) : random(1.2, 1.6); // ✅ renamed: this is m/s, not pace
+    const intervalMs = 5000;
 
     let heading = random(0, 360);
     let stepsUntilTurn = randomInt(6, 20);
@@ -37,45 +35,38 @@ function generateEarthCoordinates(
     let lat = startLat;
     let lng = startLng;
     let distanceCovered = 0;
+    let stepIndex = 0; // ✅ explicit counter instead of relying on coordinates.length at push time
 
     while (distanceCovered < totalDistance) {
-        const speed = basePace * random(0.92, 1.08);
-        const distanceThisStep = speed * intervalSeconds;
+        const speed = baseSpeed * random(0.92, 1.08);
+        const distanceStep = speed * 5;
 
         stepsUntilTurn--;
+
         if (stepsUntilTurn <= 0) {
-            const turnAngle =
-                Math.random() < 0.25 ? random(-140, 140) : random(-35, 35);
-            heading = (heading + turnAngle + 360) % 360;
+            heading = (heading + random(-120, 120) + 360) % 360;
             stepsUntilTurn = randomInt(6, 20);
         } else {
             heading = (heading + random(-4, 4) + 360) % 360;
         }
 
-        const headingRad = (heading * Math.PI) / 180;
-        const deltaLat = metersToLat(distanceThisStep * Math.cos(headingRad));
-        const deltaLng = metersToLng(
-            distanceThisStep * Math.sin(headingRad),
-            lat,
-        );
+        const rad = (heading * Math.PI) / 180;
 
-        lat += deltaLat;
-        lng += deltaLng;
-
-        const noiseLat = metersToLat(random(-2, 2));
-        const noiseLng = metersToLng(random(-2, 2), lat);
+        lat += metersToLat(distanceStep * Math.cos(rad));
+        lng += metersToLng(distanceStep * Math.sin(rad), lat);
 
         coordinates.push({
-            latitude: Number((lat + noiseLat).toFixed(6)),
-            longitude: Number((lng + noiseLng).toFixed(6)),
-            timestamp: startTimestamp + coordinates.length * intervalMs,
-            accuracy: 0,
+            latitude: Number(lat.toFixed(6)),
+            longitude: Number(lng.toFixed(6)),
+            timestamp: startTimestamp + stepIndex * intervalMs, // ✅ Date object to match schema mode: "timestamp"
             altitude: 0,
-            heading: 0,
+            accuracy: 5,
             speed: 0,
+            heading: 0,
         });
 
-        distanceCovered += distanceThisStep;
+        distanceCovered += distanceStep;
+        stepIndex++; // ✅ increment after push
     }
 
     return coordinates;
@@ -91,8 +82,8 @@ export const generateActivities = ({
     goal?: number;
     sessionMinPerDay?: number;
     sessionMaxPerDay?: number;
-}): Activity[] => {
-    const activities: Activity[] = [];
+}): Activity & { coordinates: Coordinate[] } => {
+    const activities: Activity & { coordinates: Coordinate[] }[] = [];
 
     const now = new Date();
 
@@ -148,8 +139,8 @@ export const generateActivities = ({
             activities.push({
                 id: activities.length + 1,
 
-                startTime: start.toISOString(),
-                endTime: end.toISOString(),
+                startTime: start,
+                endTime: end,
 
                 // ✅ stored as milliseconds
                 duration: durationMs,
@@ -169,7 +160,6 @@ export const generateActivities = ({
     }
 
     return activities.sort(
-        (a, b) =>
-            new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+        (a, b) => b.startTime.getTime() - a.startTime.getTime(),
     );
 };

@@ -1,6 +1,38 @@
-import { Coordinate } from "../types/type";
+import { Activity, Coordinate } from "../types/type";
 
 type C = Omit<Coordinate, "id" | "activityId">;
+export const computeStats = (activities: Activity[]) => {
+    const distance = activities.reduce(
+        (sum, activity) => sum + activity.distance,
+        0,
+    );
+    const calories = activities.reduce(
+        (sum, activity) => sum + activity.calories,
+        0,
+    );
+    const duration = activities.reduce(
+        (sum, activity) => sum + activity.duration,
+        0,
+    );
+    const goal = activities.reduce((sum, activity) => sum + activity.goal, 0);
+    const pace = activities.reduce(
+        (sum, activity) => sum + activity.avgPace,
+        0,
+    );
+    const speed = activities.reduce(
+        (sum, activity) => sum + activity.avgSpeed,
+        0,
+    );
+
+    return {
+        distance,
+        calories,
+        duration,
+        goal,
+        pace,
+        speed,
+    };
+};
 export const computeDistance = (a: C, b: C) => {
     const R = 6_371_000;
     const toRad = (deg: number) => (deg * Math.PI) / 180;

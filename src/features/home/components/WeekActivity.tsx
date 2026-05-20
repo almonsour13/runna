@@ -4,14 +4,12 @@ import ActivityGroupDrawer, {
 } from "@/shared/components/drawer/ActivityGroupDrawer";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
-import { homeService } from "@/shared/services/storage/home.service";
+import { activityService } from "@/shared/services/storage/activity.service";
 import { cn } from "@/shared/utils/cn";
+import { computeStats } from "@/shared/utils/compute";
 import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
-import {
-    formatCalories,
-    formatDuration,
-    formatPace,
-} from "@/shared/utils/format";
+import { formatCalories, formatDuration } from "@/shared/utils/format";
+import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { addDays, format, isToday, startOfWeek } from "date-fns";
 import { memo, useMemo, useRef } from "react";
@@ -27,7 +25,7 @@ function WeekActivity() {
     } = useQuery({
         queryKey: ["home", "week"],
         queryFn: async () => {
-            const data = await homeService.getWeekActivity();
+            const data = await activityService.getWeekActivity();
             return data;
         },
         staleTime: 0,
@@ -50,40 +48,15 @@ function WeekActivity() {
             const dateKey = date.toDateString();
             const dayActivities = activityByWeekDay.get(dateKey) ?? [];
 
-            const totalDayDistance = dayActivities.reduce(
-                (sum, a) => sum + a.distance,
-                0,
-            );
-            const totalDayCalories = dayActivities.reduce(
-                (sum, a) => sum + a.calories,
-                0,
-            );
-            const totalDayDuration = dayActivities.reduce(
-                (sum, a) => sum + a.duration,
-                0,
-            );
-            const totalDayAvgPace = dayActivities.length
-                ? dayActivities.reduce((sum, a) => sum + (a.avgPace ?? 0), 0) /
-                  dayActivities.length
-                : 0;
-            const totalDayAvgSpeed = dayActivities.length
-                ? dayActivities.reduce((sum, a) => sum + (a.avgSpeed ?? 0), 0) /
-                  dayActivities.length
-                : 0;
-            const totalDayGoal = dayActivities.reduce(
-                (sum, a) => sum + a.goal,
-                0,
-            );
+            const { distance, duration, calories } =
+                computeStats(dayActivities);
 
             return {
                 date,
                 dateKey,
-                totalDayDistance,
-                totalDayDuration,
-                totalDayCalories,
-                totalDayAvgPace,
-                totalDayAvgSpeed,
-                totalDayGoal,
+                totalDayDistance: distance,
+                totalDayDuration: duration,
+                totalDayCalories: calories,
                 isFuture: date > today,
                 isToday: isToday(date),
                 count: dayActivities.length,
@@ -106,44 +79,37 @@ function WeekActivity() {
         (sum, day) => sum + day.totalDayCalories,
         0,
     );
-
-    const totalWeekAvgPace = activeDays
-        ? weekDays.reduce((sum, day) => sum + day.totalDayAvgPace, 0) /
-          activeDays
-        : 0;
-    const totalWeekAvgSpeed = activeDays
-        ? weekDays.reduce((sum, day) => sum + day.totalDayAvgSpeed, 0) /
-          activeDays
-        : 0;
-
     const totalWeekDistanceKm = convertMtoKm(totalWeekDistance);
 
     const stats = [
         {
+            label: "Distance",
+            value: totalWeekDistanceKm.toFixed(1),
+            unit: "km",
+            icon: "navigate",
+            color: "text-primary",
+        },
+        {
+            border: true,
+        },
+        {
             label: "Duration",
             value: formatDuration(convertMsToS(totalWeekDuration)),
-            unit: "hh:mm",
-            icon: "time-outline",
+            unit: null,
+            icon: "time",
+            color: "text-blue-500",
+        },
+        {
+            border: true,
         },
         {
             label: "Calories",
             value: formatCalories(totalWeekCalories),
             unit: "kcal",
-            icon: "flame-outline",
-        },
-        {
-            label: "Avg. Pace",
-            value: formatPace(totalWeekAvgPace),
-            unit: "min/km",
-            icon: "timer-outline",
+            icon: "flame",
+            color: "text-red-500",
         },
     ];
-
-    const currentStreak = (() => {
-        let streak = 0;
-
-        return streak;
-    })();
 
     return (
         <>
@@ -155,59 +121,57 @@ function WeekActivity() {
                         <ColView className="gap-4">
                             <ColView className="gap-4">
                                 <RowView className="justify-between">
-                                    <Text className="text-sm">This Week</Text>
-                                    <RowView className="gap-2 items-center">
-                                        {currentStreak > 0 && (
-                                            <View className="hidden px-2 py-0.5 rounded-full bg-muted">
-                                                <Text className="text-xs text-white">
-                                                    🔥 {currentStreak} day
-                                                    streak
-                                                </Text>
-                                            </View>
-                                        )}
-                                        {weekDays.length === 7 && (
-                                            <Text className="text-sm text-muted-foreground">
-                                                {format(
-                                                    weekDays[0].date,
-                                                    "MMM d",
-                                                )}{" "}
-                                                –{" "}
-                                                {format(
-                                                    weekDays[6].date,
-                                                    "MMM d",
-                                                )}
-                                            </Text>
-                                        )}
-                                    </RowView>
-                                </RowView>
-                                <RowView className="gap-4 ">
-                                    <Text className="text-5xl font-semibold text-foreground">
-                                        {totalWeekDistanceKm
-                                            .toFixed(1)
-                                            .toLocaleString()}
-                                        {""}
-                                        <Text className="text-xl">km</Text>
+                                    <Text className="text-base font-medium">
+                                        This Week
                                     </Text>
-                                    <RowView className="flex-1 justify-end gap-4 items-end">
-                                        {stats.map((stat, i) => {
+                                    {weekDays.length === 7 && (
+                                        <Text className="text-sm text-muted-foreground">
+                                            {format(weekDays[0].date, "MMM d")}{" "}
+                                            –{" "}
+                                            {format(weekDays[6].date, "MMM d")}
+                                        </Text>
+                                    )}
+                                </RowView>
+                                <RowView className="flex-1 justify-between items-center">
+                                    {stats.map((stat, i) => {
+                                        if ("border" in stat) {
                                             return (
-                                                <ColView
-                                                    key={stat.label}
-                                                    className="gap-0"
-                                                >
+                                                <View
+                                                    key={i}
+                                                    className="h-full w-px bg-muted"
+                                                />
+                                            );
+                                        }
+                                        return (
+                                            <ColView
+                                                key={stat.label}
+                                                className={cn("gap-1")}
+                                            >
+                                                <RowView className="gap-1">
+                                                    <Ionicons
+                                                        name={stat.icon as any}
+                                                        size={11}
+                                                        className="text-primary"
+                                                    />
                                                     <Text className="text-xs text-muted-foreground">
                                                         {stat.label}
                                                     </Text>
-                                                    <Text className="text-xl font-medium">
-                                                        {stat.value}
-                                                    </Text>
-                                                    {/* <Text className="text-[6px] text-muted-foreground">
-                                                    {stat.unit}
-                                                </Text> */}
-                                                </ColView>
-                                            );
-                                        })}
-                                    </RowView>
+                                                </RowView>
+                                                <Text
+                                                    className={cn(
+                                                        "text-3xl font-bold",
+                                                    )}
+                                                >
+                                                    {stat.value}{" "}
+                                                    {stat.unit && (
+                                                        <Text className="text-xs font-normal text-muted-foreground">
+                                                            {stat.unit}
+                                                        </Text>
+                                                    )}
+                                                </Text>
+                                            </ColView>
+                                        );
+                                    })}
                                 </RowView>
                             </ColView>
                             <RowView className="gap-2">
@@ -235,7 +199,7 @@ function WeekActivity() {
                                                     )
                                                 }
                                             >
-                                                <Card className="h-16 w-full justify-end bg-muted/50 rounded overflow-hidden p-0 border-0">
+                                                <Card className="h-12 w-full justify-end bg-muted/50 rounded overflow-hidden p-0 border-0">
                                                     {!day.isFuture && (
                                                         <View
                                                             style={{

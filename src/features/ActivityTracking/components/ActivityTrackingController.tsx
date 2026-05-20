@@ -81,11 +81,11 @@ export default function ActivityTrackingController() {
                     }}
                 >
                     <TouchableOpacity disabled={isDisable} onPress={reset}>
-                        <Card className="h-16 aspect-square bg-muted items-center justify-center">
+                        <Card className="h-16 aspect-square bg-card items-center justify-center">
                             <Ionicons
                                 name="refresh"
                                 size={24}
-                                className="text-muted-foreground"
+                                className="text-foreground"
                             />
                         </Card>
                     </TouchableOpacity>
@@ -121,11 +121,11 @@ export default function ActivityTrackingController() {
                     }}
                 >
                     <TouchableOpacity disabled={isDisable} onPress={stop}>
-                        <Card className="h-16 aspect-square bg-muted items-center justify-center">
+                        <Card className="h-16 aspect-square bg-card items-center justify-center">
                             <Ionicons
                                 name="checkmark"
                                 size={24}
-                                className="text-white"
+                                className="text-foreground"
                             />
                         </Card>
                     </TouchableOpacity>
