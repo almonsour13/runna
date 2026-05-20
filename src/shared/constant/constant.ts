@@ -51,3 +51,13 @@ export const MAP_STYLES = [
         },
     },
 ];
+
+export const ICON_COLORS: Record<string, string> = {
+    location: "#3b82f6",
+    time: "#10b981",
+    flame: "#f59e0b",
+    "stats-chart": "#8b5cf6",
+    speedometer: "#ef4444",
+    navigation: "#14b8a6",
+    timer: "#f97316",
+};

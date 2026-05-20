@@ -30,7 +30,7 @@ export default function StatisticTabs() {
                         >
                             <Card
                                 className={cn(
-                                    "flex-1 items-center justify-center p-2",
+                                    "items-center justify-center p-2",
                                     activeTab === tab && "bg-primary",
                                 )}
                             >
@@ -48,38 +48,36 @@ export default function StatisticTabs() {
                 })}
             </RowView>
             {activeTab !== "All Time" && (
-                <RowView className="gap-1 justify-between items-end">
+                <RowView className="gap-1 justify-between items-center">
+                    <TouchableOpacity
+                        onPress={() => setOffset((o) => o - 1)}
+                        disabled={isPrevDisabled}
+                    >
+                        <Card
+                            className={cn(
+                                "items-center justify-center p-2",
+                                isPrevDisabled && "opacity-50",
+                            )}
+                        >
+                            <Ionicons name="chevron-back" size={20} />
+                        </Card>
+                    </TouchableOpacity>
                     <Text className="text-lg font-medium text-foreground">
                         {rangeLabel}
                     </Text>
-                    <RowView className="gap-1">
-                        <TouchableOpacity
-                            onPress={() => setOffset((o) => o - 1)}
-                            disabled={isPrevDisabled}
+                    <TouchableOpacity
+                        onPress={() => setOffset((o) => o + 1)}
+                        disabled={isNextDisabled}
+                    >
+                        <Card
+                            className={cn(
+                                "items-center justify-center p-2",
+                                isNextDisabled && "opacity-50",
+                            )}
                         >
-                            <Card
-                                className={cn(
-                                    "flex-1 items-center justify-center p-2",
-                                    isPrevDisabled && "opacity-50",
-                                )}
-                            >
-                                <Ionicons name="chevron-back" size={20} />
-                            </Card>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => setOffset((o) => o + 1)}
-                            disabled={isNextDisabled}
-                        >
-                            <Card
-                                className={cn(
-                                    "flex-1 items-center justify-center p-2",
-                                    isNextDisabled && "opacity-50",
-                                )}
-                            >
-                                <Ionicons name="chevron-forward" size={20} />
-                            </Card>
-                        </TouchableOpacity>
-                    </RowView>
+                            <Ionicons name="chevron-forward" size={20} />
+                        </Card>
+                    </TouchableOpacity>
                 </RowView>
             )}
         </ColView>

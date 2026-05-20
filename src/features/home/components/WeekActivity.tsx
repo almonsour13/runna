@@ -4,6 +4,7 @@ import ActivityGroupDrawer, {
 } from "@/shared/components/drawer/ActivityGroupDrawer";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
+import { ICON_COLORS } from "@/shared/constant/constant";
 import { activityService } from "@/shared/services/storage/activity.service";
 import { cn } from "@/shared/utils/cn";
 import { computeStats } from "@/shared/utils/compute";
@@ -163,7 +164,11 @@ function WeekActivity() {
                                                     <Ionicons
                                                         name={stat.icon as any}
                                                         size={11}
-                                                        className="text-primary"
+                                                        color={
+                                                            ICON_COLORS[
+                                                                stat.icon
+                                                            ]
+                                                        }
                                                     />
                                                     <Text className="text-xs text-muted-foreground">
                                                         {stat.label}

@@ -2,17 +2,18 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { cn } from "@/shared/utils/cn";
-import { convertMtoKm } from "@/shared/utils/convert";
 import { eachDayOfInterval, isToday } from "date-fns";
 import { useMemo } from "react";
 import { View } from "react-native";
 import { useStatisticContext } from "../context/StatisticContext";
 
-const BAR_HEIGHT = 180;
+const BAR_HEIGHT = 156;
 
-export default function StatisticBar() {
+export default function StatisticCaloriesTrend() {
     const { activeTab, activities, dateRange } = useStatisticContext();
+
     if (activeTab === "All Time") return null;
+
     const barData = useMemo(() => {
         if (!dateRange.from || !dateRange.to) return [];
         const days = eachDayOfInterval({
@@ -22,33 +23,47 @@ export default function StatisticBar() {
         const byDay = new Map<string, number>();
         activities.forEach((a) => {
             const key = new Date(a.createdAt).toDateString();
-            byDay.set(key, (byDay.get(key) ?? 0) + (a.distance ?? 0));
+            byDay.set(key, (byDay.get(key) ?? 0) + (a.calories ?? 0));
         });
         return days.map((date) => ({
             date,
-            distance: byDay.get(date.toDateString()) ?? 0,
+            calories: byDay.get(date.toDateString()) ?? 0,
             isToday: isToday(date),
             isFuture: date > new Date(),
         }));
-    }, [activeTab, activities, dateRange]);
+    }, [activities, dateRange]);
 
-    const maxDistance = useMemo(() => {
-        return Math.max(...barData.map((d) => d.distance), 0);
-    }, [barData]);
+    const maxCalories = useMemo(
+        () => Math.max(...barData.map((d) => d.calories), 0),
+        [barData],
+    );
 
     const ruler = useMemo(() => {
         const steps = 4;
-        const stepValue = maxDistance / steps;
+        const stepValue = maxCalories / steps;
         return Array.from(
             { length: steps + 1 },
             (_, i) => (steps - i) * stepValue,
         );
-    }, [maxDistance]);
+    }, [maxCalories]);
+
+    const total = useMemo(
+        () => barData.reduce((s, d) => s + d.calories, 0),
+        [barData],
+    );
 
     return (
         <ColView className="px-4 gap-1">
+            <RowView className="justify-between items-center">
+                <Text className="text-lg font-medium text-foreground">
+                    Calories Burned
+                </Text>
+                <Text className="text-xs text-muted-foreground">
+                    {total.toFixed(0)} kcal total
+                </Text>
+            </RowView>
             <Card>
-                <RowView className="gap-4">
+                <RowView className="gap-2">
                     <View
                         style={{ height: BAR_HEIGHT }}
                         className="justify-between"
@@ -58,24 +73,19 @@ export default function StatisticBar() {
                                 key={i}
                                 className="text-xs text-foreground leading-none"
                             >
-                                {convertMtoKm(r).toFixed(0)}{" "}
-                                <Text className="text-[8px] text-muted-foreground">
-                                    km
-                                </Text>
+                                {r.toFixed(0)}
                             </Text>
                         ))}
                     </View>
-
                     <RowView
                         className="flex-1 gap-1"
                         style={{ height: BAR_HEIGHT }}
                     >
                         {barData.map((d, idx) => {
                             const pct =
-                                maxDistance > 0
-                                    ? (d.distance / maxDistance) * 100
+                                maxCalories > 0
+                                    ? (d.calories / maxCalories) * 100
                                     : 0;
-
                             return (
                                 <View
                                     key={idx}
@@ -88,8 +98,8 @@ export default function StatisticBar() {
                                             className={cn(
                                                 "rounded",
                                                 d.isToday
-                                                    ? "bg-primary"
-                                                    : "bg-primary/20",
+                                                    ? "bg-amber-500"
+                                                    : "bg-amber-500/30",
                                             )}
                                         />
                                     )}

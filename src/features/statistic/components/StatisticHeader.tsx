@@ -8,7 +8,7 @@ export default function StatisticHeader() {
                 Statistic
             </Text>
             <Text className="text-sm text-muted-foreground">
-                Your activity over time
+                Your activity statistics over time
             </Text>
         </ColView>
     );

@@ -1,5 +1,6 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Text from "@/shared/components/ui/Text";
+import { ICON_COLORS } from "@/shared/constant/constant";
 import { Activity } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
 import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
@@ -96,9 +97,9 @@ export default function ActivitySummary({ activity }: { activity: Activity }) {
                 <ColView className="gap-1">
                     <RowView className="gap-1 items-center">
                         <Ionicons
-                            name="location"
+                            name="navigate"
                             size={12}
-                            className="text-primary"
+                            color={ICON_COLORS["navigate"]}
                         />
                         <Text className="text-sm text-muted-foreground">
                             Distance
@@ -129,7 +130,7 @@ export default function ActivitySummary({ activity }: { activity: Activity }) {
                                 <Ionicons
                                     name={stat.icon}
                                     size={11}
-                                    className="text-primary"
+                                    color={ICON_COLORS[stat.icon]}
                                 />
                                 <Text className="text-xs text-muted-foreground">
                                     {stat.label}
