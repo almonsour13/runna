@@ -11,6 +11,10 @@ export const useActivityMutations = () => {
                 queryKey: ["history"],
                 exact: false,
             }),
+            queryClient.invalidateQueries({
+                queryKey: ["statistics"],
+                exact: false,
+            }),
         ]);
 
     const deleteActivity = useMutation({
