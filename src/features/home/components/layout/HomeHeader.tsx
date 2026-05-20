@@ -56,7 +56,7 @@ export default function HomeHeader() {
                 </Text>
             </ColView>
             <TouchableOpacity onPress={() => navigation.navigate("Schedule")}>
-                <Ionicons name="calendar-clear-outline" size={24} />
+                <Ionicons name="calendar-outline" size={24} />
             </TouchableOpacity>
         </RowView>
     );
