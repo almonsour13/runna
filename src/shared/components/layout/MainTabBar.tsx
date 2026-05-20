@@ -15,9 +15,9 @@ function MainTabBar({ state, navigation }: { state: any; navigation: any }) {
             visible: true,
         },
         {
-            label: "Report",
+            label: "Statistic",
             icon: "bar-chart",
-            visible: false,
+            visible: true,
         },
         {
             label: "History",

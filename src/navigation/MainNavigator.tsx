@@ -1,5 +1,6 @@
 import HistoryScreen from "@/features/history/HistoryScreen";
 import HomeScreen from "@/features/home/HomeScreen";
+import StatisticScreen from "@/features/statistic/StatisticScreen";
 import MainTabBar from "@/shared/components/layout/MainTabBar";
 import SafeScreen from "@/shared/components/SafeScreen";
 import { useActivityTracking } from "@/shared/hooks/use-activity-tracking";
@@ -23,6 +24,7 @@ export default function MainNavigator() {
                 tabBar={(props) => <MainTabBar {...props} />}
             >
                 <Tab.Screen name="Home" component={HomeScreen} />
+                <Tab.Screen name="Statistic" component={StatisticScreen} />
                 <Tab.Screen name="History" component={HistoryScreen} />
             </Tab.Navigator>
         </SafeScreen>

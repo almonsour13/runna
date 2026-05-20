@@ -18,6 +18,15 @@ import { TouchableOpacity, View } from "react-native";
 function WeekActivity() {
     const activityGrouperDrawer = useRef<ActivityGroupDrawerHandle>(null);
     const today = useMemo(() => new Date(), []);
+    const weekStartDate = useMemo(
+        () => startOfWeek(today, { weekStartsOn: 0 }),
+        [today],
+    );
+    const weekEndDate = useMemo(
+        () => addDays(weekStartDate, 6),
+        [weekStartDate],
+    );
+
     const {
         data: activities = [],
         isLoading,
@@ -25,7 +34,10 @@ function WeekActivity() {
     } = useQuery({
         queryKey: ["home", "week"],
         queryFn: async () => {
-            const data = await activityService.getWeekActivity();
+            const data = await activityService.getByDateRange(
+                weekStartDate,
+                weekEndDate,
+            );
             return data;
         },
         staleTime: 0,

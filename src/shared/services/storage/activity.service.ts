@@ -76,32 +76,22 @@ class ActivityService {
             throw error;
         }
     }
-    async getWeekActivity(): Promise<Activity[]> {
+    async getByDateRange(from: Date, to: Date): Promise<Activity[]> {
         try {
-            const today = new Date();
-
-            const startOfWeek = new Date(today);
-            startOfWeek.setDate(today.getDate() - 6);
-            startOfWeek.setHours(0, 0, 0, 0);
-
-            const endOfDay = new Date(today);
-            endOfDay.setHours(23, 59, 59, 999);
-
             const data = await db
                 .select()
                 .from(activity)
                 .where(
                     and(
-                        gte(activity.createdAt, startOfWeek),
-                        lte(activity.createdAt, endOfDay),
+                        gte(activity.createdAt, from),
+                        lte(activity.createdAt, to),
                     ),
                 );
-
-            logger.log("[HomeService] getWeekActivity → success");
+            logger.log("[ActivityStorage] getByDateRange → success");
             return data;
         } catch (error) {
-            logger.error("[HomeService] getWeekActivity → error:", error);
-            return [];
+            logger.error("[ActivityStorage] getByDateRange → error:", error);
+            throw error;
         }
     }
 
