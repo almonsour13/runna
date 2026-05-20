@@ -38,8 +38,8 @@ export default function HomeHeader() {
         return pool[Math.floor(Math.random() * pool.length)];
     }, [greeting]);
 
-    const initials =
-        profile?.name.trim().split(" ")[0].split("")[0].toUpperCase() ?? "?";
+    // const initials =
+    //     profile?.name.trim().split(" ")[0].split("")[0].toUpperCase() ?? "?";
     return (
         <RowView className="px-4 pt-8 gap-4 justify-between items-start">
             <ColView className="flex-1 gap-0">

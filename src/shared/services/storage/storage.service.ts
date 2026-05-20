@@ -1,3 +1,4 @@
+import { PREFIX } from "@/shared/constant/constant";
 import { logger } from "@/shared/utils/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -58,7 +59,7 @@ export class StorageService {
     static async resetAll(): Promise<void> {
         try {
             const keys = await AsyncStorage.getAllKeys();
-            const appKeys = keys.filter((k) => k.startsWith("@steps"));
+            const appKeys = keys.filter((k) => k.startsWith(PREFIX));
             if (appKeys.length > 0) {
                 await AsyncStorage.multiRemove(appKeys);
             }

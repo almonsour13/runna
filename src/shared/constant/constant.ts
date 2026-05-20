@@ -23,9 +23,10 @@ export const MIN_DISTANCE_METERS = 5;
 export const MAX_SPEED_MPS = 10;
 export const WARMUP_READINGS = 5;
 
-const PREFIX = "@runna/test";
+export const PREFIX = "@runna/test";
 
 export const STORAGE_KEYS = {
+    onboarding: `${PREFIX}:onboarding`,
     activity: `${PREFIX}:activity`,
     activityTracking: `${PREFIX}:activityTracking`,
     profile: `${PREFIX}:profile`,
