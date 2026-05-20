@@ -1,5 +1,7 @@
 import ActivityDetailsScreen from "@/features/ActivityDetails/ActivityDetailsScreen";
 import ActivityTrackingScreen from "@/features/ActivityTracking/ActivityTrackingScreen";
+import OnboardingScreen from "@/features/onboarding/OnboardingScreen";
+import { useOnboardingContext } from "@/shared/context/OnboardingContext";
 import { db } from "@/shared/db";
 import migrations from "@/shared/db/migrations/migrations";
 import { seed } from "@/shared/db/seed";
@@ -25,14 +27,15 @@ SplashScreen.preventAutoHideAsync();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
-    const { success, error: migrationError } = useMigrations(db, migrations);
-    const [loaded, error] = useFonts({
+    const { isOnboarded } = useOnboardingContext();
+    const { success } = useMigrations(db, migrations);
+    const [loaded] = useFonts({
         DMSans_400Regular,
         DMSans_500Medium,
         DMSans_600SemiBold,
         DMSans_700Bold,
     });
-    const { isLoading, error: appInitError } = useAppInit();
+    const { isLoading } = useAppInit();
 
     const isReady = loaded && success && !isLoading;
 
@@ -53,6 +56,10 @@ export default function RootNavigator() {
         // init();
     }, []);
 
+    if (!isReady) {
+        return null;
+    }
+
     return (
         <NavigationContainer>
             <Stack.Navigator
@@ -63,35 +70,47 @@ export default function RootNavigator() {
                     },
                 }}
             >
-                <Stack.Screen name="Main" component={MainNavigator} />
-                <Stack.Screen
-                    name="ActivityTracking"
-                    component={ActivityTrackingScreen}
-                    options={{
-                        animation: "fade",
-                    }}
-                />
-                <Stack.Screen
-                    name="ActivityDetails"
-                    component={ActivityDetailsScreen}
-                    options={{
-                        animation: "slide_from_right",
-                    }}
-                />
-                <Stack.Screen
-                    name="Settings"
-                    component={SettingsNavigator}
-                    options={{
-                        animation: "slide_from_right",
-                    }}
-                />
-                <Stack.Screen
-                    name="Profile"
-                    component={ProfileNavigator}
-                    options={{
-                        animation: "slide_from_right",
-                    }}
-                />
+                {!isOnboarded ? (
+                    <Stack.Screen
+                        name="Onboarding"
+                        component={OnboardingScreen}
+                        options={{
+                            animation: "fade",
+                        }}
+                    />
+                ) : (
+                    <>
+                        <Stack.Screen name="Main" component={MainNavigator} />
+                        <Stack.Screen
+                            name="ActivityTracking"
+                            component={ActivityTrackingScreen}
+                            options={{
+                                animation: "fade",
+                            }}
+                        />
+                        <Stack.Screen
+                            name="ActivityDetails"
+                            component={ActivityDetailsScreen}
+                            options={{
+                                animation: "slide_from_right",
+                            }}
+                        />
+                        <Stack.Screen
+                            name="Settings"
+                            component={SettingsNavigator}
+                            options={{
+                                animation: "slide_from_right",
+                            }}
+                        />
+                        <Stack.Screen
+                            name="Profile"
+                            component={ProfileNavigator}
+                            options={{
+                                animation: "slide_from_right",
+                            }}
+                        />
+                    </>
+                )}
             </Stack.Navigator>
         </NavigationContainer>
     );
