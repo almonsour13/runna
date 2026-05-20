@@ -5,25 +5,25 @@ import { useMemo } from "react";
 
 const PHRASES = {
     morning: [
-        "Time to lace up! 👟",
+        "Time to lace up!",
         "A great run starts now.",
         "Make today's miles count.",
         "Your best run is ahead of you.",
-        "Rise and run! 🌅",
+        "Rise and run!",
     ],
     noon: [
         "Still time for a great run!",
-        "Afternoon miles hit different. 🔥",
+        "Afternoon miles hit different.",
         "Push through — you've got this.",
         "Mid-day energy? Use it.",
         "Your legs are ready. Are you?",
     ],
     evening: [
-        "End the day strong. 💪",
+        "End the day strong.",
         "One more run before you rest.",
         "Evening miles are earned miles.",
         "Finish the day on your feet.",
-        "The night run is calling. 🌙",
+        "The night run is calling.",
     ],
 };
 

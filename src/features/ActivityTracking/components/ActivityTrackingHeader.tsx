@@ -61,13 +61,13 @@ export default function ActivityTrackingHeader() {
     }, [currentLocation]);
 
     return (
-        <RowView className="p-4  gap-4 items-center">
+        <RowView className="p-4 justify-between  gap-4 items-center">
             <RowView className="gap-4 items-center">
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={24} />
                 </TouchableOpacity>
             </RowView>
-            <RowView className="flex-1 justify-start items-center">
+            <RowView className="hidden flex-1 justify-start items-center">
                 <ColView className="gap-0 justify-center items-center">
                     <Text className="text-xl">Morning Walk</Text>
                     <Text className="hidden text-xs font-medium text-muted-foreground">

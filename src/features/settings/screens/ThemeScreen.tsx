@@ -79,7 +79,7 @@ export default function ThemeScreen() {
                                             <Ionicons
                                                 name={item.icon as any}
                                                 size={20}
-                                                className="text-foreground"
+                                                className="text-primary"
                                             />
                                         </View>
                                         <Text className="text-base">

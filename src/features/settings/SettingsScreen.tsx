@@ -84,7 +84,7 @@ export default function SettingsScreen() {
                     onPress: () => console.log("export data"),
                     type: "action",
                     danger: false,
-                    visible: true,
+                    visible: false,
                 },
                 {
                     label: "Import Data",
@@ -94,7 +94,7 @@ export default function SettingsScreen() {
                     onPress: () => console.log("import data"),
                     type: "action",
                     danger: false,
-                    visible: true,
+                    visible: false,
                 },
                 {
                     label: "Clear Activity Data",
@@ -124,7 +124,9 @@ export default function SettingsScreen() {
                                         await StorageService.resetAll();
                                         setIsOnboarded(false);
                                         setTimeout(() => {
-                                            navigation.navigate("Onboarding");
+                                            navigation.navigate("Onboarding", {
+                                                screen: "Intro",
+                                            });
                                         }, 1000);
                                     },
                                 },
@@ -193,7 +195,7 @@ export default function SettingsScreen() {
                                                                                 20
                                                                             }
                                                                             className={cn(
-                                                                                "text-foreground",
+                                                                                "text-primary",
                                                                                 isDanger &&
                                                                                     "text-destructive",
                                                                             )}

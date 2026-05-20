@@ -2,6 +2,7 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import ActivityActionDrawer, {
     ActivityActionDrawerHandle,
 } from "@/shared/components/drawer/ActivityActionDrawer";
+import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { Activity } from "@/shared/types/type";
 import { capitalize, timeSession } from "@/shared/utils/utils";
@@ -21,13 +22,15 @@ export default function ActivityDetailsHeader({
 
     return (
         <>
-            <RowView className="bg-background sticky top-0 p-4 border-b border-border gap-2 items-center">
+            <RowView className="absolute z-10 top-0 left-0 right-0 p-4  gap-2 items-center">
                 <RowView className="flex-1 gap-4 items-center">
                     <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={24} />
+                        <Card className="p-2 rounded-full aspect-square">
+                            <Ionicons name="arrow-back" size={20} />
+                        </Card>
                     </TouchableOpacity>
                     {activity && (
-                        <ColView className="gap-0">
+                        <ColView className="hidden gap-0">
                             <Text className="text-lg font-medium">
                                 {capitalize(
                                     timeSession(
@@ -48,7 +51,9 @@ export default function ActivityDetailsHeader({
                                 )
                             }
                         >
-                            <Ionicons name="ellipsis-vertical" size={20} />
+                            <Card className="p-2 rounded-full aspect-square">
+                                <Ionicons name="ellipsis-vertical" size={20} />
+                            </Card>
                         </TouchableOpacity>
                     </RowView>
                 )}

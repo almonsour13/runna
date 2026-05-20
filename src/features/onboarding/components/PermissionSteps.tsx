@@ -9,7 +9,7 @@ import * as Notifications from "expo-notifications";
 import { Accelerometer } from "expo-sensors";
 import { useEffect } from "react";
 import { Dimensions, TouchableOpacity, View } from "react-native";
-import { Permissions } from "../OnboardingScreen";
+import { Permissions } from "../OnboardingStepsScreen";
 
 const { width } = Dimensions.get("window");
 
@@ -21,7 +21,7 @@ function StatusIcon({ status }: { status: PermissionStatus }) {
             <Ionicons
                 name="checkmark-circle"
                 size={20}
-                className="text-green-500"
+                className="text-primary"
             />
         );
     }
@@ -30,7 +30,6 @@ function StatusIcon({ status }: { status: PermissionStatus }) {
             <Ionicons name="close-circle" size={20} className="text-red-500" />
         );
     }
-    // idle — not yet asked
     return (
         <Ionicons
             name="ellipse-outline"

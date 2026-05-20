@@ -14,7 +14,6 @@ import {
 } from "react-native";
 import ActivityDetailsEmptyState from "./Components/ActivityDetailsEmptyState";
 import ActivityDetailsMap from "./Components/ActivityDetailsMap";
-import ActivityDetailsSplits from "./Components/ActivityDetailsSplits";
 import ActivitySummary from "./Components/ActivityDetailsSummary";
 import ActivityDetailsHeader from "./Components/layout/ActivityDetailsHeader";
 
@@ -68,7 +67,7 @@ export default function ActivityDetailsScreen() {
         <SafeScreen>
             <ScrollView
                 contentContainerStyle={{ flexGrow: 1 }}
-                stickyHeaderIndices={[0]}
+                // stickyHeaderIndices={[0]}
                 refreshControl={
                     <RefreshControl
                         refreshing={isRefreshing}
@@ -76,22 +75,22 @@ export default function ActivityDetailsScreen() {
                     />
                 }
             >
-                <ActivityDetailsHeader activity={activity} />
                 {isLoading ? (
                     <View className="flex-1 items-center justify-center py-20">
                         <ActivityIndicator size="large" />
                     </View>
                 ) : activity && coordinates.length > 0 ? (
-                    <ColView className="relative flex-1 gap-4 pt-4">
-                        <ActivitySummary activity={activity} />
+                    <ColView className="relative flex-1 gap-0">
+                        <ActivityDetailsHeader activity={activity} />
                         <ActivityDetailsMap
                             kmSplits={kmSplits}
                             coordinates={coordinates}
                         />
-                        <ActivityDetailsSplits
+                        <ActivitySummary activity={activity} />
+                        {/* <ActivityDetailsSplits
                             activity={activity}
                             kmSplits={kmSplits}
-                        />
+                        /> */}
                     </ColView>
                 ) : (
                     <ActivityDetailsEmptyState />

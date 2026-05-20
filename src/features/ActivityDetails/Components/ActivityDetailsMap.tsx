@@ -1,4 +1,5 @@
 import { RowView } from "@/shared/components/CustomView";
+import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { useMapStyle } from "@/shared/hooks/use-map-style";
 import { Coordinate } from "@/shared/types/type";
@@ -15,7 +16,7 @@ import { useMemo, useRef, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { KmSplits } from "../ActivityDetailsScreen";
 
-const MAP_PADDING = 20;
+const MAP_PADDING = 40;
 export default function ActivityDetailsMap({
     kmSplits,
     coordinates,
@@ -25,7 +26,7 @@ export default function ActivityDetailsMap({
 }) {
     const cameraRef = useRef<React.ElementRef<typeof Camera> | null>(null);
     const [isMapReady, setIsMapReady] = useState(false);
-    const [isKmMarkersVisible, setIsKmMarkersVisible] = useState(true);
+    const [isKmMarkersVisible, setIsKmMarkersVisible] = useState(false);
     const mapStyle = useMapStyle();
 
     const geoJson = useMemo(
@@ -98,13 +99,19 @@ export default function ActivityDetailsMap({
                 height: coordinates.length ? undefined : 0,
                 overflow: "hidden",
             }}
-            className="h-80 relative"
+            className="flex-1 relative"
         >
             <Map
                 mapStyle={mapStyle}
                 logo={false}
                 attribution={false}
                 compass={false}
+                touchZoom={false}
+                touchRotate={false}
+                touchPitch={false}
+                doubleTapZoom={false}
+                dragPan={false}
+                doubleTapHoldZoom={false}
                 onDidFinishLoadingMap={() => setIsMapReady(true)}
                 className="relative"
             >
@@ -177,7 +184,7 @@ export default function ActivityDetailsMap({
                     ))}
             </Map>
 
-            <RowView className="absolute right-4 bottom-4 gap-2">
+            <RowView className="hidden absolute right-4 bottom-4 gap-2">
                 <TouchableOpacity
                     className="h-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40"
                     onPress={fitBounds}
@@ -189,17 +196,20 @@ export default function ActivityDetailsMap({
                     />
                 </TouchableOpacity>
                 <TouchableOpacity
-                    className={cn(
-                        "h-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40",
-                        isKmMarkersVisible && "bg-primary",
-                    )}
                     onPress={() => setIsKmMarkersVisible((prev) => !prev)}
                 >
-                    <Ionicons
-                        name="flag"
-                        size={16}
-                        className={cn("text-white")}
-                    />
+                    <Card
+                        className={cn(
+                            "p-2 rounded-full aspect-square border border-border/40",
+                            isKmMarkersVisible && "bg-primary",
+                        )}
+                    >
+                        <Ionicons
+                            name="flag"
+                            size={20}
+                            className={cn("text-white")}
+                        />
+                    </Card>
                 </TouchableOpacity>
             </RowView>
         </View>

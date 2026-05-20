@@ -1,6 +1,6 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import RingChart from "@/shared/components/ui/RingChart";
 import Text from "@/shared/components/ui/Text";
-import { ICON_COLORS } from "@/shared/constant/constant";
 import { Activity } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
 import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
@@ -39,6 +39,7 @@ export default function ActivitySummary({ activity }: { activity: Activity }) {
                 speed,
             };
         }, [activity]);
+    const pct = (distanceKm / goalKm) * 100 || 0;
 
     const dateLabel =
         activity &&
@@ -84,53 +85,62 @@ export default function ActivitySummary({ activity }: { activity: Activity }) {
         },
     ];
     return (
-        <ColView className="px-4 gap-4">
-            <RowView className="justify-between items-end">
-                <RowView className="gap-0">
+        <ColView className="p-4 pb-8 gap-4">
+            <RowView className="justify-between items-start">
+                <ColView className="gap-1">
                     <Text className="text-base font-medium">{dateLabel}</Text>
-                </RowView>
-                <Text className="text-sm text-muted-foreground font-medium">
-                    {timeRangeLabel}
-                </Text>
+                    <Text className="text-xs text-muted-foreground">
+                        {timeRangeLabel}
+                    </Text>
+                </ColView>
+                <Text className="text-base">Run</Text>
             </RowView>
+            <View className="border-b border-border/40" />
             <RowView className="justify-between">
                 <ColView className="gap-1">
                     <RowView className="gap-1 items-center">
                         <Ionicons
                             name="navigate"
-                            size={12}
-                            color={ICON_COLORS["navigate"]}
+                            size={11}
+                            className="text-primary"
                         />
                         <Text className="text-sm text-muted-foreground">
                             Distance
                         </Text>
                     </RowView>
-                    <Text className="text-6xl font-bold">
+                    <Text className="text-6xl font-medium">
                         {distanceKm.toFixed(2)}
-                        <Text className="font-medium text-2xl"> km</Text>
+                        <Text className="text-muted-foreground font-medium text-2xl">
+                            {" "}
+                            / {goalKm.toFixed(0)} km
+                        </Text>
                     </Text>
                 </ColView>
+                <ColView className="relative gap-1">
+                    <RingChart
+                        pct={pct}
+                        radius={28}
+                        trackColor="transparent"
+                        startDeg={180}
+                    />
+                    <View className="absolute inset-0 justify-center items-center">
+                        <Text className="text-base font-semibold">
+                            {pct.toFixed(0)}
+                            <Text className="text-xs">%</Text>
+                        </Text>
+                    </View>
+                </ColView>
             </RowView>
-            <RowView className="justify-between items-center">
+            <View className="border-b border-border/40" />
+            <RowView className="justify-between flex-wrap items-center gap-4">
                 {stats.map((stat, i) => {
-                    if ("border" in stat) {
-                        return (
-                            <View key={i} className="h-full w-px bg-muted" />
-                        );
-                    }
                     return (
-                        <ColView
-                            key={stat.label}
-                            className={cn(
-                                "gap-1",
-                                // " pl-4 border-l border-border",
-                            )}
-                        >
+                        <ColView key={stat.label} className={cn("gap-1")}>
                             <RowView className="gap-1 items-center">
                                 <Ionicons
                                     name={stat.icon}
                                     size={11}
-                                    color={ICON_COLORS[stat.icon]}
+                                    className="text-primary"
                                 />
                                 <Text className="text-xs text-muted-foreground">
                                     {stat.label}
@@ -139,9 +149,7 @@ export default function ActivitySummary({ activity }: { activity: Activity }) {
                             <Text className="text-2xl font-medium text-foreground leading-none">
                                 {stat.value}{" "}
                                 {stat.unit && (
-                                    <Text className="text-[9px] text-muted-foreground">
-                                        {stat.unit}
-                                    </Text>
+                                    <Text className="text-xs">{stat.unit}</Text>
                                 )}
                             </Text>
                         </ColView>

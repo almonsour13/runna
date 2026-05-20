@@ -1,7 +1,6 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
-import { ICON_COLORS } from "@/shared/constant/constant";
 import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
 import { formatCalories, formatDuration } from "@/shared/utils/format";
 import { Ionicons } from "@expo/vector-icons";
@@ -71,10 +70,7 @@ export default function StatisticSummary() {
                                         <Ionicons
                                             name={stat.icon as any}
                                             size={11}
-                                            color={
-                                                ICON_COLORS[stat.icon] ??
-                                                "#94a3b8"
-                                            }
+                                            className="text-primary"
                                         />
                                         <Text className="text-xs text-muted-foreground">
                                             {stat.label}
