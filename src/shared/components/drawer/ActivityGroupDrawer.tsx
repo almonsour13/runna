@@ -127,7 +127,7 @@ const ActivityGroupDrawer = forwardRef<
                                             </Text>
                                         </RowView>
                                         <Text
-                                            className={cn("text-3xl font-bold")}
+                                            className={cn("text-2xl font-bold")}
                                         >
                                             {stat.value}{" "}
                                             {stat.unit && (

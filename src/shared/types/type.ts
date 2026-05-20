@@ -6,7 +6,9 @@ export type RootStackParamList = {
     Home: undefined;
     ActivityTracking: undefined;
     Settings: undefined;
-    Onboarding: undefined;
+    Onboarding: {
+        screen?: "Intro" | "OnboardingSteps";
+    };
 
     History: {
         initialFilter?:

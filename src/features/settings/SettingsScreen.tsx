@@ -1,6 +1,8 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
+import { useOnboardingContext } from "@/shared/context/OnboardingContext";
+import { StorageService } from "@/shared/services/storage/storage.service";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
 import { useSettingsStore } from "@/shared/stores/use-settings-store";
 import { NavigationProp } from "@/shared/types/type";
@@ -10,14 +12,14 @@ import { capitalize } from "@/shared/utils/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import Constants from "expo-constants";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
 
 const version = Constants.expoConfig?.version;
 export default function SettingsScreen() {
     const navigation = useNavigation<NavigationProp>();
     const profile = useProfileStore((s) => s.profile);
     const preferences = useSettingsStore((s) => s.settings?.preferences);
-
+    const { setIsOnboarded } = useOnboardingContext();
     const sections = [
         {
             title: "Profile",
@@ -109,7 +111,26 @@ export default function SettingsScreen() {
                     description: "Wipe profile, settings, and activity history",
                     icon: "nuclear-outline" as const,
                     value: undefined,
-                    onPress: () => console.log("reset all"),
+                    onPress: async () => {
+                        Alert.alert(
+                            "Reset All Data",
+                            "This will delete your profile, settings, and all activity history. You'll be taken back to onboarding. This cannot be undone.",
+                            [
+                                { text: "Cancel", style: "cancel" },
+                                {
+                                    text: "Reset",
+                                    style: "destructive",
+                                    onPress: async () => {
+                                        await StorageService.resetAll();
+                                        setIsOnboarded(false);
+                                        setTimeout(() => {
+                                            navigation.navigate("Onboarding");
+                                        }, 1000);
+                                    },
+                                },
+                            ],
+                        );
+                    },
                     type: "action",
                     danger: true,
                     visible: true,

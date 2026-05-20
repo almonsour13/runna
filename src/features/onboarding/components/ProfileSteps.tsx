@@ -70,7 +70,7 @@ export default function ProfileSteps({
                             >
                                 <Card className="h-16 justify-center">
                                     <Text>
-                                        {profile?.age
+                                        {profile.age
                                             ? profile.age
                                             : "Select Age"}
                                     </Text>

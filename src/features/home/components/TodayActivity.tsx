@@ -97,7 +97,7 @@ export default function TodayActivity() {
                                                 </RowView>
                                                 <Text
                                                     className={cn(
-                                                        "text-3xl font-bold",
+                                                        "text-2xl font-bold",
                                                     )}
                                                 >
                                                     {stat.value}{" "}

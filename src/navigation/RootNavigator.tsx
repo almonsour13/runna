@@ -1,6 +1,5 @@
 import ActivityDetailsScreen from "@/features/ActivityDetails/ActivityDetailsScreen";
 import ActivityTrackingScreen from "@/features/ActivityTracking/ActivityTrackingScreen";
-import OnboardingScreen from "@/features/onboarding/OnboardingScreen";
 import { useOnboardingContext } from "@/shared/context/OnboardingContext";
 import { db } from "@/shared/db";
 import migrations from "@/shared/db/migrations/migrations";
@@ -20,6 +19,7 @@ import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import MainNavigator from "./MainNavigator";
+import OnboardingNavigator from "./OnboardingNavigator";
 import ProfileNavigator from "./ProfileNavigator";
 import SettingsNavigator from "./SettingsNavigator";
 
@@ -73,7 +73,7 @@ export default function RootNavigator() {
                 {!isOnboarded ? (
                     <Stack.Screen
                         name="Onboarding"
-                        component={OnboardingScreen}
+                        component={OnboardingNavigator}
                         options={{
                             animation: "fade",
                         }}
