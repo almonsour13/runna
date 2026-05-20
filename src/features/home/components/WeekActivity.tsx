@@ -13,10 +13,10 @@ import { formatCalories, formatDuration } from "@/shared/utils/format";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { addDays, format, isToday, startOfWeek } from "date-fns";
-import { memo, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { TouchableOpacity, View } from "react-native";
 
-function WeekActivity() {
+export default function WeekActivity() {
     const activityGrouperDrawer = useRef<ActivityGroupDrawerHandle>(null);
     const today = useMemo(() => new Date(), []);
     const weekStartDate = useMemo(
@@ -145,7 +145,7 @@ function WeekActivity() {
                                         </Text>
                                     )}
                                 </RowView>
-                                <RowView className="flex-1 justify-between items-center">
+                                <RowView className="justify-between items-center">
                                     {stats.map((stat, i) => {
                                         if ("border" in stat) {
                                             return (
@@ -254,5 +254,3 @@ function WeekActivity() {
         </>
     );
 }
-
-export default memo(WeekActivity);
