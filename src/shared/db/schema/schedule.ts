@@ -4,11 +4,11 @@ export const schedule = sqliteTable("schedule", {
     id: text("id").primaryKey(),
     name: text("name").notNull(),
     time: text("time").notNull(),
-    distance: real("distance").notNull(),
+    goal: real("goal").notNull(),
     type: text("type").notNull(),
 
     repeatType: text("repeat_type").notNull(),
-    repeatDays: text("repeat_days"),
+    repeatDays: text("repeat_days").default("[]"),
 
     status: text("status").default("active").notNull(),
 
