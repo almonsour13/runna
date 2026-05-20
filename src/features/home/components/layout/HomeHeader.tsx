@@ -1,7 +1,11 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Text from "@/shared/components/ui/Text";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
+import { NavigationProp } from "@/shared/types/type";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { useMemo } from "react";
+import { TouchableOpacity } from "react-native";
 
 const PHRASES = {
     morning: [
@@ -28,6 +32,7 @@ const PHRASES = {
 };
 
 export default function HomeHeader() {
+    const navigation = useNavigation<NavigationProp>();
     const profile = useProfileStore((s) => s.profile);
 
     const hour = new Date().getHours();
@@ -50,6 +55,9 @@ export default function HomeHeader() {
                     {randomPhrase}
                 </Text>
             </ColView>
+            <TouchableOpacity onPress={() => navigation.navigate("Schedule")}>
+                <Ionicons name="calendar-clear-outline" size={24} />
+            </TouchableOpacity>
         </RowView>
     );
 }
