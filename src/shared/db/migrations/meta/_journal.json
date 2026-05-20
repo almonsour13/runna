@@ -43,6 +43,13 @@
       "when": 1779199438984,
       "tag": "0005_living_pestilence",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1779295661821,
+      "tag": "0006_sudden_ghost_rider",
+      "breakpoints": true
     }
   ]
 }

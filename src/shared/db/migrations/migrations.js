@@ -7,6 +7,7 @@ import m0002 from './0002_nasty_namorita.sql';
 import m0003 from './0003_burly_sugar_man.sql';
 import m0004 from './0004_white_lila_cheney.sql';
 import m0005 from './0005_living_pestilence.sql';
+import m0006 from './0006_sudden_ghost_rider.sql';
 
   export default {
     journal,
@@ -16,7 +17,8 @@ m0001,
 m0002,
 m0003,
 m0004,
-m0005
+m0005,
+m0006
     }
   }
   
