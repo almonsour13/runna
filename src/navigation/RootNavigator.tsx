@@ -4,7 +4,6 @@ import ScheduleScreen from "@/features/schedule/ScheduleScreen";
 import { useOnboardingContext } from "@/shared/context/OnboardingContext";
 import { db } from "@/shared/db";
 import migrations from "@/shared/db/migrations/migrations";
-import { seed } from "@/shared/db/seed";
 import { useAppInit } from "@/shared/hooks/use-app-init";
 import { RootStackParamList } from "@/shared/types/type";
 import {
@@ -48,13 +47,16 @@ export default function RootNavigator() {
 
     useEffect(() => {
         async function init() {
-            await seed({
-                days: 30,
-                sessionMinPerDay: 2,
-                sessionMaxPerDay: 3,
-            });
+            // await seed({
+            //     days: 30,
+            //     sessionMinPerDay: 2,
+            //     sessionMaxPerDay: 3,
+            // });
+            // await seedSchedule({
+            //     count: 7,
+            // });
         }
-        // init();
+        init();
     }, []);
 
     if (!isReady) {

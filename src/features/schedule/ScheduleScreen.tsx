@@ -1,16 +1,15 @@
 import { ColView } from "@/shared/components/CustomView";
 import SafeScreen from "@/shared/components/SafeScreen";
-import Card from "@/shared/components/ui/Card";
-import { cn } from "@/shared/utils/cn";
-import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { RefreshControl, ScrollView, TouchableOpacity } from "react-native";
+import { RefreshControl, ScrollView } from "react-native";
+import AddScheduleButton from "./components/AddScheduleButton";
 import ScheduleHeader from "./components/ScheduleHeader";
+import ScheduleList from "./components/ScheduleList";
+
 export default function ScheduleScreen() {
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     const refresh = async () => {};
-
     return (
         <SafeScreen>
             <ScrollView
@@ -25,21 +24,10 @@ export default function ScheduleScreen() {
                     flexGrow: 1,
                 }}
             >
-                <ColView className="relative flex-1 gap-4 pb-28 bg-amber-50">
+                <ColView className="relative flex-1 gap-4 pb-28">
                     <ScheduleHeader />
-                    <TouchableOpacity className="absolute bottom-4 right-4">
-                        <Card
-                            className={cn(
-                                "relative bg-primary h-16 aspect-square justify-center items-center ",
-                            )}
-                        >
-                            <Ionicons
-                                name="add"
-                                size={24}
-                                className="text-white"
-                            />
-                        </Card>
-                    </TouchableOpacity>
+                    <ScheduleList />
+                    <AddScheduleButton />
                 </ColView>
             </ScrollView>
         </SafeScreen>
