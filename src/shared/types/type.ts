@@ -1,5 +1,6 @@
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { activity, coordinate } from "../db/schema";
+import { schedule } from "../db/schema/schedule";
 
 export type RootStackParamList = {
     Main: undefined;
@@ -9,7 +10,6 @@ export type RootStackParamList = {
     Onboarding: {
         screen?: "Intro" | "OnboardingSteps";
     };
-
     History: {
         initialFilter?:
             | "All"
@@ -18,14 +18,13 @@ export type RootStackParamList = {
             | "This Month"
             | "All Time";
     };
-
     ActivityDetails: {
         activityId: string;
     };
-
     Profile: {
         screen?: "ProfileScreen" | "ProfileEdit";
     };
+    Schedule: undefined;
 };
 
 export type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -43,6 +42,7 @@ export type ActivityType = "walk" | "run";
 export type Activity = typeof activity.$inferSelect;
 export type Coordinate = typeof coordinate.$inferSelect;
 export type RawCoordinate = Omit<Coordinate, "id" | "activityId">;
+export type Schedule = typeof schedule.$inferSelect;
 
 export type Profile = {
     id?: string;
