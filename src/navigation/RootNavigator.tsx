@@ -1,5 +1,6 @@
 import ActivityDetailsScreen from "@/features/ActivityDetails/ActivityDetailsScreen";
 import ActivityTrackingScreen from "@/features/ActivityTracking/ActivityTrackingScreen";
+import ScheduleScreen from "@/features/schedule/ScheduleScreen";
 import { useOnboardingContext } from "@/shared/context/OnboardingContext";
 import { db } from "@/shared/db";
 import migrations from "@/shared/db/migrations/migrations";
@@ -105,6 +106,14 @@ export default function RootNavigator() {
                         <Stack.Screen
                             name="Profile"
                             component={ProfileNavigator}
+                            options={{
+                                animation: "slide_from_right",
+                            }}
+                        />
+
+                        <Stack.Screen
+                            name="Schedule"
+                            component={ScheduleScreen}
                             options={{
                                 animation: "slide_from_right",
                             }}
