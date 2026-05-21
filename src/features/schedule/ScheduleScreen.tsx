@@ -12,24 +12,26 @@ export default function ScheduleScreen() {
     const refresh = async () => {};
     return (
         <SafeScreen>
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={isRefreshing}
-                        onRefresh={refresh}
-                    />
-                }
-                contentContainerStyle={{
-                    flexGrow: 1,
-                }}
-            >
-                <ColView className="relative flex-1 gap-4 pb-28">
-                    <ScheduleHeader />
-                    <ScheduleList />
-                    <AddScheduleButton />
-                </ColView>
-            </ScrollView>
+            <ColView className="flex-1 relative">
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={isRefreshing}
+                            onRefresh={refresh}
+                        />
+                    }
+                    contentContainerStyle={{
+                        flexGrow: 1,
+                    }}
+                >
+                    <ColView className=" flex-1 pb-28">
+                        <ScheduleHeader />
+                        <ScheduleList />
+                    </ColView>
+                </ScrollView>
+                <AddScheduleButton />
+            </ColView>
         </SafeScreen>
     );
 }
