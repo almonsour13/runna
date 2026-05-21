@@ -23,7 +23,7 @@ interface Props {
 
 const ITEM_HEIGHT = 56;
 const VISIBLE_ITEMS = 5;
-const RECOMMENDED_KM = 10;
+const RECOMMENDED_KM = 5;
 
 const GoalDrawer = forwardRef<DrawerHandle, Props>(
     ({ value, onChange }, ref) => {
@@ -42,7 +42,6 @@ const GoalDrawer = forwardRef<DrawerHandle, Props>(
             (_, i) => minGoal + i * interval,
         );
 
-        // value is in meters, convert to km for display
         const toKm = (meters: number) => Math.round(meters / 1000);
         const defaultKm = value != null ? toKm(value) : RECOMMENDED_KM;
 
@@ -65,14 +64,14 @@ const GoalDrawer = forwardRef<DrawerHandle, Props>(
             const selectedKm =
                 goals[Math.max(0, Math.min(index, goals.length - 1))];
             setSelectedGoal(selectedKm);
-            onChange(selectedKm * 1000); // emit back as meters
+            onChange(selectedKm * 1000);
         };
 
         return (
             <Drawer ref={drawerRef} disableScrollView={true}>
                 <ColView className="relative gap-4 p-4">
                     <RowView className="px-4 justify-center">
-                        <Text className="text-base font-medium text-foreground">
+                        <Text className="text-lg font-medium text-foreground">
                             Select Your Goal
                         </Text>
                     </RowView>

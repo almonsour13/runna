@@ -63,3 +63,5 @@ export const ICON_COLORS: Record<string, string> = {
     speedometer: "#475569",
     speed: "#475569",
 };
+
+export const ACTIVITY_TYPE = ["walk", "run"];

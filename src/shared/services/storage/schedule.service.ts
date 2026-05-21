@@ -28,6 +28,31 @@ class ScheduleService {
             throw error;
         }
     }
+    async getByDay(date: Date): Promise<Schedule[]> {
+        try {
+            const day = date.getDay();
+            const data = await db.select().from(schedule);
+
+            const filtered = data.filter((item) => {
+                try {
+                    const days = JSON.parse(item.repeatDays || "[]");
+
+                    return days.includes(day);
+                } catch {
+                    return false;
+                }
+            });
+
+            logger.log("[ScheduleStorage] getByRepeatDay → success");
+
+            return filtered;
+        } catch (error) {
+            logger.error("[ScheduleStorage] getByRepeatDay → error:", error);
+
+            throw error;
+        }
+    }
+
     async create(scheduleInput: Omit<Schedule, "status">) {
         try {
             const data = await db

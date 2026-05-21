@@ -50,6 +50,20 @@
       "when": 1779295661821,
       "tag": "0006_sudden_ghost_rider",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1779338373186,
+      "tag": "0007_dark_proudstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1779341303767,
+      "tag": "0008_polite_deathstrike",
+      "breakpoints": true
     }
   ]
 }

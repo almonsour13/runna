@@ -1,4 +1,3 @@
-import { ICON_COLORS } from "@/shared/constant/constant";
 import { activityService } from "@/shared/services/storage/activity.service";
 import { cn } from "@/shared/utils/cn";
 import { computeStats } from "@/shared/utils/compute";
@@ -121,7 +120,7 @@ const ActivityGroupDrawer = forwardRef<
                                             <Ionicons
                                                 name={stat.icon as any}
                                                 size={11}
-                                                color={ICON_COLORS[stat.icon]}
+                                                className="text-primary"
                                             />
                                             <Text className="text-xs text-muted-foreground">
                                                 {stat.label}

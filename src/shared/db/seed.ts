@@ -231,26 +231,18 @@ export const seedSchedule = async ({
 
     const schedules = Array.from({ length: count }).map(() => {
         const type = TYPES[randomInt(0, TYPES.length - 1)];
-
-        const repeatType = Math.random() > 0.3 ? "weekly" : "daily";
-
-        const repeatDays =
-            repeatType === "weekly"
-                ? JSON.stringify(
-                      WEEKLY_PATTERNS[randomInt(0, WEEKLY_PATTERNS.length - 1)],
-                  )
-                : JSON.stringify([]);
+        const repeatDays = JSON.stringify(
+            WEEKLY_PATTERNS[randomInt(0, WEEKLY_PATTERNS.length - 1)],
+        );
 
         return {
             id: generateId(),
 
-            name: randomName(type),
+            title: randomName(type),
             time: randomTime(),
             goal: randomGoal(type),
 
             type,
-
-            repeatType,
             repeatDays,
 
             status: Math.random() > 0.2 ? "active" : "inactive",

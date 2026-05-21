@@ -42,7 +42,6 @@ export default function ProfileEditScreen() {
     const goalDrawerRef = useRef<DrawerHandle>(null);
 
     const handleChange = (key: keyof Profile, value: any) => {
-        console.log(key, value);
         setNewProfile((prev) => {
             if (!prev) return null;
 

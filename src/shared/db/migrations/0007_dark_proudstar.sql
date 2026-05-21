@@ -1,0 +1,1 @@
+ALTER TABLE `schedule` RENAME COLUMN "name" TO "title";

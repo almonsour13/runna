@@ -83,7 +83,7 @@ const HeightDrawer = forwardRef<DrawerHandle, HeightProps>(
             <Drawer ref={drawerRef} disableScrollView={true}>
                 <ColView className="relative gap-4 p-4">
                     <RowView className="px-4 justify-center">
-                        <Text className="text-base font-medium text-foreground">
+                        <Text className="text-lg font-medium text-foreground">
                             Select Your Height
                         </Text>
                     </RowView>
