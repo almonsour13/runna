@@ -1,7 +1,7 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Text from "@/shared/components/ui/Text";
 import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { useMemo } from "react";
 import { TouchableOpacity } from "react-native";
@@ -64,7 +64,11 @@ export default function ActivityTrackingHeader() {
         <RowView className="p-4 justify-between  gap-4 items-center">
             <RowView className="gap-4 items-center">
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back" size={24} />
+                    <Icon
+                        name="arrow-back"
+                        size={24}
+                        className="text-foreground"
+                    />
                 </TouchableOpacity>
             </RowView>
             <RowView className="hidden flex-1 justify-start items-center">
@@ -77,13 +81,13 @@ export default function ActivityTrackingHeader() {
             </RowView>
             <RowView className="px-4 items-center justify-between gap-4">
                 <RowView className="gap-1">
-                    <Ionicons name="locate" />
+                    <Icon name="locate" />
                     <Text className="text-xs font-medium text-muted-foreground">
                         {coordinates.length} pts
                     </Text>
                 </RowView>
                 <RowView className="gap-1">
-                    <Ionicons name="cellular" className={gpsSignal.color} />
+                    <Icon name="cellular" className={gpsSignal.color} />
                     <Text className="text-xs font-medium text-muted-foreground">
                         {gpsSignal.label}
                     </Text>

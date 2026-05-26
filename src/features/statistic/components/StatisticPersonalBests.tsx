@@ -1,9 +1,9 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
 import { formatDuration, formatPace } from "@/shared/utils/format";
-import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { useMemo } from "react";
 import { useStatisticContext } from "../context/StatisticContext";
@@ -47,7 +47,7 @@ export default function StatisticPersonalBests() {
     const stats = [
         {
             label: "Longest Distance",
-            value: `${convertMtoKm(bestDistance?.distance ?? 0).toFixed(2)}`,
+            value: `${convertMtoKm(bestDistance?.distance ?? 0).toFixed(1)}`,
             date: bestDistance?.createdAt ?? null,
             icon: "navigate",
             unit: "km",
@@ -70,57 +70,68 @@ export default function StatisticPersonalBests() {
             label: "Best Pace",
             value: formatPace(bestPace?.avgPace ?? 0),
             date: bestPace?.createdAt ?? null,
-            icon: "speedometer",
+            icon: "timer",
         },
     ];
 
     return (
         <ColView className="px-4 gap-1">
-            <Text className="text-lg font-medium text-foreground">
-                Personal Bests
-            </Text>
-            <RowView className="gap-1 flex-wrap">
+            <Text className="text-lg font-medium">Personal Bests</Text>
+            <ColView className="gap-2">
                 {stats.map((stat) => (
-                    <Card key={stat.label} className="flex-1 min-w-[45%] gap-1">
+                    <Card key={stat.label} className="flex-1">
                         {isLoading ? (
-                            <ColView className="gap-1">
-                                <RowView className="gap-1">
-                                    <Card className="flex-1 h-14" />
-                                </RowView>
-                            </ColView>
+                            <Card className="flex-1 h-12" />
                         ) : (
-                            <ColView className="gap-1">
-                                <RowView className="gap-1 items-center">
-                                    <Ionicons
-                                        name={stat.icon as any}
-                                        size={11}
-                                        className="text-primary"
-                                    />
-                                    <Text className="text-xs text-muted-foreground">
-                                        {stat.label}
+                            <RowView className="justify-between">
+                                <ColView>
+                                    <RowView className="gap-2 items-center">
+                                        <Icon
+                                            name={stat.icon}
+                                            size={12}
+                                            className="text-primary"
+                                        />
+                                        <Text className="text-sm text-muted-foreground">
+                                            {stat.label}
+                                        </Text>
+                                    </RowView>
+                                    <RowView className="gap-2 items-center">
+                                        <Icon
+                                            name="calendar"
+                                            size={10}
+                                            className="text-primary"
+                                        />
+                                        <Text className="text-xs text-muted-foreground">
+                                            {stat.date
+                                                ? format(
+                                                      new Date(stat.date),
+                                                      "MMM d, yyyy",
+                                                  )
+                                                : "—"}
+                                        </Text>
+                                    </RowView>
+                                </ColView>
+                                <RowView
+                                    style={{
+                                        alignItems: "baseline",
+                                        gap: 2,
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    <Text className="text-2xl font-medium">
+                                        {stat.value}
                                     </Text>
-                                </RowView>
-                                <Text className="text-2xl font-bold">
-                                    {stat.value}{" "}
                                     {stat.unit && (
-                                        <Text className="text-xs font-normal text-muted-foreground">
+                                        <Text className="text-xs text-muted-foreground">
                                             {stat.unit}
                                         </Text>
                                     )}
-                                </Text>
-                                <Text className="text-xs text-muted-foreground">
-                                    {stat.date
-                                        ? format(
-                                              new Date(stat.date),
-                                              "MMM d, yyyy",
-                                          )
-                                        : "—"}
-                                </Text>
-                            </ColView>
+                                </RowView>
+                            </RowView>
                         )}
                     </Card>
                 ))}
-            </RowView>
+            </ColView>
         </ColView>
     );
 }

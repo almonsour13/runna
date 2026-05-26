@@ -1,7 +1,13 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Drawer, { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import {
+    forwardRef,
+    useEffect,
+    useImperativeHandle,
+    useRef,
+    useState,
+} from "react";
 import {
     FlatList,
     NativeScrollEvent,
@@ -24,19 +30,21 @@ const PERIODS = ["AM", "PM"];
 
 const pad = (n: number) => n.toString().padStart(2, "0");
 
-// parse "07:30 AM" → { hour: 7, minute: 30, periodIndex: 0 }
 const parseTime = (value?: string | null) => {
-    if (!value) return { hourIndex: 6, minuteIndex: 0, periodIndex: 0 }; // default 7:00 AM
-    const [time, period] = value.split(" ");
-    const [h, m] = time.split(":").map(Number);
+    if (!value) return { hourIndex: 6, minuteIndex: 0, periodIndex: 0 };
+
+    const [h, m] = value.split(":").map((v) => parseInt(v, 10));
+
+    const period = h >= 12 ? "PM" : "AM";
+    const hour12 = h % 12 || 12;
+
     return {
-        hourIndex: (h % 12 || 12) - 1, // 0-based index into HOURS
-        minuteIndex: m,
-        periodIndex: period === "PM" ? 1 : 0,
+        hourIndex: HOURS.indexOf(hour12),
+        minuteIndex: MINUTES.indexOf(m),
+        periodIndex: PERIODS.indexOf(period),
     };
 };
 
-// ✅ Extracted reusable scroll column
 const ScrollColumn = ({
     data,
     initialIndex,
@@ -123,17 +131,36 @@ const TimeDrawer = forwardRef<DrawerHandle, Props>(
             close: () => drawerRef.current?.close(),
         }));
 
-        const parsed = parseTime(value);
+        const [hourIndex, setHourIndex] = useState(
+            () => parseTime(value).hourIndex,
+        );
+        const [minuteIndex, setMinuteIndex] = useState(
+            () => parseTime(value).minuteIndex,
+        );
+        const [periodIndex, setPeriodIndex] = useState(
+            () => parseTime(value).periodIndex,
+        );
 
-        const [hourIndex, setHourIndex] = useState(parsed.hourIndex);
-        const [minuteIndex, setMinuteIndex] = useState(parsed.minuteIndex);
-        const [periodIndex, setPeriodIndex] = useState(parsed.periodIndex);
+        useEffect(() => {
+            const parsed = parseTime(value);
+            setHourIndex(parsed.hourIndex);
+            setMinuteIndex(parsed.minuteIndex);
+            setPeriodIndex(parsed.periodIndex);
+        }, [value]);
 
         const handleConfirm = () => {
             const hour = HOURS[hourIndex];
             const minute = MINUTES[minuteIndex];
             const period = PERIODS[periodIndex];
-            onChange(`${pad(hour)}:${pad(minute)} ${period}`);
+
+            let hour24 = hour;
+            if (period === "AM") {
+                hour24 = hour === 12 ? 0 : hour;
+            } else {
+                hour24 = hour === 12 ? 12 : hour + 12;
+            }
+
+            onChange(`${pad(hour24)}:${pad(minute)}`);
             drawerRef.current?.close();
         };
 
@@ -141,9 +168,7 @@ const TimeDrawer = forwardRef<DrawerHandle, Props>(
             <Drawer ref={drawerRef} disableScrollView={true}>
                 <ColView className="gap-4 p-4">
                     <RowView className="justify-center">
-                        <Text className="text-lg font-medium text-foreground">
-                            Select Time
-                        </Text>
+                        <Text className="text-lg font-medium">Select Time</Text>
                     </RowView>
 
                     <RowView className="items-center">
@@ -154,9 +179,7 @@ const TimeDrawer = forwardRef<DrawerHandle, Props>(
                             formatLabel={(item) => pad(item as number)}
                         />
 
-                        <Text className="text-2xl font-bold text-foreground pb-1">
-                            :
-                        </Text>
+                        <Text className="text-2xl font-bold pb-1">:</Text>
                         <ScrollColumn
                             data={MINUTES}
                             initialIndex={minuteIndex}

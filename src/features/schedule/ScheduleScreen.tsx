@@ -25,7 +25,7 @@ export default function ScheduleScreen() {
                         flexGrow: 1,
                     }}
                 >
-                    <ColView className=" flex-1 pb-28">
+                    <ColView className=" flex-1 pb-28 gap-0">
                         <ScheduleHeader />
                         <ScheduleList />
                     </ColView>

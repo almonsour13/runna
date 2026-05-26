@@ -3,11 +3,9 @@ import Text from "@/shared/components/ui/Text";
 
 export default function StatisticHeader() {
     return (
-        <ColView className="px-4 pt-8 gap-1">
-            <Text className="text-2xl font-medium text-foreground">
-                Statistic
-            </Text>
-            <Text className="text-sm text-muted-foreground">
+        <ColView className="p-4 pb-0 gap-0">
+            <Text className="text-2xl font-medium">Statistic</Text>
+            <Text className="text-lg text-muted-foreground">
                 Your activity statistics over time
             </Text>
         </ColView>

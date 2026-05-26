@@ -1,50 +1,178 @@
-# Welcome to your Expo app 👋
+# Runna 🏃‍♂️
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A comprehensive activity tracking and fitness management mobile application built with React Native and Expo. Track your runs, workouts, and physical activities with real-time GPS mapping, detailed statistics, and personalized schedules.
 
-## Get started
+## 📱 Features
 
-1. Install dependencies
+### Activity Tracking
 
-   ```bash
-   npm install
-   ```
+- **Real-time GPS Tracking**: Track your runs and activities with accurate GPS positioning
+- **Interactive Route Maps**: Visualize your route on MapLibre maps during and after activities
+- **Activity Recording**: Start, pause, and stop activity tracking with real-time metrics
+- **Detailed Activity Summary**: View distance, duration, pace, and calories burned
 
-2. Start the app
+### Dashboard & Home Screen
 
-   ```bash
-   npx expo start
-   ```
+- **Quick Overview**: See today's activities and overall progress at a glance
+- **Weekly Activity Summary**: Track your activity patterns across the week
+- **Today's Schedule**: View planned activities and upcoming workouts
+- **Recent Activities**: Access your latest completed activities
 
-In the output, you'll find options to open the app in a
+### Activity Management
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- **Activity History**: Complete historical view of all recorded activities
+- **Activity Details**: In-depth analysis of past activities with route replay
+- **Activity Editing**: Edit activity details and notes
+- **Activity Deletion**: Remove activities from your record
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Statistics & Analytics
 
-## Get a fresh project
+- **Performance Metrics**: Track key metrics like distance, duration, average pace
+- **Statistical Analysis**: View trends and patterns in your training data
+- **Visual Reports**: Graphical representation of your fitness progress
 
-When you're ready, run:
+### User Management
 
-```bash
-npm run reset-project
+- **Onboarding Flow**: Step-by-step setup wizard for new users
+- **User Profile**: Create and manage your user profile
+- **Profile Editing**: Update personal information and preferences
+- **Settings Management**: Customize app preferences and behavior
+
+### Smart Features
+
+- **Push Notifications**: Get reminders and alerts for scheduled activities
+- **Schedule Management**: Plan and organize your workouts
+- **Persistent Data Storage**: All activities saved locally with SQLite
+- **Dark/Light Theme**: Automatic theme detection based on system settings
+
+## 🛠️ Tech Stack
+
+- **Framework**: React Native with [Expo](https://expo.dev)
+- **Language**: TypeScript
+- **Routing**: Expo Router (file-based routing)
+- **Styling**: Tailwind CSS via NativeWind
+- **Maps**: MapLibre React Native
+- **Database**: SQLite with Drizzle ORM
+- **State Management**: React Query (@tanstack/react-query)
+- **Navigation**: React Navigation (Bottom Tabs)
+- **Sensors**: Expo Sensors for activity detection
+- **Location**: Expo Location for GPS tracking
+- **Notifications**: Expo Notifications
+- **Storage**: Async Storage for local data persistence
+
+## 📁 Project Structure
+
+```
+src/
+├── features/              # Feature screens and components
+│   ├── ActivityTracking/  # Real-time activity tracking
+│   ├── ActivityDetails/   # Activity details view
+│   ├── history/          # Activity history screen
+│   ├── home/             # Dashboard home screen
+│   ├── onboarding/       # Onboarding flow
+│   ├── profile/          # User profile screens
+│   ├── schedule/         # Activity scheduling
+│   ├── settings/         # App settings
+│   └── statistic/        # Statistics and analytics
+├── navigation/           # Navigation configuration
+│   ├── MainNavigator
+│   ├── OnboardingNavigator
+│   ├── ProfileNavigator
+│   └── RootNavigator
+└── shared/              # Shared utilities and components
+    ├── components/      # Reusable UI components
+    ├── context/        # React context providers
+    ├── db/            # Database schema and migrations
+    ├── hooks/         # Custom React hooks
+    ├── lib/           # Utility functions and data
+    ├── providers/     # Context providers
+    ├── services/      # Business logic services
+    ├── stores/        # State management
+    ├── types/         # TypeScript type definitions
+    └── utils/         # Helper utilities
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🚀 Getting Started
 
-## Learn more
+### Prerequisites
 
-To learn more about developing your project with Expo, look at the following resources:
+- Node.js (v16 or higher)
+- npm or yarn
+- Expo CLI: `npm install -g expo-cli`
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Installation
 
-## Join the community
+1. **Clone the repository**
 
-Join our community of developers creating universal apps.
+    ```bash
+    git clone <repository-url>
+    cd runna
+    ```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+2. **Install dependencies**
+
+    ```bash
+    npm install
+    ```
+
+3. **Start the development server**
+    ```bash
+    npm start
+    ```
+
+### Running on Different Platforms
+
+**Android Emulator:**
+
+```bash
+npm run android
+```
+
+**iOS Simulator (macOS only):**
+
+```bash
+npm run ios
+```
+
+**Web Browser:**
+
+```bash
+npm run web
+```
+
+**Expo Go (Quickest for testing):**
+
+- Scan the QR code from the CLI output with the Expo Go app
+- Available on [iOS](https://apps.apple.com/app/expo-go/id982107779) and [Android](https://play.google.com/store/apps/details?id=host.exp.exponent)
+
+## 💻 Development
+
+### Running Linter
+
+```bash
+npm run lint
+```
+
+### Database Migrations
+
+The app uses Drizzle ORM for database management. Database schema is defined in `src/shared/db/schema/`.
+
+## 📚 Learn More
+
+- [Expo Documentation](https://docs.expo.dev/)
+- [React Native Documentation](https://reactnative.dev/)
+- [MapLibre Documentation](https://maplibre.org/)
+- [Drizzle ORM](https://orm.drizzle.team/)
+- [NativeWind Documentation](https://www.nativewind.dev/)
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📞 Support
+
+For support, please open an issue in the repository or contact the development team.

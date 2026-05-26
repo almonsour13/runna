@@ -7,39 +7,86 @@ export const formatStats = ({
     distance,
     calories,
     duration,
+    steps,
+    speed,
+    pace,
 }: {
-    distance: number;
-    duration: number;
-    calories: number;
+    distance?: number;
+    duration?: number;
+    calories?: number;
+    steps?: number;
+    speed?: number;
+    pace?: number;
 }) => {
-    const distanceKm = convertMtoKm(distance);
-    const durationSec = convertMsToS(duration);
-    return [
-        {
+    const stats = [];
+    if (distance) {
+        stats.push({
             label: "Distance",
-            value: distanceKm.toFixed(1),
+            value: convertMtoKm(distance).toFixed(1),
             unit: "km",
             icon: "navigate",
-        },
-        {
+        });
+    }
+    if (duration) {
+        stats.push({
             label: "Duration",
-            value: formatDuration(durationSec),
+            value: formatDuration(convertMsToS(duration)),
             unit: null,
             icon: "time",
-        },
-        {
+        });
+    }
+    if (calories) {
+        stats.push({
             label: "Calories",
             value: formatCalories(calories),
             unit: "kcal",
             icon: "flame",
-        },
-    ];
+        });
+    }
+    if (steps) {
+        stats.push({
+            label: "Steps",
+            value: steps.toLocaleString("en-US", {
+                maximumFractionDigits: 0,
+            }),
+            unit: null,
+            icon: "footsteps",
+        });
+    }
+    if (speed) {
+        stats.push({
+            label: "Speed",
+            value: formatSpeed(speed),
+            unit: "km/h",
+            icon: "speedometer",
+        });
+    }
+    if (pace) {
+        stats.push({
+            label: "Pace",
+            value: formatPace(pace),
+            unit: "/km",
+            icon: "speedometer",
+        });
+    }
+
+    return stats;
 };
 export const formatRelativeDateLabel = (date: Date) => {
     if (isToday(date)) return "Today";
     if (isYesterday(date)) return "Yesterday";
     return null;
 };
+export function formatDurationReadable(ms: number) {
+    const totalSeconds = Math.floor(ms / 1000);
+
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    const parts: string[] = [];
+
+    return `${hours}${hours > 1 ? "hrs" : "hr"} ${minutes}${minutes > 1 ? "mins" : "min"}`;
+}
 export const formatDurationHHMMSS = (ms: number): string => {
     const totalSeconds = Math.floor(ms / 1000);
 
@@ -75,7 +122,9 @@ export function formatSpeed(speed: number) {
 }
 export function formatCalories(calories: number) {
     if (!calories || calories < 0 || !isFinite(calories)) return "0";
-    return calories.toFixed(0);
+    return calories.toLocaleString("en-US", {
+        maximumFractionDigits: 0,
+    });
 }
 
 export function formatCmToftIn(cm: number) {

@@ -1,7 +1,12 @@
 import { db } from "@/shared/db";
 import { activity, coordinate } from "@/shared/db/schema";
-import { Activity, Coordinate } from "@/shared/types/type";
+import {
+    Activity,
+    ActivityWithCoordinates,
+    Coordinate,
+} from "@/shared/types/type";
 import { logger } from "@/shared/utils/logger";
+import { generateId } from "@/shared/utils/utils";
 import { and, asc, desc, eq, gte, lt, lte } from "drizzle-orm";
 
 class ActivityService {
@@ -15,23 +20,20 @@ class ActivityService {
         offset?: number;
         orderBy?: keyof Activity;
         orderDirection?: "asc" | "desc";
-    }): Promise<Activity[]> {
+    }): Promise<ActivityWithCoordinates[]> {
         try {
-            const query = db
-                .select()
-                .from(activity)
-                .orderBy(
+            const activities = await db.query.activity.findMany({
+                with: {
+                    coordinates: true,
+                },
+                orderBy:
                     orderDirection === "desc"
                         ? desc(activity[orderBy])
                         : asc(activity[orderBy]),
-                );
-            if (limit !== undefined) {
-                query.limit(limit);
-            }
-            if (offset !== undefined) {
-                query.offset(offset);
-            }
-            const activities = await query;
+                limit,
+                offset,
+            });
+
             logger.log("[ActivityStorage] get → success");
             return activities;
         } catch (error) {
@@ -39,36 +41,41 @@ class ActivityService {
             throw error;
         }
     }
-    async getById(id: string): Promise<Activity | null> {
+    async getById(id: string): Promise<ActivityWithCoordinates | null> {
         try {
-            const data = await db
-                .select()
-                .from(activity)
-                .where(eq(activity.id, id));
+            const data = await db.query.activity.findFirst({
+                with: {
+                    coordinates: true,
+                },
+                where: eq(activity.id, id),
+            });
+
             logger.log("[ActivityStorage] getById → success");
-            return data[0] || null;
+            return data ?? null;
         } catch (error) {
             logger.error("[ActivityStorage] getById → error:", error);
             throw error;
         }
     }
 
-    async getByDate(date: Date): Promise<Activity[]> {
+    async getByDate(date: Date): Promise<ActivityWithCoordinates[]> {
         try {
             const startOfDay = new Date(date);
             startOfDay.setHours(0, 0, 0, 0);
 
             const endOfDay = new Date(date);
             endOfDay.setHours(23, 59, 59, 999);
-            const data = await db
-                .select()
-                .from(activity)
-                .where(
-                    and(
-                        gte(activity.createdAt, startOfDay),
-                        lt(activity.createdAt, endOfDay),
-                    ),
-                );
+
+            const data = await db.query.activity.findMany({
+                with: {
+                    coordinates: true,
+                },
+                where: and(
+                    gte(activity.createdAt, startOfDay),
+                    lt(activity.createdAt, endOfDay),
+                ),
+            });
+
             logger.log("[ActivityStorage] getByDate → success");
             return data;
         } catch (error) {
@@ -94,7 +101,57 @@ class ActivityService {
             throw error;
         }
     }
+    async getPrevActivityById(id: string): Promise<Activity | null> {
+        try {
+            const data = await db
+                .select()
+                .from(activity)
+                .where(lt(activity.id, id))
+                .orderBy(desc(activity.id))
+                .limit(1);
 
+            logger.log("[ActivityStorage] getPreviousActivity → success");
+            return data[0] || null;
+        } catch (error) {
+            logger.error(
+                "[ActivityStorage] getPreviousActivity → error:",
+                error,
+            );
+            throw error;
+        }
+    }
+    async getPreviousDayActivities(date: Date): Promise<Activity[]> {
+        try {
+            const prevDay = new Date(date);
+            prevDay.setDate(prevDay.getDate() - 1);
+
+            const startOfDay = new Date(prevDay);
+            startOfDay.setHours(0, 0, 0, 0);
+
+            const endOfDay = new Date(prevDay);
+            endOfDay.setHours(23, 59, 59, 999);
+
+            const data = await db
+                .select()
+                .from(activity)
+                .where(
+                    and(
+                        gte(activity.createdAt, startOfDay),
+                        lte(activity.createdAt, endOfDay),
+                    ),
+                )
+                .orderBy(desc(activity.createdAt));
+
+            logger.log("[ActivityStorage] getPreviousDayActivities → success");
+            return data;
+        } catch (error) {
+            logger.error(
+                "[ActivityStorage] getPreviousDayActivities → error:",
+                error,
+            );
+            throw error;
+        }
+    }
     async getCoordinatesByActivityId(id: string): Promise<Coordinate[]> {
         try {
             const data = await db
@@ -116,16 +173,45 @@ class ActivityService {
 
     async create(
         activityInput: Omit<Activity, "isImported" | "importedAt">,
-    ): Promise<Activity> {
+        coordinates?: Omit<Coordinate, "id" | "activityId">[],
+    ): Promise<ActivityWithCoordinates> {
         try {
-            const data = await db
-                .insert(activity)
-                .values(activityInput)
-                .returning();
-            logger.log("[ActivityStorage] save → success");
-            return data[0];
+            const result = await db.transaction(async (tx) => {
+                logger.log("1. starting transaction");
+
+                const [createdActivity] = await tx
+                    .insert(activity)
+                    .values(activityInput)
+                    .returning();
+                logger.log("2. activity created:", createdActivity);
+
+                let createdCoordinates: Coordinate[] = [];
+
+                if (coordinates && coordinates.length > 0) {
+                    logger.log("3. inserting coordinates:", coordinates.length);
+                    createdCoordinates = await tx
+                        .insert(coordinate)
+                        .values(
+                            coordinates.map((coord) => ({
+                                ...coord,
+                                id: generateId(),
+                                activityId: createdActivity.id,
+                            })),
+                        )
+                        .returning();
+                    logger.log("4. coordinates created:", createdCoordinates);
+                }
+
+                return {
+                    ...createdActivity,
+                    coordinates: createdCoordinates,
+                };
+            });
+
+            logger.log("[ActivityStorage] create → success");
+            return result;
         } catch (error) {
-            logger.error("[ActivityStorage] save → error:", error);
+            logger.error("[ActivityStorage] create → error:", error);
             throw error;
         }
     }

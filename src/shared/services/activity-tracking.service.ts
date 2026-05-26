@@ -277,18 +277,15 @@ class ActivityTrackingService {
                 goal: profile?.goal || 5000,
                 status: "Completed",
                 type: "run",
+                steps: 0,
                 createdAt: startTime,
                 updatedAt: endTime,
             };
             logger.log("New Activity: ", newActivity);
 
-            const savedActivity = await activityService.create(newActivity);
-            await activityService.createCoordinates(
-                finalCoordinates.map((coord) => ({
-                    ...coord,
-                    id: generateId(),
-                    activityId: savedActivity.id,
-                })),
+            const savedActivity = await activityService.create(
+                newActivity,
+                finalCoordinates,
             );
 
             this.stopSession();

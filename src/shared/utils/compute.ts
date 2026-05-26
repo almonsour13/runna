@@ -24,6 +24,8 @@ export const computeStats = (activities: Activity[]) => {
         0,
     );
 
+    const steps = activities.reduce((sum, activity) => sum + activity.steps, 0);
+
     return {
         distance,
         calories,
@@ -31,6 +33,7 @@ export const computeStats = (activities: Activity[]) => {
         goal,
         pace,
         speed,
+        steps,
     };
 };
 export const computeDistance = (a: C, b: C) => {

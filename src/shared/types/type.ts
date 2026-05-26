@@ -5,7 +5,9 @@ import { schedule } from "../db/schema/schedule";
 export type RootStackParamList = {
     Main: undefined;
     Home: undefined;
-    ActivityTracking: undefined;
+    ActivityTracking: {
+        type?: string;
+    };
     Settings: undefined;
     Onboarding: {
         screen?: "Intro" | "OnboardingSteps";
@@ -41,6 +43,9 @@ export type ActivityType = "walk" | "run";
 
 export type Activity = typeof activity.$inferSelect;
 export type Coordinate = typeof coordinate.$inferSelect;
+export type ActivityWithCoordinates = Activity & {
+    coordinates: Coordinate[];
+};
 export type RawCoordinate = Omit<Coordinate, "id" | "activityId">;
 export type Schedule = typeof schedule.$inferSelect;
 

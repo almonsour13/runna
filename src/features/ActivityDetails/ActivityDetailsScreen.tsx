@@ -4,7 +4,7 @@ import { activityService } from "@/shared/services/storage/activity.service";
 import { Coordinate } from "@/shared/types/type";
 import { computeKmSplits } from "@/shared/utils/compute";
 import { useRoute } from "@react-navigation/native";
-import { useQueries } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
     ActivityIndicator,
@@ -13,9 +13,9 @@ import {
     View,
 } from "react-native";
 import ActivityDetailsEmptyState from "./Components/ActivityDetailsEmptyState";
+import ActivityDetailsHeader from "./Components/ActivityDetailsHeader";
 import ActivityDetailsMap from "./Components/ActivityDetailsMap";
 import ActivitySummary from "./Components/ActivityDetailsSummary";
-import ActivityDetailsHeader from "./Components/layout/ActivityDetailsHeader";
 
 export type KmSplits = {
     km: number;
@@ -29,45 +29,33 @@ export default function ActivityDetailsScreen() {
     const { activityId } = route.params as { activityId: string };
     const id = activityId;
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [activityQuery, coordinatesQuery] = useQueries({
-        queries: [
-            {
-                queryKey: ["activity", id],
-                queryFn: () => activityService.getById(id),
-                enabled: !!id,
-            },
-            {
-                queryKey: ["coordinates", id],
-                queryFn: () => activityService.getCoordinatesByActivityId(id),
-                enabled: !!id,
-            },
-        ],
+
+    const {
+        data: activity,
+        isLoading,
+        refetch,
+    } = useQuery({
+        queryKey: ["activity", id],
+        queryFn: async () => activityService.getById(id),
+        enabled: !!id,
     });
 
-    const activity = activityQuery.data ?? null;
-    const coordinates = coordinatesQuery.data ?? [];
+    const coordinates = activity?.coordinates || [];
 
     const kmSplits = useMemo(
         () => (coordinates.length > 0 ? computeKmSplits(coordinates) : []),
         [coordinates],
     );
 
-    const isLoading = activityQuery.isLoading || coordinatesQuery.isLoading;
-    const isError = activityQuery.isError || coordinatesQuery.isError;
-
     const refresh = () => {
         setIsRefreshing(true);
-        Promise.all([
-            activityQuery.refetch(),
-            coordinatesQuery.refetch(),
-        ]).finally(() => setIsRefreshing(false));
+        refetch().finally(() => setIsRefreshing(false));
     };
 
     return (
-        <SafeScreen>
+        <SafeScreen className="">
             <ScrollView
                 contentContainerStyle={{ flexGrow: 1 }}
-                // stickyHeaderIndices={[0]}
                 refreshControl={
                     <RefreshControl
                         refreshing={isRefreshing}
@@ -87,10 +75,6 @@ export default function ActivityDetailsScreen() {
                             coordinates={coordinates}
                         />
                         <ActivitySummary activity={activity} />
-                        {/* <ActivityDetailsSplits
-                            activity={activity}
-                            kmSplits={kmSplits}
-                        /> */}
                     </ColView>
                 ) : (
                     <ActivityDetailsEmptyState />

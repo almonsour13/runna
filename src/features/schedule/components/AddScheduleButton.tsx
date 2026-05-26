@@ -1,9 +1,9 @@
 import ScheduleFormDrawer, {
     ScheduleFormDrawerHandle,
 } from "@/features/schedule/components/ScheduleFormDrawer";
+import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import { cn } from "@/shared/utils/cn";
-import { Ionicons } from "@expo/vector-icons";
 import { useRef } from "react";
 import { TouchableOpacity } from "react-native";
 
@@ -20,7 +20,7 @@ export default function AddScheduleButton() {
                         "relative bg-primary h-16 aspect-square justify-center items-center ",
                     )}
                 >
-                    <Ionicons name="add" size={24} className="text-white" />
+                    <Icon name="add" size={24} className="text-white" />
                 </Card>
             </TouchableOpacity>
             <ScheduleFormDrawer ref={scheduleFormDrawer} />

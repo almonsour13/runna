@@ -77,7 +77,7 @@ const AgeDrawer = forwardRef<DrawerHandle, Props>(
             <Drawer ref={drawerRef} disableScrollView={true}>
                 <ColView className="relative gap-4 p-4">
                     <RowView className="px-4 justify-center">
-                        <Text className="text-lg font-medium text-foreground">
+                        <Text className="text-lg font-medium">
                             Select Your Age
                         </Text>
                     </RowView>

@@ -11,7 +11,7 @@ interface RingChartProps {
     trackWidth?: number;
     color?: string;
     gapDeg?: number;
-    startDeg?: number; // 0 = 12 o'clock, 90 = 3 o'clock, 180 = 6 o'clock, etc.
+    startDeg?: number;
 }
 
 export default function RingChart({

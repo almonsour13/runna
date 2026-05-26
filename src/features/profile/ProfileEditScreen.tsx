@@ -1,4 +1,5 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
@@ -7,8 +8,6 @@ import { useProfileStore } from "@/shared/stores/use-profile.store";
 import { Profile } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
 import { formatCmToftIn } from "@/shared/utils/format";
-import { capitalize } from "@/shared/utils/utils";
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useRef, useState } from "react";
 import { TextInput, TouchableOpacity } from "react-native";
@@ -93,7 +92,7 @@ export default function ProfileEditScreen() {
                 <RowView className="px-4 pt-8 justify-between items-center">
                     <RowView className="gap-4 items-center">
                         <TouchableOpacity onPress={() => navigation.goBack()}>
-                            <Ionicons
+                            <Icon
                                 name="arrow-back"
                                 size={24}
                                 className="text-foreground"
@@ -136,9 +135,9 @@ export default function ProfileEditScreen() {
                                 onPress={() => genderDrawerRef.current?.open()}
                             >
                                 <Card className="h-16 justify-center">
-                                    <Text>
+                                    <Text className="capitalize">
                                         {newProfile?.gender
-                                            ? capitalize(newProfile.gender)
+                                            ? newProfile.gender
                                             : "Select Gender"}
                                     </Text>
                                 </Card>

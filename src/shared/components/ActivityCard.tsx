@@ -2,60 +2,84 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { useNavigation } from "@react-navigation/native";
-import { useQuery } from "@tanstack/react-query";
 import { format, isToday, isYesterday } from "date-fns";
 import { useRef } from "react";
 import { TouchableOpacity, View } from "react-native";
-import { activityService } from "../services/storage/activity.service";
-import { Activity, Coordinate, NavigationProp } from "../types/type";
+import { ActivityWithCoordinates, NavigationProp } from "../types/type";
 import { cn } from "../utils/cn";
 import { convertMtoKm } from "../utils/convert";
+import { formatStats } from "../utils/format";
 import { simplifyCoordinates } from "../utils/simplify-coordinates";
-import { capitalize } from "../utils/utils";
 import ActivityActionDrawer, {
     ActivityActionDrawerHandle,
 } from "./drawer/ActivityActionDrawer";
+import Icon from "./Icon";
 import VectorRouteMap from "./VectorRouteMap";
 
 export default function ActivityCard({
     activity,
     className,
 }: {
-    activity: Activity & {
-        coordinates?: Coordinate[];
-    };
+    activity: ActivityWithCoordinates;
     className?: string;
 }) {
     const navigation = useNavigation<NavigationProp>();
     const activityActionDrawerRef = useRef<ActivityActionDrawerHandle>(null);
+    const {
+        id,
+        startTime,
+        endTime,
+        distance,
+        calories,
+        duration,
+        avgPace,
+        avgSpeed,
+        steps,
+        goal,
+        type,
+        isImported,
+        coordinates,
+    } = activity;
 
     const date = isToday(activity.startTime)
         ? "Today"
         : isYesterday(activity.startTime)
           ? "Yesterday"
           : format(activity.startTime, "MMM d");
+
     const timeRange = [
         date,
-        format(activity.startTime, "p"),
-        activity.endTime ? format(activity.endTime, "p") : "Ongoing",
+        format(startTime, "p"),
+        endTime ? format(endTime, "p") : "Ongoing",
     ].join(" • ");
 
-    const distance = activity.distance;
     const distanceKm = convertMtoKm(distance);
-    const goal = activity.goal;
     const goalKm = convertMtoKm(goal);
     const pct = (distance / goal) * 100;
 
-    const { data: coordinates, isLoading: isCoordinatesLoading } = useQuery({
-        queryKey: ["coordinates", activity.id],
-        queryFn: async () => {
-            const data = await activityService.getCoordinatesByActivityId(
-                activity.id,
-            );
-            const s = simplifyCoordinates(data, 0.0001, false);
-            activity.coordinates = s;
-            return s;
-        },
+    const isGoalMet = pct >= 100;
+    const simplifiedCoordinates = simplifyCoordinates(
+        coordinates,
+        0.0001,
+        false,
+    );
+    // const { data: coordinates, isLoading: isCoordinatesLoading } = useQuery({
+    //     queryKey: ["coordinates", id],
+    //     queryFn: async () => {
+    //         const data = await activityService.getCoordinatesByActivityId(
+    //             activity.id,
+    //         );
+    //         const s = simplifyCoordinates(data, 0.0001, false);
+    //         activity.coordinates = s;
+    //         return s;
+    //     },
+    // });
+
+    const stats = formatStats({
+        distance,
+        duration,
+        calories,
+        steps,
     });
 
     return (
@@ -63,22 +87,20 @@ export default function ActivityCard({
             <TouchableOpacity
                 onPress={() =>
                     navigation.navigate("ActivityDetails", {
-                        activityId: activity.id,
+                        activityId: id,
                     })
                 }
                 onLongPress={() =>
-                    activityActionDrawerRef.current?.openWithActivityId(
-                        activity.id,
-                    )
+                    activityActionDrawerRef.current?.openWithActivityId(id)
                 }
             >
                 <Card key={activity.id} className={cn("", className)}>
                     <RowView className="gap-4">
                         <View className="h-12 aspect-square justify-center items-center rounded">
-                            {coordinates && (
+                            {simplifiedCoordinates && (
                                 <VectorRouteMap
-                                    coordinates={coordinates}
-                                    type={activity.type}
+                                    coordinates={simplifiedCoordinates}
+                                    type={type}
                                     strokeWidth={2}
                                     size={120}
                                 />
@@ -91,17 +113,35 @@ export default function ActivityCard({
                                 </Text>
                                 <RowView className="items-center gap-2">
                                     {activity.isImported && (
-                                        <Text className="text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                                        <Text className="capitalize text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                                             Imported
                                         </Text>
                                     )}
-                                    <Text className="text-xs font-medium text-primary">
-                                        {capitalize(activity.type)}
+                                    <Text className="capitalize text-xs font-medium text-primary bg-muted px-1.5 py-0.5 rounded">
+                                        {type}
                                     </Text>
                                 </RowView>
                             </RowView>
-                            <RowView className="justify-between items-end">
-                                <Text className="text-2xl font-bold">
+                            <RowView>
+                                {stats.map((stat, i) => {
+                                    return (
+                                        <RowView
+                                            key={stat.label}
+                                            className="items-center gap-1"
+                                        >
+                                            <Icon name={stat.icon} size={12} />
+                                            <Text className="text-sm font-medium">
+                                                {stat.value}{" "}
+                                                {stat.unit && (
+                                                    <Text className="text-xs font-medium  text-muted-foreground">
+                                                        {stat.unit}
+                                                    </Text>
+                                                )}
+                                            </Text>
+                                        </RowView>
+                                    );
+                                })}
+                                {/* <Text className="text-2xl font-medium">
                                     {distanceKm.toFixed(1)}{" "}
                                     <Text className="text-sm font-medium  text-muted-foreground">
                                         / {goalKm.toFixed(1)} km
@@ -109,7 +149,7 @@ export default function ActivityCard({
                                 </Text>
                                 <Text className="text-sm font-medium">
                                     {pct.toFixed(0)}%
-                                </Text>
+                                </Text> */}
                             </RowView>
                         </ColView>
                     </RowView>

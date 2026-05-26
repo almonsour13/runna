@@ -1,8 +1,8 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Drawer, { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
 import { cn } from "@/shared/utils/cn";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { TouchableOpacity } from "react-native";
 
@@ -24,7 +24,7 @@ const RepeatTypeDrawer = forwardRef<DrawerHandle, Props>(
             <Drawer ref={drawerRef}>
                 <ColView className="gap-4 py-4">
                     <RowView className="justify-center">
-                        <Text className="text-lg font-medium text-foreground">
+                        <Text className="text-lg font-medium">
                             Select Repeat
                         </Text>
                     </RowView>
@@ -53,7 +53,7 @@ const RepeatTypeDrawer = forwardRef<DrawerHandle, Props>(
                                             {type}
                                         </Text>
                                         {isSelected && (
-                                            <Ionicons
+                                            <Icon
                                                 name="checkmark"
                                                 size={20}
                                                 className="text-primary"

@@ -1,7 +1,7 @@
 import { RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
 import { cn } from "@/shared/utils/cn";
-import { Ionicons } from "@expo/vector-icons";
 import { Camera } from "@maplibre/maplibre-react-native";
 import { useMemo } from "react";
 import { TouchableOpacity } from "react-native";
@@ -88,7 +88,7 @@ export default function MapControls({ cameraRef }: Props) {
                 )}
                 onPress={recenter}
             >
-                <Ionicons
+                <Icon
                     name="locate-outline"
                     size={16}
                     className={cn(
@@ -103,7 +103,7 @@ export default function MapControls({ cameraRef }: Props) {
                     className="h-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40"
                     onPress={fitRoute}
                 >
-                    <Ionicons
+                    <Icon
                         name="scan-outline"
                         size={16}
                         className="text-foreground"
@@ -118,7 +118,7 @@ export default function MapControls({ cameraRef }: Props) {
                 )}
                 onPress={toggle3D}
             >
-                <Ionicons
+                <Icon
                     name="cube-outline"
                     size={16}
                     className="text-foreground"

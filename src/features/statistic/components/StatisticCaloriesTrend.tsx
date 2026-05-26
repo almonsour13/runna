@@ -55,8 +55,8 @@ export default function StatisticCaloriesTrend() {
     return (
         <ColView className="px-4 gap-1">
             <RowView className="justify-between items-center">
-                <Text className="text-lg font-medium text-foreground">
-                    Calories Burned
+                <Text className="text-lg font-medium">
+                    Calories Burned Trends
                 </Text>
                 <Text className="text-xs text-muted-foreground">
                     {total.toFixed(0)} kcal total
@@ -69,16 +69,13 @@ export default function StatisticCaloriesTrend() {
                         className="justify-between"
                     >
                         {ruler.map((r, i) => (
-                            <Text
-                                key={i}
-                                className="text-xs text-foreground leading-none"
-                            >
+                            <Text key={i} className="text-xs leading-none">
                                 {r.toFixed(0)}
                             </Text>
                         ))}
                     </View>
                     <RowView
-                        className="flex-1 gap-1"
+                        className="flex-1 gap-2"
                         style={{ height: BAR_HEIGHT }}
                     >
                         {barData.map((d, idx) => {

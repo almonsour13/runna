@@ -3,10 +3,9 @@ import Drawer, { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
 import { ACTIVITY_TYPE } from "@/shared/constant/constant";
 import { cn } from "@/shared/utils/cn";
-import { capitalize } from "@/shared/utils/utils";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { TouchableOpacity } from "react-native";
+import Icon from "../Icon";
 
 interface Props {
     value?: string | null;
@@ -25,9 +24,7 @@ const ActivityTypeDrawer = forwardRef<DrawerHandle, Props>(
             <Drawer ref={drawerRef}>
                 <ColView className="gap-4 py-4">
                     <RowView className="justify-center">
-                        <Text className="text-lg font-medium text-foreground">
-                            Select Type
-                        </Text>
+                        <Text className="text-lg font-medium">Select Type</Text>
                     </RowView>
                     <ColView className="gap-0">
                         {ACTIVITY_TYPE.map((type) => {
@@ -47,14 +44,14 @@ const ActivityTypeDrawer = forwardRef<DrawerHandle, Props>(
                                     <RowView className="justify-between">
                                         <Text
                                             className={cn(
-                                                "text-lg",
+                                                "text-lg capitalize",
                                                 isSelected && "text-primary",
                                             )}
                                         >
-                                            {capitalize(type)}
+                                            {type}
                                         </Text>
                                         {isSelected && (
-                                            <Ionicons
+                                            <Icon
                                                 name="checkmark"
                                                 size={20}
                                                 className="text-primary"

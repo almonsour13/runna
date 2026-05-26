@@ -67,7 +67,7 @@ const WeightDrawer = forwardRef<DrawerHandle, WeightProps>(
             <Drawer ref={drawerRef} disableScrollView={true}>
                 <ColView className="relative gap-4 p-4">
                     <RowView className="px-4 justify-center">
-                        <Text className="text-lg font-medium text-foreground">
+                        <Text className="text-lg font-medium">
                             Select Your Weight
                         </Text>
                     </RowView>
@@ -106,9 +106,7 @@ const WeightDrawer = forwardRef<DrawerHandle, WeightProps>(
                                                 {item}
                                             </Text>
                                             <Text
-                                                className={cn(
-                                                    "text-sm pb-1 text-foreground",
-                                                )}
+                                                className={cn("text-sm pb-1")}
                                             >
                                                 kg
                                             </Text>

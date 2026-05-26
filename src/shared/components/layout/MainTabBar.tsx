@@ -1,10 +1,10 @@
 import { cn } from "@/shared/utils/cn";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import clsx from "clsx";
 import { memo } from "react";
 import { TouchableOpacity, View } from "react-native";
 import ActivityButton from "../ActivityButton";
 import { ColView, RowView } from "../CustomView";
+import Icon from "../Icon";
 import Card from "../ui/Card";
 import Text from "../ui/Text";
 
@@ -51,11 +51,11 @@ function MainTabBar({ state, navigation }: { state: any; navigation: any }) {
                                     <Card
                                         className={cn(
                                             "h-16 aspect-square border border-border/40 justify-center items-center",
-                                            isActive && "bg-primary-foreground",
+                                            // isActive && "bg-primary-foreground",
                                         )}
                                     >
                                         <ColView className="gap-2 justify-center items-center ">
-                                            <Ionicons
+                                            <Icon
                                                 name={tab.icon as any}
                                                 size={24}
                                                 className={clsx(

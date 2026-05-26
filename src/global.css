@@ -9,9 +9,9 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-    --background: oklch(0.9711 0 0);
+    --background: oklch(0.9611 0 0);
     --foreground: oklch(0.2046 0 0);
-    --card: oklch(0.9911 0 0);
+    --card: oklch(1 0 0);
     --card-foreground: oklch(0.2046 0 0);
     --popover: oklch(0.9911 0 0);
     --popover-foreground: oklch(0.4386 0 0);
@@ -20,9 +20,10 @@
     --secondary: oklch(0.994 0 0);
     --secondary-foreground: oklch(0.2046 0 0);
     --muted: oklch(0.9461 0 0);
-    --muted-foreground: oklch(0.2435 0 0);
+    --muted-foreground: oklch(41.654% 0.00005 271.152);
     --accent: oklch(0.9461 0 0);
     --accent-foreground: oklch(0.2435 0 0);
+    --success: #02a963;
     --destructive: oklch(64.089% 0.24567 31.574);
     --destructive-foreground: oklch(0.9934 0.0032 17.2118);
     --border: oklch(0.9037 0 0);
@@ -83,7 +84,7 @@
     --primary-foreground: oklch(0.9213 0.0135 167.1556);
     --secondary: oklch(0.2603 0 0);
     --secondary-foreground: oklch(0.9851 0 0);
-    --muted: oklch(0.2393 0 0);
+    --muted: oklch(0.2593 0 0);
     --muted-foreground: oklch(0.7122 0 0);
     --accent: oklch(0.3132 0 0);
     --accent-foreground: oklch(0.9851 0 0);
@@ -149,6 +150,7 @@
     --color-muted-foreground: var(--muted-foreground);
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
+    --color-success: var(--success);
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
     --color-border: var(--border);

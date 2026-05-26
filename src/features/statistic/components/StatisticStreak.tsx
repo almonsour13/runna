@@ -1,8 +1,8 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { cn } from "@/shared/utils/cn";
-import { Ionicons } from "@expo/vector-icons";
 import { eachDayOfInterval, isToday, startOfDay, subDays } from "date-fns";
 import { useMemo } from "react";
 import { View } from "react-native";
@@ -63,20 +63,18 @@ export default function StatisticStreak() {
 
     return (
         <ColView className="px-4 gap-1">
-            <Text className="text-lg font-medium text-foreground">
-                Activity Streak
-            </Text>
+            <Text className="text-lg font-medium">Activity Streak</Text>
             <Card className="gap-3">
                 {/* Streak stats */}
                 <RowView className="gap-1">
                     <Card className="flex-1 items-center gap-1 bg-primary/10 border-0">
                         <RowView className="gap-1 items-center">
-                            <Ionicons name="flame" size={14} color="#f59e0b" />
+                            <Icon name="flame" size={14} color="#f59e0b" />
                             <Text className="text-xs text-muted-foreground">
                                 Current
                             </Text>
                         </RowView>
-                        <Text className="text-2xl font-bold text-foreground">
+                        <Text className="text-2xl font-bold">
                             {currentStreak}
                         </Text>
                         <Text className="text-xs text-muted-foreground">
@@ -85,12 +83,12 @@ export default function StatisticStreak() {
                     </Card>
                     <Card className="flex-1 items-center gap-1 bg-muted/50 border-0">
                         <RowView className="gap-1 items-center">
-                            <Ionicons name="trophy" size={14} color="#8b5cf6" />
+                            <Icon name="trophy" size={14} color="#8b5cf6" />
                             <Text className="text-xs text-muted-foreground">
                                 Longest
                             </Text>
                         </RowView>
-                        <Text className="text-2xl font-bold text-foreground">
+                        <Text className="text-2xl font-bold">
                             {longestStreak}
                         </Text>
                         <Text className="text-xs text-muted-foreground">

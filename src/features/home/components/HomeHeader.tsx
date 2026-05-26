@@ -1,8 +1,8 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Text from "@/shared/components/ui/Text";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
 import { NavigationProp } from "@/shared/types/type";
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useMemo } from "react";
 import { TouchableOpacity } from "react-native";
@@ -46,9 +46,9 @@ export default function HomeHeader() {
     // const initials =
     //     profile?.name.trim().split(" ")[0].split("")[0].toUpperCase() ?? "?";
     return (
-        <RowView className="px-4 pt-8 gap-4 justify-between items-start">
+        <RowView className="p-4 pb-0 gap-4 justify-between items-start">
             <ColView className="flex-1 gap-0">
-                <Text className="text-2xl text-foreground">
+                <Text className="text-2xl">
                     Good {greeting}, {profile?.name}
                 </Text>
                 <Text className="text-lg text-muted-foreground">
@@ -56,7 +56,11 @@ export default function HomeHeader() {
                 </Text>
             </ColView>
             <TouchableOpacity onPress={() => navigation.navigate("Schedule")}>
-                <Ionicons name="calendar-outline" size={24} />
+                <Icon
+                    name="calendar-outline"
+                    size={24}
+                    className="text-foreground"
+                />
             </TouchableOpacity>
         </RowView>
     );

@@ -64,4 +64,4 @@ export const ICON_COLORS: Record<string, string> = {
     speed: "#475569",
 };
 
-export const ACTIVITY_TYPE = ["walk", "run"];
+export const ACTIVITY_TYPE = ["walk", "run"] as const;

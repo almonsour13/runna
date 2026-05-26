@@ -10,6 +10,7 @@ export const activity = sqliteTable("activity", {
     calories: real("calories").notNull(),
     avgPace: real("avg_pace").notNull(),
     avgSpeed: real("avg_speed").notNull(),
+    steps: integer("steps").notNull(),
 
     goal: integer("goal").notNull(),
     type: text("type").notNull(),

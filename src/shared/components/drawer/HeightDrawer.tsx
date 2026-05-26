@@ -83,7 +83,7 @@ const HeightDrawer = forwardRef<DrawerHandle, HeightProps>(
             <Drawer ref={drawerRef} disableScrollView={true}>
                 <ColView className="relative gap-4 p-4">
                     <RowView className="px-4 justify-center">
-                        <Text className="text-lg font-medium text-foreground">
+                        <Text className="text-lg font-medium">
                             Select Your Height
                         </Text>
                     </RowView>
@@ -116,16 +116,12 @@ const HeightDrawer = forwardRef<DrawerHandle, HeightProps>(
                                         <RowView className="items-end gap-1">
                                             <RowView className="gap-8">
                                                 <Text
-                                                    className={cn(
-                                                        "text-foreground text-2xl",
-                                                    )}
+                                                    className={cn("text-2xl")}
                                                 >
                                                     {item.label}
                                                 </Text>
                                                 <Text
-                                                    className={cn(
-                                                        "text-foreground text-2xl",
-                                                    )}
+                                                    className={cn("text-2xl")}
                                                 >
                                                     {item.cm}{" "}
                                                     <Text className="text-base">
@@ -134,9 +130,7 @@ const HeightDrawer = forwardRef<DrawerHandle, HeightProps>(
                                                 </Text>
                                             </RowView>
                                             <Text
-                                                className={cn(
-                                                    "text-sm pb-1 text-foreground",
-                                                )}
+                                                className={cn("text-sm pb-1")}
                                             ></Text>
                                         </RowView>
                                     </View>

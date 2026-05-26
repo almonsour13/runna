@@ -1,10 +1,10 @@
 import AnimatedActiveButtonIndicator from "@/shared/components/AnimatedActiveButtonIndicator";
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import { useAcitivityTrackingController } from "@/shared/hooks/use-activity-tracking-controller";
 import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
 import { cn } from "@/shared/utils/cn";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { useEffect, useMemo, useRef } from "react";
 import { ActivityIndicator, Animated, TouchableOpacity } from "react-native";
 
@@ -72,7 +72,7 @@ export default function ActivityTrackingController() {
     }, [isDisable]);
 
     return (
-        <ColView className="py-4 gap-4">
+        <ColView className="pb-4 gap-4">
             <RowView className="px-4 items-center justify-center">
                 <Animated.View
                     style={{
@@ -82,7 +82,7 @@ export default function ActivityTrackingController() {
                 >
                     <TouchableOpacity disabled={isDisable} onPress={reset}>
                         <Card className="h-16 aspect-square bg-card items-center justify-center">
-                            <Ionicons
+                            <Icon
                                 name="refresh"
                                 size={24}
                                 className="text-foreground"
@@ -104,8 +104,8 @@ export default function ActivityTrackingController() {
                         {!currentLocation ? (
                             <ActivityIndicator />
                         ) : (
-                            <Ionicons
-                                name={mainIcon as any}
+                            <Icon
+                                name={mainIcon}
                                 size={24}
                                 className="text-white"
                             />
@@ -122,7 +122,7 @@ export default function ActivityTrackingController() {
                 >
                     <TouchableOpacity disabled={isDisable} onPress={stop}>
                         <Card className="h-16 aspect-square bg-card items-center justify-center">
-                            <Ionicons
+                            <Icon
                                 name="checkmark"
                                 size={24}
                                 className="text-foreground"

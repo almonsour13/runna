@@ -7,7 +7,7 @@ interface Props extends ViewProps {
 }
 export default function Card({ className, children, ...props }: Props) {
     return (
-        <View className={cn("p-4 bg-card rounded-xl", className)} {...props}>
+        <View className={cn("p-4 bg-card rounded-lg", className)} {...props}>
             {children}
         </View>
     );

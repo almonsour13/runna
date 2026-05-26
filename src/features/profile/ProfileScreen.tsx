@@ -1,7 +1,7 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Text from "@/shared/components/ui/Text";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { ScrollView, TouchableOpacity } from "react-native";
 
@@ -15,7 +15,7 @@ export default function ProfileScreen() {
                 <RowView className="px-4 pt-8 ">
                     <RowView className="gap-4 items-center">
                         <TouchableOpacity onPress={() => navigation.goBack()}>
-                            <Ionicons
+                            <Icon
                                 name="arrow-back"
                                 size={24}
                                 className="text-foreground"

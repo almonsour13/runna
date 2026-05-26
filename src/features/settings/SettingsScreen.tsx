@@ -1,4 +1,5 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { useOnboardingContext } from "@/shared/context/OnboardingContext";
@@ -8,8 +9,6 @@ import { useSettingsStore } from "@/shared/stores/use-settings-store";
 import { NavigationProp } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
 import { formatCmToftIn } from "@/shared/utils/format";
-import { capitalize } from "@/shared/utils/utils";
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import Constants from "expo-constants";
 import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
@@ -28,7 +27,7 @@ export default function SettingsScreen() {
                     label: profile?.name,
                     description: [
                         profile?.age,
-                        profile?.gender && capitalize(profile?.gender),
+                        profile?.gender && profile?.gender,
                         profile?.height && formatCmToftIn(profile?.height),
                         profile?.weight + " kg",
                     ]
@@ -54,7 +53,7 @@ export default function SettingsScreen() {
                     label: "Theme",
                     description: "Light, dark, or system mode",
                     icon: "moon",
-                    value: capitalize(preferences?.theme || "system"),
+                    value: preferences?.theme || "system",
                     type: "nav",
                     onPress: () => navigation.navigate("Theme" as never),
                     danger: false,
@@ -64,7 +63,7 @@ export default function SettingsScreen() {
                     label: "Units",
                     description: "Metric or imperial",
                     icon: "speedometer",
-                    value: capitalize(preferences?.unit || "metric"),
+                    value: preferences?.unit || "metric",
                     type: "nav",
                     onPress: () => navigation.navigate("Unit" as never),
                     danger: false,
@@ -147,11 +146,11 @@ export default function SettingsScreen() {
                 flexGrow: 1,
             }}
         >
-            <ColView className="flex-1 gap-4">
-                <RowView className="px-4 pt-8 ">
-                    <RowView className="gap-4 items-center">
+            <ColView className="flex-1 gap-0">
+                <RowView className="p-4">
+                    <RowView className="items-center">
                         <TouchableOpacity onPress={() => navigation.goBack()}>
-                            <Ionicons
+                            <Icon
                                 name="arrow-back"
                                 size={24}
                                 className="text-foreground"
@@ -170,7 +169,7 @@ export default function SettingsScreen() {
                                     <Text className="text-sm text-muted-foreground">
                                         {section.title}
                                     </Text>
-                                    <ColView className="gap-1">
+                                    <ColView className="gap-2">
                                         {items
                                             .filter((item) => item.visible)
                                             .map((item, it) => {
@@ -187,9 +186,9 @@ export default function SettingsScreen() {
                                                             <RowView className="justify-between items-center">
                                                                 <RowView className="gap-4 items-center">
                                                                     <View className="bg-muted h-10 w-10 items-center justify-center rounded">
-                                                                        <Ionicons
+                                                                        <Icon
                                                                             name={
-                                                                                item.icon as any
+                                                                                item.icon
                                                                             }
                                                                             size={
                                                                                 20
@@ -223,12 +222,12 @@ export default function SettingsScreen() {
                                                                 {item.type ===
                                                                     "nav" && (
                                                                     <RowView className="items-center">
-                                                                        <Text className="text-xs text-primary">
+                                                                        <Text className="text-xs text-primary capitalize">
                                                                             {
                                                                                 item.value
                                                                             }
                                                                         </Text>
-                                                                        <Ionicons
+                                                                        <Icon
                                                                             name="chevron-forward"
                                                                             size={
                                                                                 16

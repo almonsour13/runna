@@ -8,7 +8,8 @@ export default function Text({ style, className, ...props }: TextProps) {
           ? "DMSans_600SemiBold"
           : className?.includes("font-bold")
             ? "DMSans_700Bold"
-            : "DMSans_400Regular";
+            : // : "DMSans_400Regular";
+              "DMSans_500Medium";
     return (
         <RNText
             style={[{ fontFamily: font }, style]}

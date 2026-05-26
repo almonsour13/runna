@@ -1,4 +1,5 @@
 import { db } from ".";
+import { ACTIVITY_TYPE } from "../constant/constant";
 import { Coordinate } from "../types/type";
 import { logger } from "../utils/logger";
 import { generateId } from "../utils/utils";
@@ -39,7 +40,7 @@ function generateEarthCoordinates(
     let lat = startLat;
     let lng = startLng;
     let distanceCovered = 0;
-    let stepIndex = 0; // ✅ explicit counter instead of relying on coordinates.length at push time
+    let stepIndex = 0;
 
     while (distanceCovered < totalDistance) {
         const speed = baseSpeed * random(0.92, 1.08);
@@ -140,6 +141,8 @@ export const seed = async ({
             const avgPace = durationSec / 60 / distanceKm;
             const calories =
                 type === "run" ? distance * 0.063 : distance * 0.04;
+            const stepLength = type === "run" ? 0.75 : 0.65; // meters per step
+            const steps = Math.round(distance / stepLength);
 
             const [act] = await db
                 .insert(activity)
@@ -153,6 +156,7 @@ export const seed = async ({
                     avgPace,
                     avgSpeed,
                     goal,
+                    steps,
                     type,
                     status: "completed",
                     isImported: isImportedBatch, // 👈 whole day's batch
@@ -174,8 +178,6 @@ export const seed = async ({
     logger.log("[Seed] seeding complete");
 };
 
-const TYPES = ["walk", "run", "cycling"] as const;
-
 const WEEKLY_PATTERNS = [
     [1, 3, 5], // Mon Wed Fri
     [0, 6], // Weekend
@@ -192,7 +194,7 @@ function randomTime() {
         .padStart(2, "0")}`;
 }
 
-function randomGoal(type: (typeof TYPES)[number]) {
+function randomGoal(type: (typeof ACTIVITY_TYPE)[number]) {
     switch (type) {
         case "run":
             return randomInt(5000, 15000);
@@ -200,19 +202,15 @@ function randomGoal(type: (typeof TYPES)[number]) {
         case "walk":
             return randomInt(2000, 8000);
 
-        case "cycling":
-            return randomInt(10000, 40000);
-
         default:
             return 5000;
     }
 }
 
-function randomName(type: (typeof TYPES)[number]) {
+function randomName(type: (typeof ACTIVITY_TYPE)[number]) {
     const names = {
         walk: ["Morning Walk", "Evening Walk", "Daily Walk"],
         run: ["Morning Run", "Tempo Run", "Recovery Run"],
-        cycling: ["Weekend Cycling", "Bike Session", "Road Cycling"],
     };
 
     return names[type][randomInt(0, names[type].length - 1)];
@@ -230,7 +228,7 @@ export const seedSchedule = async ({
     const now = new Date();
 
     const schedules = Array.from({ length: count }).map(() => {
-        const type = TYPES[randomInt(0, TYPES.length - 1)];
+        const type = ACTIVITY_TYPE[randomInt(0, ACTIVITY_TYPE.length - 1)];
         const repeatDays = JSON.stringify(
             WEEKLY_PATTERNS[randomInt(0, WEEKLY_PATTERNS.length - 1)],
         );

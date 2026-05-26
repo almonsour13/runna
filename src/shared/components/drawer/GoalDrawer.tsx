@@ -71,7 +71,7 @@ const GoalDrawer = forwardRef<DrawerHandle, Props>(
             <Drawer ref={drawerRef} disableScrollView={true}>
                 <ColView className="relative gap-4 p-4">
                     <RowView className="px-4 justify-center">
-                        <Text className="text-lg font-medium text-foreground">
+                        <Text className="text-lg font-medium">
                             Select Your Goal
                         </Text>
                     </RowView>
@@ -113,20 +113,14 @@ const GoalDrawer = forwardRef<DrawerHandle, Props>(
                                                 {item}
                                             </Text>
                                             <Text
-                                                className={cn(
-                                                    "text-sm pb-1 text-foreground",
-                                                )}
+                                                className={cn("text-sm pb-1")}
                                             >
                                                 km
                                             </Text>
                                         </RowView>
                                         {isRecommended && (
                                             <View className="absolute z-40 right-0">
-                                                <Text
-                                                    className={cn(
-                                                        "text-xs text-foreground",
-                                                    )}
-                                                >
+                                                <Text className={cn("text-xs")}>
                                                     Recommended
                                                 </Text>
                                             </View>

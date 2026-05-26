@@ -14,7 +14,8 @@ import ActivityTypeDrawer from "@/shared/components/drawer/ActivityTypeDrawer";
 import GoalDrawer from "@/shared/components/drawer/GoalDrawer";
 import { cn } from "@/shared/utils/cn";
 import { convertMtoKm } from "@/shared/utils/convert";
-import { capitalize, generateId } from "@/shared/utils/utils";
+import { generateId } from "@/shared/utils/utils";
+import { format } from "date-fns";
 import { Switch, TextInput, TouchableOpacity } from "react-native";
 import { ColView, RowView } from "../../../shared/components/CustomView";
 import Card from "../../../shared/components/ui/Card";
@@ -94,6 +95,16 @@ const ScheduleFormDrawer = forwardRef<
         }
     }, [data]);
 
+    const formattedTime = () => {
+        if (!schedule?.time) return null;
+        const [h, m] = schedule?.time.split(":").map((v) => parseInt(v));
+
+        const scheduledDate = new Date();
+        scheduledDate.setHours(h, m, 0, 0);
+
+        return format(scheduledDate, "hh:mm a");
+    };
+
     const repeatDaysArray: number[] = schedule?.repeatDays
         ? JSON.parse(schedule.repeatDays)
         : [];
@@ -142,6 +153,8 @@ const ScheduleFormDrawer = forwardRef<
             } else {
                 createSchedule.mutateAsync(schedule);
             }
+            setScheduleId("");
+            setSchedule(EMPTY_SCHEDULE());
             drawerRef.current?.close();
             onClose?.();
         } finally {
@@ -153,7 +166,7 @@ const ScheduleFormDrawer = forwardRef<
             <Drawer ref={drawerRef} className="bg-background">
                 <ColView className="gap-4 p-4">
                     <RowView className="justify-center">
-                        <Text className="text-lg font-medium text-foreground">
+                        <Text className="text-lg font-medium">
                             {scheduleId ? "Edit Schedule" : " New Schedule"}
                         </Text>
                     </RowView>
@@ -178,7 +191,7 @@ const ScheduleFormDrawer = forwardRef<
                                 >
                                     <Card className="h-16 justify-center">
                                         <Text>
-                                            {schedule?.time || "Select Time"}
+                                            {formattedTime() || "Select Time"}
                                         </Text>
                                     </Card>
                                 </TouchableOpacity>
@@ -207,10 +220,8 @@ const ScheduleFormDrawer = forwardRef<
                                     onPress={() => typeDrawer.current?.open()}
                                 >
                                     <Card className="h-16 justify-center">
-                                        <Text>
-                                            {(schedule?.type &&
-                                                capitalize(schedule?.type)) ||
-                                                "Select Type"}
+                                        <Text className="capitalize">
+                                            {schedule?.type || "Select Type"}
                                         </Text>
                                     </Card>
                                 </TouchableOpacity>
@@ -261,6 +272,7 @@ const ScheduleFormDrawer = forwardRef<
             </Drawer>
             <TimeDrawer
                 ref={timeDrawer}
+                value={schedule?.time}
                 onChange={(v) => {
                     handleChange("time", v);
                 }}

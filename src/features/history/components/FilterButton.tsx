@@ -11,7 +11,7 @@ export default function FilterButton({
     ...props
 }: {
     className?: string;
-    label: string;
+    label?: string;
     active: boolean;
     onPress: () => void;
 }) {
@@ -21,7 +21,7 @@ export default function FilterButton({
                 <Text
                     className={cn(
                         "text-sm",
-                        active ? "text-white" : "text-muted-foreground",
+                        active ? "text-white" : "text-foreground",
                     )}
                 >
                     {label}

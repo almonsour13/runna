@@ -9,7 +9,6 @@ import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
 import { Profile } from "@/shared/types/type";
 import { formatCmToftIn } from "@/shared/utils/format";
-import { capitalize } from "@/shared/utils/utils";
 import { useRef } from "react";
 import { Dimensions, TextInput, TouchableOpacity } from "react-native";
 
@@ -83,9 +82,9 @@ export default function ProfileSteps({
                                 onPress={() => genderDrawerRef.current?.open()}
                             >
                                 <Card className="h-16 justify-center">
-                                    <Text>
+                                    <Text className="capitalize">
                                         {profile?.gender
-                                            ? capitalize(profile.gender)
+                                            ? profile.gender
                                             : "Select Gender"}
                                     </Text>
                                 </Card>

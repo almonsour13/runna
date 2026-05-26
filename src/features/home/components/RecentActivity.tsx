@@ -1,10 +1,10 @@
 import ActivityCard from "@/shared/components/ActivityCard";
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { activityService } from "@/shared/services/storage/activity.service";
 import { NavigationProp } from "@/shared/types/type";
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { TouchableOpacity } from "react-native";
@@ -45,19 +45,19 @@ export default function RecentActivities() {
                 )}
             </RowView>
             {isLoading ? (
-                <ColView className="px-4 gap-1">
+                <ColView className="px-4 gap-2">
                     {Array.from({ length: 5 }).map((_, i) => (
                         <Card key={i} className="h-22" />
                     ))}
                 </ColView>
             ) : !hasActivities ? (
                 <ColView className="px-4 py-8 items-center gap-2">
-                    <Ionicons
+                    <Icon
                         name="footsteps-outline"
                         size={40}
                         className="text-muted-foreground opacity-40"
                     />
-                    <Text className="text-base font-medium text-foreground">
+                    <Text className="text-base font-medium">
                         No activities yet
                     </Text>
                     <Text className="text-sm text-muted-foreground text-center">
@@ -65,7 +65,7 @@ export default function RecentActivities() {
                     </Text>
                 </ColView>
             ) : (
-                <ColView className="px-4 gap-1">
+                <ColView className="px-4 gap-2">
                     {activities.map((activity) => (
                         <ActivityCard key={activity.id} activity={activity} />
                     ))}

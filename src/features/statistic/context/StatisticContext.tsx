@@ -11,7 +11,7 @@ import {
     isThisWeek,
     isThisYear,
     startOfMonth,
-    startOfWeek
+    startOfWeek,
 } from "date-fns";
 import { createContext, useContext, useMemo, useState } from "react";
 

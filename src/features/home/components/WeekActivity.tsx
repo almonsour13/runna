@@ -1,15 +1,15 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Divider from "@/shared/components/Divider";
 import ActivityGroupDrawer, {
     ActivityGroupDrawerHandle,
 } from "@/shared/components/drawer/ActivityGroupDrawer";
+import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { activityService } from "@/shared/services/storage/activity.service";
 import { cn } from "@/shared/utils/cn";
 import { computeStats } from "@/shared/utils/compute";
-import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
-import { formatCalories, formatDuration } from "@/shared/utils/format";
-import { Ionicons } from "@expo/vector-icons";
+import { formatStats } from "@/shared/utils/format";
 import { useQuery } from "@tanstack/react-query";
 import { addDays, format, isToday, startOfWeek } from "date-fns";
 import { useMemo, useRef } from "react";
@@ -91,50 +91,25 @@ export default function WeekActivity() {
         (sum, day) => sum + day.totalDayCalories,
         0,
     );
-    const totalWeekDistanceKm = convertMtoKm(totalWeekDistance);
 
-    const stats = [
-        {
-            label: "Distance",
-            value: totalWeekDistanceKm.toFixed(1),
-            unit: "km",
-            icon: "navigate",
-            color: "text-primary",
-        },
-        {
-            border: true,
-        },
-        {
-            label: "Duration",
-            value: formatDuration(convertMsToS(totalWeekDuration)),
-            unit: null,
-            icon: "time",
-            color: "text-blue-500",
-        },
-        {
-            border: true,
-        },
-        {
-            label: "Calories",
-            value: formatCalories(totalWeekCalories),
-            unit: "kcal",
-            icon: "flame",
-            color: "text-red-500",
-        },
-    ];
+    const stats = formatStats({
+        distance: totalWeekDistance,
+        duration: totalWeekDuration,
+        calories: totalWeekCalories,
+    });
 
     return (
         <>
             <View className="px-4">
                 {isLoading ? (
-                    <Card className="h-60" />
+                    <Card className="h-48" />
                 ) : (
                     <Card className="">
                         <ColView className="gap-4">
                             <ColView className="gap-4">
                                 <RowView className="justify-between">
                                     <Text className="text-base font-medium">
-                                        This Week
+                                        This Week Progress
                                     </Text>
                                     {weekDays.length === 7 && (
                                         <Text className="text-sm text-muted-foreground">
@@ -148,20 +123,20 @@ export default function WeekActivity() {
                                     {stats.map((stat, i) => {
                                         if ("border" in stat) {
                                             return (
-                                                <View
+                                                <Divider
                                                     key={i}
-                                                    className="h-full w-px bg-muted"
+                                                    direction="vertical"
                                                 />
                                             );
                                         }
                                         return (
                                             <ColView
                                                 key={stat.label}
-                                                className={cn("gap-1")}
+                                                className={cn("")}
                                             >
-                                                <RowView className="gap-1">
-                                                    <Ionicons
-                                                        name={stat.icon as any}
+                                                <RowView className="">
+                                                    <Icon
+                                                        name={stat.icon}
                                                         size={11}
                                                         className="text-primary"
                                                     />
@@ -171,7 +146,7 @@ export default function WeekActivity() {
                                                 </RowView>
                                                 <Text
                                                     className={cn(
-                                                        "text-3xl font-bold",
+                                                        "text-3xl font-medium",
                                                     )}
                                                 >
                                                     {stat.value}{" "}
@@ -187,7 +162,7 @@ export default function WeekActivity() {
                                 </RowView>
                             </ColView>
                             <RowView className="gap-2">
-                                <RowView className="flex-1 items-end gap-1">
+                                <RowView className="flex-1 items-end gap-2">
                                     {weekDays.map((day, i) => {
                                         const maxDayDistance = Math.max(
                                             ...weekDays.map(
@@ -211,7 +186,7 @@ export default function WeekActivity() {
                                                     )
                                                 }
                                             >
-                                                <Card className="h-12 w-full justify-end bg-muted/50 rounded overflow-hidden p-0 border-0">
+                                                <Card className="h-12 w-full justify-end bg-muted rounded overflow-hidden p-0 border-0">
                                                     {!day.isFuture && (
                                                         <View
                                                             style={{

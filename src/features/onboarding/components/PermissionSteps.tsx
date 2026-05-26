@@ -1,8 +1,8 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { cn } from "@/shared/utils/cn";
-import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import * as MediaLibrary from "expo-media-library";
 import * as Notifications from "expo-notifications";
@@ -18,20 +18,14 @@ type PermissionStatus = "granted" | "denied" | "idle";
 function StatusIcon({ status }: { status: PermissionStatus }) {
     if (status === "granted") {
         return (
-            <Ionicons
-                name="checkmark-circle"
-                size={20}
-                className="text-primary"
-            />
+            <Icon name="checkmark-circle" size={20} className="text-primary" />
         );
     }
     if (status === "denied") {
-        return (
-            <Ionicons name="close-circle" size={20} className="text-red-500" />
-        );
+        return <Icon name="close-circle" size={20} className="text-red-500" />;
     }
     return (
-        <Ionicons
+        <Icon
             name="ellipse-outline"
             size={20}
             className="text-muted-foreground"
@@ -192,7 +186,7 @@ export default function PermissionSteps({
                             >
                                 <RowView className="items-center gap-3">
                                     <View className="bg-muted h-10 w-10 items-center justify-center rounded">
-                                        <Ionicons
+                                        <Icon
                                             name={icon as any}
                                             size={20}
                                             className="text-foreground"

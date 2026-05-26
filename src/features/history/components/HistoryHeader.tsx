@@ -3,11 +3,9 @@ import Text from "@/shared/components/ui/Text";
 
 export default function HistoryHeader() {
     return (
-        <ColView className="px-4 pt-8 gap-0.5 pb-4">
-            <Text className="text-2xl font-medium text-foreground">
-                History
-            </Text>
-            <Text className="text-sm text-muted-foreground">
+        <ColView className="p-4 pb-0 gap-0">
+            <Text className="text-2xl font-medium">History</Text>
+            <Text className="text-lg text-muted-foreground">
                 Your activity over time
             </Text>
         </ColView>

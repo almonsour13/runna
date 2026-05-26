@@ -1,10 +1,10 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { settingsService } from "@/shared/services/storage/settings.service";
 import { useSettingsStore } from "@/shared/stores/use-settings-store";
 import { ThemeMode } from "@/shared/types/type";
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { TouchableOpacity, View } from "react-native";
 
@@ -55,7 +55,7 @@ export default function ThemeScreen() {
             <RowView className="px-4 pt-8 ">
                 <RowView className="gap-4 items-center">
                     <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Ionicons
+                        <Icon
                             name="arrow-back"
                             size={24}
                             className="text-foreground"
@@ -76,8 +76,8 @@ export default function ThemeScreen() {
                                 <RowView className="justify-between items-center">
                                     <RowView className="gap-4 items-center">
                                         <View className="bg-muted h-10 w-10 items-center justify-center rounded">
-                                            <Ionicons
-                                                name={item.icon as any}
+                                            <Icon
+                                                name={item.icon}
                                                 size={20}
                                                 className="text-primary"
                                             />
@@ -87,7 +87,7 @@ export default function ThemeScreen() {
                                         </Text>
                                     </RowView>
                                     {isSelected && (
-                                        <Ionicons
+                                        <Icon
                                             name="checkmark"
                                             size={20}
                                             className="text-primary"

@@ -1,17 +1,17 @@
 import { RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Text from "@/shared/components/ui/Text";
 import { NavigationProp } from "@/shared/types/type";
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { TouchableOpacity } from "react-native";
 
 export default function ScheduleHeader() {
     const navigation = useNavigation<NavigationProp>();
     return (
-        <RowView className="px-4 pt-8 gap-4 pb-4">
-            <RowView className="gap-4 items-center">
+        <RowView className="p-4">
+            <RowView className="items-center">
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Ionicons
+                    <Icon
                         name="arrow-back"
                         size={24}
                         className="text-foreground"

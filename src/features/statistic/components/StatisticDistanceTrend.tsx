@@ -9,6 +9,7 @@ import { View } from "react-native";
 import { useStatisticContext } from "../context/StatisticContext";
 
 const BAR_HEIGHT = 156;
+const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 export default function StatisticDistanceTrend() {
     const { activeTab, activities, dateRange } = useStatisticContext();
@@ -56,31 +57,26 @@ export default function StatisticDistanceTrend() {
         <>
             <ColView className="px-4 gap-1">
                 <RowView className="justify-between items-center">
-                    <Text className="text-lg font-medium text-foreground">
-                        Distance
-                    </Text>
+                    <Text className="text-lg font-medium">Distance Trends</Text>
                     <Text className="text-xs text-muted-foreground">
                         {convertMtoKm(total).toFixed(0)} km total
                     </Text>
                 </RowView>
                 <Card>
-                    <RowView className="gap-2">
+                    <RowView className="gap-2 ">
                         <View
                             style={{ height: BAR_HEIGHT }}
                             className="justify-between"
                         >
                             {ruler.map((r, i) => (
-                                <Text
-                                    key={i}
-                                    className="text-xs text-foreground leading-none"
-                                >
+                                <Text key={i} className="text-xs leading-none">
                                     {convertMtoKm(r).toFixed(0)}
                                 </Text>
                             ))}
                         </View>
 
                         <RowView
-                            className="flex-1 gap-1"
+                            className="flex-1 gap-2"
                             style={{ height: BAR_HEIGHT }}
                         >
                             {barData.map((d, idx) => {
@@ -88,27 +84,37 @@ export default function StatisticDistanceTrend() {
                                     maxDistance > 0
                                         ? (d.distance / maxDistance) * 100
                                         : 0;
+                                const dayLabel =
+                                    activeTab === "Week"
+                                        ? DAY_LABELS[idx % 7]
+                                        : false;
 
                                 return (
-                                    <View
-                                        key={idx}
-                                        className="flex-1 justify-end bg-muted/50 rounded overflow-hidden"
-                                        style={{ height: BAR_HEIGHT }}
-                                    >
-                                        {!d.isFuture && (
-                                            <View
-                                                style={{
-                                                    height: `${pct}%`,
-                                                }}
-                                                className={cn(
-                                                    "rounded",
-                                                    d.isToday
-                                                        ? "bg-primary"
-                                                        : "bg-primary/20",
-                                                )}
-                                            />
+                                    <ColView key={idx} className="flex-1">
+                                        <View
+                                            className="flex-1 justify-end bg-muted rounded overflow-hidden"
+                                            style={{ height: BAR_HEIGHT }}
+                                        >
+                                            {!d.isFuture && (
+                                                <View
+                                                    style={{
+                                                        height: `${pct}%`,
+                                                    }}
+                                                    className={cn(
+                                                        "rounded",
+                                                        d.isToday
+                                                            ? "bg-primary"
+                                                            : "bg-primary/20",
+                                                    )}
+                                                />
+                                            )}
+                                        </View>
+                                        {dayLabel && (
+                                            <Text className="text-xs text-center">
+                                                {dayLabel}
+                                            </Text>
                                         )}
-                                    </View>
+                                    </ColView>
                                 );
                             })}
                         </RowView>

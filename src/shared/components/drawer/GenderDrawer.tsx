@@ -3,9 +3,9 @@ import Drawer, { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
 import { Gender } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { TouchableOpacity } from "react-native";
+import Icon from "../Icon";
 
 interface Props {
     value?: Gender | null;
@@ -56,7 +56,7 @@ const GenderDrawer = forwardRef<DrawerHandle, Props>(
                                             {gender}
                                         </Text>
                                         {isSelected && (
-                                            <Ionicons
+                                            <Icon
                                                 name="checkmark"
                                                 size={20}
                                                 className="text-primary"

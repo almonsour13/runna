@@ -2,11 +2,10 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import ActivityActionDrawer, {
     ActivityActionDrawerHandle,
 } from "@/shared/components/drawer/ActivityActionDrawer";
-import Card from "@/shared/components/ui/Card";
+import Icon from "@/shared/components/Icon";
 import Text from "@/shared/components/ui/Text";
 import { Activity } from "@/shared/types/type";
-import { capitalize, timeSession } from "@/shared/utils/utils";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { timeSession } from "@/shared/utils/utils";
 import { useNavigation } from "@react-navigation/native";
 import { useRef } from "react";
 import { TouchableOpacity } from "react-native";
@@ -22,22 +21,20 @@ export default function ActivityDetailsHeader({
 
     return (
         <>
-            <RowView className="absolute z-10 top-0 left-0 right-0 p-4  gap-2 items-center">
-                <RowView className="flex-1 gap-4 items-center">
+            <RowView className="p-4 items-center">
+                <RowView className="flex-1 items-center">
                     <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Card className="p-2 rounded-full aspect-square">
-                            <Ionicons name="arrow-back" size={20} />
-                        </Card>
+                        <Icon
+                            name="arrow-back"
+                            size={24}
+                            className="text-foreground"
+                        />
                     </TouchableOpacity>
                     {activity && (
-                        <ColView className="hidden gap-0">
-                            <Text className="text-lg font-medium">
-                                {capitalize(
-                                    timeSession(
-                                        activity.startTime.toDateString(),
-                                    ),
-                                )}{" "}
-                                {capitalize(activity.type)}
+                        <ColView className="gap-0">
+                            <Text className="text-2xl font-medium capitalize">
+                                {timeSession(activity.startTime.toDateString())}{" "}
+                                {activity.type}
                             </Text>
                         </ColView>
                     )}
@@ -51,9 +48,11 @@ export default function ActivityDetailsHeader({
                                 )
                             }
                         >
-                            <Card className="p-2 rounded-full aspect-square">
-                                <Ionicons name="ellipsis-vertical" size={20} />
-                            </Card>
+                            <Icon
+                                name="ellipsis-vertical"
+                                size={20}
+                                className="text-foreground"
+                            />
                         </TouchableOpacity>
                     </RowView>
                 )}

@@ -2,12 +2,12 @@ import { activityService } from "@/shared/services/storage/activity.service";
 import { cn } from "@/shared/utils/cn";
 import { computeStats } from "@/shared/utils/compute";
 import { formatRelativeDateLabel, formatStats } from "@/shared/utils/format";
-import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import ActivityCard from "../ActivityCard";
 import { ColView, RowView } from "../CustomView";
+import Icon from "../Icon";
 import Card from "../ui/Card";
 import Drawer, { DrawerHandle } from "../ui/Drawer";
 import Text from "../ui/Text";
@@ -28,8 +28,10 @@ const ActivityGroupDrawer = forwardRef<
         open: () => drawerRef.current?.open(),
         close: () => drawerRef.current?.close(),
         openWithActivityDate: (date: Date) => {
-            setActivityDate(date);
             drawerRef.current?.open();
+            requestAnimationFrame(() => {
+                setActivityDate(date);
+            });
         },
     }));
 
@@ -65,18 +67,9 @@ const ActivityGroupDrawer = forwardRef<
     return (
         <>
             <Drawer ref={drawerRef}>
-                {isLoading ? (
+                {!isLoading && isEmpty ? (
                     <ColView className="items-center justify-center gap-3 px-4 py-16">
-                        <Ionicons
-                            name="sync"
-                            size={32}
-                            className="text-muted-foreground"
-                        />
-                        <Text className="text-sm font-medium">Loading...</Text>
-                    </ColView>
-                ) : isEmpty ? (
-                    <ColView className="items-center justify-center gap-3 px-4 py-16">
-                        <Ionicons
+                        <Icon
                             name="footsteps-outline"
                             size={32}
                             className="text-muted-foreground"
@@ -106,52 +99,64 @@ const ActivityGroupDrawer = forwardRef<
                             </Text>
                         </RowView>
 
-                        <RowView className="justify-between gap-1">
-                            {stats.map((stat, i) => (
-                                <Card
-                                    key={stat.label}
-                                    className={cn(
-                                        "flex-1",
-                                        "border border-border/40",
-                                    )}
-                                >
-                                    <ColView className={cn("gap-1")}>
-                                        <RowView className="gap-1">
-                                            <Ionicons
-                                                name={stat.icon as any}
-                                                size={11}
-                                                className="text-primary"
-                                            />
-                                            <Text className="text-xs text-muted-foreground">
-                                                {stat.label}
-                                            </Text>
-                                        </RowView>
-                                        <Text
-                                            className={cn("text-2xl font-bold")}
-                                        >
-                                            {stat.value}{" "}
-                                            {stat.unit && (
-                                                <Text className="text-xs font-normal text-muted-foreground">
-                                                    {stat.unit}
-                                                </Text>
-                                            )}
-                                        </Text>
-                                    </ColView>
-                                </Card>
-                            ))}
+                        <RowView className="justify-between gap-2">
+                            {isLoading
+                                ? Array.from({ length: 3 }).map((_, i) => (
+                                      <Card
+                                          key={i}
+                                          className="flex-1 h-22 border border-border"
+                                      />
+                                  ))
+                                : stats.map((stat, i) => (
+                                      <Card
+                                          key={stat.label}
+                                          className={cn(
+                                              "flex-1",
+                                              "border border-border",
+                                          )}
+                                      >
+                                          <ColView>
+                                              <RowView>
+                                                  <Icon
+                                                      name={stat.icon}
+                                                      size={11}
+                                                      className="text-primary"
+                                                  />
+                                                  <Text className="text-xs text-muted-foreground">
+                                                      {stat.label}
+                                                  </Text>
+                                              </RowView>
+                                              <Text className={cn("text-xl")}>
+                                                  {stat.value}{" "}
+                                                  {stat.unit && (
+                                                      <Text className="text-xs font-normal text-muted-foreground">
+                                                          {stat.unit}
+                                                      </Text>
+                                                  )}
+                                              </Text>
+                                          </ColView>
+                                      </Card>
+                                  ))}
                         </RowView>
                         <ColView>
-                            <Text className="text-lg text-foreground font-medium">
+                            <Text className="text-lg font-medium">
                                 Activities
                             </Text>
-                            <ColView className="gap-1">
-                                {activities.map((activity) => (
-                                    <ActivityCard
-                                        key={activity.id}
-                                        activity={activity}
-                                        className="border border-border/40"
-                                    />
-                                ))}
+                            <ColView className="gap-2">
+                                {isLoading
+                                    ? Array.from({ length: 3 }).map((_, i) => (
+                                          <Card
+                                              key={i}
+                                              className="h-22 border border-border"
+                                          />
+                                      ))
+                                    : activities.map((activity) => (
+                                          <ActivityCard
+                                              key={activity.id}
+                                              activity={activity}
+                                              className="border border-border"
+                                          />
+                                      ))}
                             </ColView>
                         </ColView>
                     </ColView>

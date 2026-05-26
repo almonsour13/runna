@@ -1,9 +1,8 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Drawer, { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
 import { cn } from "@/shared/utils/cn";
-import { capitalize } from "@/shared/utils/utils";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import {
     forwardRef,
     useEffect,
@@ -60,9 +59,7 @@ const RepeatDaysDrawer = forwardRef<DrawerHandle, Props>(
             <Drawer ref={drawerRef}>
                 <ColView className="gap-4 py-4">
                     <RowView className="justify-center">
-                        <Text className="text-lg font-medium text-foreground">
-                            Select Days
-                        </Text>
+                        <Text className="text-lg font-medium">Select Days</Text>
                     </RowView>
                     <ColView className="gap-0">
                         {DAY_LABELS.map((day, i) => {
@@ -79,14 +76,14 @@ const RepeatDaysDrawer = forwardRef<DrawerHandle, Props>(
                                     <RowView className="justify-between">
                                         <Text
                                             className={cn(
-                                                "text-lg",
+                                                "text-lg capitalize",
                                                 isSelected && "text-primary",
                                             )}
                                         >
-                                            {capitalize(day)}
+                                            {day}
                                         </Text>
                                         {isSelected && (
-                                            <Ionicons
+                                            <Icon
                                                 name="checkmark"
                                                 size={20}
                                                 className="text-primary"

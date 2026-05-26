@@ -1,5 +1,6 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import GoalDrawer from "@/shared/components/drawer/GoalDrawer";
+import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
@@ -17,7 +18,6 @@ import {
     formatDurationHHMMSS,
     formatPace,
 } from "@/shared/utils/format";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { useMemo, useRef } from "react";
 import { TouchableOpacity } from "react-native";
 
@@ -78,7 +78,7 @@ export default function ActivityTrackingSummary() {
                     >
                         <Card className="px-3 py-1.5">
                             <RowView className="gap-1.5">
-                                <Ionicons
+                                <Icon
                                     name="flag"
                                     size={12}
                                     className="text-primary"
@@ -93,7 +93,7 @@ export default function ActivityTrackingSummary() {
                 <ColView className="gap-1 items-center">
                     <Text className="text-6xl font-bold">{time}</Text>
                     <RowView className="gap-1 items-center">
-                        <Ionicons
+                        <Icon
                             name="time-outline"
                             size={12}
                             className="hidden text-primary"
@@ -115,7 +115,7 @@ export default function ActivityTrackingSummary() {
                                 </Text>
                             </RowView>
                             <RowView className="gap-1 items-center">
-                                <Ionicons
+                                <Icon
                                     name={stat.icon}
                                     size={12}
                                     className="hidden text-primary"

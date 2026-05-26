@@ -1,10 +1,10 @@
 import { RowView } from "@/shared/components/CustomView";
+import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { useMapStyle } from "@/shared/hooks/use-map-style";
 import { Coordinate } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
-import { Ionicons } from "@expo/vector-icons";
 import {
     Camera,
     GeoJSONSource,
@@ -99,7 +99,7 @@ export default function ActivityDetailsMap({
                 height: coordinates.length ? undefined : 0,
                 overflow: "hidden",
             }}
-            className="flex-1 relative"
+            className="relative min-h-92 flex-1"
         >
             <Map
                 mapStyle={mapStyle}
@@ -189,7 +189,7 @@ export default function ActivityDetailsMap({
                     className="h-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40"
                     onPress={fitBounds}
                 >
-                    <Ionicons
+                    <Icon
                         name="scan-outline"
                         size={16}
                         className="text-foreground"
@@ -204,7 +204,7 @@ export default function ActivityDetailsMap({
                             isKmMarkersVisible && "bg-primary",
                         )}
                     >
-                        <Ionicons
+                        <Icon
                             name="flag"
                             size={20}
                             className={cn("text-white")}
