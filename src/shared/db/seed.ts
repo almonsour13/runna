@@ -102,7 +102,7 @@ export const seed = async ({
         day.setDate(day.getDate() + 1)
     ) {
         const sessionCount = randomInt(sessionMinPerDay, sessionMaxPerDay);
-        const isImportedBatch = Math.random() > 0.7;
+        const isImportedBatch = false;
 
         for (let i = 0; i < sessionCount; i++) {
             const type = Math.random() > 0.5 ? "walk" : "run";

@@ -97,6 +97,7 @@ export default function PermissionSteps({
                               : "idle",
                 }));
             },
+            visible: true,
         },
         {
             name: "Notifications",
@@ -116,6 +117,7 @@ export default function PermissionSteps({
                               : "idle",
                 }));
             },
+            visible: true,
         },
         {
             name: "Photo Library",
@@ -134,6 +136,7 @@ export default function PermissionSteps({
                               : "idle",
                 }));
             },
+            visible: false,
         },
         {
             name: "Motion & Sensors",
@@ -153,6 +156,7 @@ export default function PermissionSteps({
                               : "idle",
                 }));
             },
+            visible: true,
         },
     ];
 
@@ -168,46 +172,49 @@ export default function PermissionSteps({
                 </Text>
             </ColView>
             <ColView className="px-4 gap-2">
-                {permissionsList.map((perm) => {
-                    const { name, description, icon, status, onRequest } = perm;
-                    const isDenied = status === "denied";
+                {permissionsList
+                    .filter((perm) => perm.visible)
+                    .map((perm) => {
+                        const { name, description, icon, status, onRequest } =
+                            perm;
+                        const isDenied = status === "denied";
 
-                    return (
-                        <TouchableOpacity
-                            key={name}
-                            onPress={onRequest}
-                            disabled={isDenied}
-                        >
-                            <Card
-                                className={cn(
-                                    "justify-center h-18",
-                                    isDenied && "opacity-50",
-                                )}
+                        return (
+                            <TouchableOpacity
+                                key={name}
+                                onPress={onRequest}
+                                disabled={isDenied}
                             >
-                                <RowView className="items-center gap-3">
-                                    <View className="bg-muted h-10 w-10 items-center justify-center rounded">
-                                        <Icon
-                                            name={icon as any}
-                                            size={20}
-                                            className="text-foreground"
-                                        />
-                                    </View>
-                                    <ColView className="flex-1 gap-0.5">
-                                        <Text className="font-medium">
-                                            {name}
-                                        </Text>
-                                        <Text className="text-xs text-muted-foreground">
-                                            {isDenied
-                                                ? "Permission denied. Enable it in Settings."
-                                                : description}
-                                        </Text>
-                                    </ColView>
-                                    <StatusIcon status={status} />
-                                </RowView>
-                            </Card>
-                        </TouchableOpacity>
-                    );
-                })}
+                                <Card
+                                    className={cn(
+                                        "justify-center h-18",
+                                        isDenied && "opacity-50",
+                                    )}
+                                >
+                                    <RowView className="items-center gap-3">
+                                        <View className="bg-muted h-10 w-10 items-center justify-center rounded">
+                                            <Icon
+                                                name={icon as any}
+                                                size={20}
+                                                className="text-foreground"
+                                            />
+                                        </View>
+                                        <ColView className="flex-1 gap-0.5">
+                                            <Text className="font-medium">
+                                                {name}
+                                            </Text>
+                                            <Text className="text-xs text-muted-foreground">
+                                                {isDenied
+                                                    ? "Permission denied. Enable it in Settings."
+                                                    : description}
+                                            </Text>
+                                        </ColView>
+                                        <StatusIcon status={status} />
+                                    </RowView>
+                                </Card>
+                            </TouchableOpacity>
+                        );
+                    })}
             </ColView>
         </ColView>
     );

@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import { Coordinate } from "../db/repositories/coordinate.repository";
-import { ActivityTrackingStatus } from "../types/type";
+import { ActivityTrackingStatus, Coordinate } from "../types/type";
 type TrackedCoordinate = Omit<Coordinate, "id" | "activityId">;
 type ActivityTrackingStore = {
+    activityType: string | null;
     status: ActivityTrackingStatus;
     duration: number;
     previewCoordinate: TrackedCoordinate | null;
@@ -10,6 +10,7 @@ type ActivityTrackingStore = {
     label: string | null;
     mode: "preview" | "recording";
 
+    setActivityType: (activityType: string | null) => void;
     setDuration: (duration: number) => void;
     setStatus: (status: ActivityTrackingStatus) => void;
     setPreviewCoordinate: (coordinate: TrackedCoordinate | null) => void;
@@ -21,6 +22,7 @@ type ActivityTrackingStore = {
 };
 
 const INITIAL_STATE = {
+    activityType: null,
     status: "idle" as ActivityTrackingStatus,
     duration: 0,
     previewCoordinate: null,
@@ -33,6 +35,7 @@ export const useActivityTrackingStore = create<ActivityTrackingStore>(
     (set) => ({
         ...INITIAL_STATE,
 
+        setActivityType: (activityType) => set({ activityType }),
         setDuration: (duration) => set({ duration }),
         setStatus: (status) => set({ status }),
         setPreviewCoordinate: (previewCoordinate) => set({ previewCoordinate }),

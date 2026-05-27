@@ -1,20 +1,11 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
+import { ACTIVITY_TYPE_COLOR } from "@/shared/constant/constant";
+import { ActivityType } from "@/shared/types/type";
 import { useMemo } from "react";
 import { View } from "react-native";
 import { useStatisticContext } from "../context/StatisticContext";
-
-const SEGMENT_COLORS = [
-    "#028d53",
-    "#378ADD",
-    "#D85A30",
-    "#7F77DD",
-    "#D4537E",
-    "#BA7517",
-    "#1D9E75",
-    "#E24B4A",
-];
 
 export default function StatisticTypeBreakdown() {
     const { activities, isLoading } = useStatisticContext();
@@ -28,7 +19,7 @@ export default function StatisticTypeBreakdown() {
                 type,
                 count,
                 pct: (count / total) * 100,
-                color: SEGMENT_COLORS[i % SEGMENT_COLORS.length],
+                color: ACTIVITY_TYPE_COLOR[type as ActivityType],
             }))
             .sort((a, b) => b.count - a.count);
     }, [activities]);

@@ -8,6 +8,7 @@ import { TouchableOpacity } from "react-native";
 
 export default function ActivityTrackingHeader() {
     const navigation = useNavigation();
+    const activityType = useActivityTrackingStore((s) => s.activityType);
     const coordinates = useActivityTrackingStore((s) => s.coordinates);
     const previewCoordinate = useActivityTrackingStore(
         (s) => s.previewCoordinate,
@@ -80,15 +81,22 @@ export default function ActivityTrackingHeader() {
                 </ColView>
             </RowView>
             <RowView className="px-4 items-center justify-between gap-4">
-                <RowView className="gap-1">
-                    <Icon name="locate" />
-                    <Text className="text-xs font-medium text-muted-foreground">
+                <Text className="capitalize font-medium text-muted-foreground">
+                    {activityType}
+                </Text>
+                <RowView className="items-center">
+                    <Icon name="locate" size={16} />
+                    <Text className="font-medium text-muted-foreground">
                         {coordinates.length} pts
                     </Text>
                 </RowView>
-                <RowView className="gap-1">
-                    <Icon name="cellular" className={gpsSignal.color} />
-                    <Text className="text-xs font-medium text-muted-foreground">
+                <RowView className="items-center">
+                    <Icon
+                        name="cellular"
+                        className={gpsSignal.color}
+                        size={16}
+                    />
+                    <Text className="font-medium text-muted-foreground">
                         {gpsSignal.label}
                     </Text>
                 </RowView>

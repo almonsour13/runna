@@ -1,4 +1,5 @@
 import { LocationAccuracy } from "expo-location";
+import { ActivityType } from "../types/type";
 
 export const GPS_CONFIG = {
     LOCATION_GEOCODE_INTERVAL_MS: 15000,
@@ -65,3 +66,7 @@ export const ICON_COLORS: Record<string, string> = {
 };
 
 export const ACTIVITY_TYPE = ["walk", "run"] as const;
+export const ACTIVITY_TYPE_COLOR: Record<ActivityType, string> = {
+    walk: "#3b82f6",
+    run: "#f97316",
+};

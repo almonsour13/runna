@@ -6,7 +6,9 @@ import Divider from "@/shared/components/Divider";
 import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
+import { ACTIVITY_TYPE_COLOR } from "@/shared/constant/constant";
 import { scheduleService } from "@/shared/services/storage/schedule.service";
+import { ActivityType } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
 import { convertMtoKm } from "@/shared/utils/convert";
 import { useQuery } from "@tanstack/react-query";
@@ -100,7 +102,14 @@ export default function ScheduleList() {
                                                     {label}
                                                 </Text>
                                                 <RowView className="items-center gap-2">
-                                                    <Text className="capitalize text-xs font-medium text-primary bg-muted px-1.5 py-0.5 rounded">
+                                                    <Text
+                                                        className="capitalize text-xs font-medium text-primary bg-muted px-1.5 py-0.5 rounded"
+                                                        style={{
+                                                            color: ACTIVITY_TYPE_COLOR[
+                                                                type as ActivityType
+                                                            ],
+                                                        }}
+                                                    >
                                                         {type}
                                                     </Text>
                                                     <Text

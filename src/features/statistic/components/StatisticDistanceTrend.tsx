@@ -75,10 +75,7 @@ export default function StatisticDistanceTrend() {
                             ))}
                         </View>
 
-                        <RowView
-                            className="flex-1 gap-2"
-                            style={{ height: BAR_HEIGHT }}
-                        >
+                        <RowView className="flex-1 gap-2">
                             {barData.map((d, idx) => {
                                 const pct =
                                     maxDistance > 0
@@ -92,7 +89,7 @@ export default function StatisticDistanceTrend() {
                                 return (
                                     <ColView key={idx} className="flex-1">
                                         <View
-                                            className="flex-1 justify-end bg-muted rounded overflow-hidden"
+                                            className="justify-end bg-muted rounded overflow-hidden"
                                             style={{ height: BAR_HEIGHT }}
                                         >
                                             {!d.isFuture && (

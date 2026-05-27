@@ -34,56 +34,52 @@ function MainTabBar({ state, navigation }: { state: any; navigation: any }) {
 
     return (
         <RowView className="absolute bottom-0 left-0 right-0 p-4 justify-center items-center">
-            <Card className="h-16 bg-transparent p-0">
-                <RowView className="flex-1 justify-between">
-                    {tabs
-                        .filter((tab) => tab.visible)
-                        .map((tab, index) => {
-                            const isActive = state.index === index;
-                            return (
-                                <TouchableOpacity
-                                    key={tab.label}
-                                    onPress={() =>
-                                        navigation.navigate(tab.label)
-                                    }
-                                    activeOpacity={0.9}
+            <RowView className="justify-between">
+                {tabs
+                    .filter((tab) => tab.visible)
+                    .map((tab, index) => {
+                        const isActive = state.index === index;
+                        return (
+                            <TouchableOpacity
+                                key={tab.label}
+                                onPress={() => navigation.navigate(tab.label)}
+                                activeOpacity={0.9}
+                            >
+                                <Card
+                                    className={cn(
+                                        "h-16 aspect-square justify-center items-center border border-border",
+                                        // isActive && "bg-primary-foreground",
+                                    )}
                                 >
-                                    <Card
-                                        className={cn(
-                                            "h-16 aspect-square border border-border/40 justify-center items-center",
-                                            // isActive && "bg-primary-foreground",
-                                        )}
-                                    >
-                                        <ColView className="gap-2 justify-center items-center ">
-                                            <Icon
-                                                name={tab.icon as any}
-                                                size={24}
-                                                className={clsx(
-                                                    "text-muted-foreground",
-                                                    isActive && "text-primary",
-                                                )}
-                                            />
-                                            <View
-                                                className={clsx(
-                                                    "hidden h-2 aspect-square rounded-full bg-primary",
-                                                    !isActive && "hidden",
-                                                )}
-                                            />
-                                            <Text
-                                                className={clsx(
-                                                    "hidden text-xs text-muted-foreground",
-                                                    isActive && "text-primary",
-                                                )}
-                                            >
-                                                {tab.label}
-                                            </Text>
-                                        </ColView>
-                                    </Card>
-                                </TouchableOpacity>
-                            );
-                        })}
-                </RowView>
-            </Card>
+                                    <ColView className="gap-2 justify-center items-center ">
+                                        <Icon
+                                            name={tab.icon as any}
+                                            size={24}
+                                            className={clsx(
+                                                "text-muted-foreground",
+                                                isActive && "text-primary",
+                                            )}
+                                        />
+                                        <View
+                                            className={clsx(
+                                                "hidden h-2 aspect-square rounded-full bg-primary",
+                                                !isActive && "hidden",
+                                            )}
+                                        />
+                                        <Text
+                                            className={clsx(
+                                                "hidden text-xs text-muted-foreground",
+                                                isActive && "text-primary",
+                                            )}
+                                        >
+                                            {tab.label}
+                                        </Text>
+                                    </ColView>
+                                </Card>
+                            </TouchableOpacity>
+                        );
+                    })}
+            </RowView>
             <ActivityButton />
         </RowView>
     );

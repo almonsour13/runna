@@ -4,9 +4,9 @@ import { useState } from "react";
 import { RefreshControl, ScrollView } from "react-native";
 import HomeHeader from "./components/HomeHeader";
 import RecentActivities from "./components/RecentActivity";
-import TodayActivity from "./components/TodayActivity";
+import TodayProgress from "./components/TodayProgress";
 import TodaySchedule from "./components/TodaySchedule";
-import WeekActivity from "./components/WeekActivity";
+import WeekProgress from "./components/WeekProgress";
 
 export default function HomeScreen() {
     const { invalidate } = useActivityMutations();
@@ -30,8 +30,8 @@ export default function HomeScreen() {
         >
             <ColView className="flex-1 gap-4 pb-28">
                 <HomeHeader />
-                <WeekActivity />
-                <TodayActivity />
+                <WeekProgress />
+                <TodayProgress />
                 <TodaySchedule />
                 <RecentActivities />
             </ColView>

@@ -1,3 +1,4 @@
+import { ActivityType } from "@/shared/types/type";
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const activity = sqliteTable("activity", {
@@ -13,7 +14,7 @@ export const activity = sqliteTable("activity", {
     steps: integer("steps").notNull(),
 
     goal: integer("goal").notNull(),
-    type: text("type").notNull(),
+    type: text("type").$type<ActivityType>().notNull(),
     status: text("status").notNull(),
 
     isImported: integer("is_imported", { mode: "boolean" })

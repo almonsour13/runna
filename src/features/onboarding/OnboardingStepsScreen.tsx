@@ -7,8 +7,14 @@ import { useProfileStore } from "@/shared/stores/use-profile.store";
 import { NavigationProp, Profile } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
 import { useNavigation } from "@react-navigation/native";
-import { useRef, useState } from "react";
-import { Dimensions, FlatList, TouchableOpacity, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import {
+    Animated,
+    Dimensions,
+    FlatList,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import FinishSteps from "./components/FinishSteps";
 import PermissionSteps from "./components/PermissionSteps";
 import ProfileSteps from "./components/ProfileSteps";
@@ -89,7 +95,7 @@ export default function OnboardingStepsScreen() {
                 });
                 setTimeout(() => {
                     navigation.navigate("Main");
-                }, 1000);
+                }, 300);
             })
             .catch((e) => {
                 console.error("Failed to save profile", e);
@@ -101,15 +107,48 @@ export default function OnboardingStepsScreen() {
     return (
         <ColView className="flex-1 gap-8">
             <RowView className="pt-12 px-4 gap-1.5">
-                {STEPS.map((s, i) => (
-                    <View
-                        key={s}
-                        className={cn(
-                            "flex-1 h-1 rounded-full",
-                            i <= index ? "bg-primary" : "bg-muted",
-                        )}
-                    />
-                ))}
+                {(() => {
+                    const animatedVals = useRef<Animated.Value[] | null>(null);
+                    if (!animatedVals.current) {
+                        animatedVals.current = STEPS.map(
+                            (_, i) => new Animated.Value(i <= index ? 1 : 0),
+                        );
+                    }
+
+                    useEffect(() => {
+                        const anims = (animatedVals.current || []).map(
+                            (av, i) =>
+                                Animated.timing(av, {
+                                    toValue: i <= index ? 1 : 0,
+                                    duration: 300,
+                                    useNativeDriver: false,
+                                }),
+                        );
+                        Animated.parallel(anims).start();
+                    }, [index]);
+
+                    return STEPS.map((s, i) => {
+                        const av = (animatedVals.current || [])[i];
+                        const width = av
+                            ? av.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: ["0%", "100%"],
+                              })
+                            : "100%";
+
+                        return (
+                            <View
+                                key={s}
+                                className="flex-1 h-1 rounded-full bg-muted"
+                            >
+                                <Animated.View
+                                    className="h-1 rounded-full bg-primary"
+                                    style={{ width }}
+                                />
+                            </View>
+                        );
+                    });
+                })()}
             </RowView>
 
             <View className="flex-1">
@@ -170,7 +209,7 @@ export default function OnboardingStepsScreen() {
                     disabled={!canProceedToNextStep}
                     className={cn(
                         "h-16 flex-1 rounded-full justify-center items-center bg-primary",
-                        !canProceedToNextStep && "opacity-50",
+                        (!canProceedToNextStep || isFinishing) && "opacity-50",
                     )}
                 >
                     <Text className="text-white font-medium">

@@ -8,13 +8,24 @@ import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { useActivityPreviewTracking } from "@/shared/hooks/use-activity-preview-tracking";
 import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
-import { useMemo } from "react";
+import { RootStackParamList } from "@/shared/types/type";
+import { RouteProp, useRoute } from "@react-navigation/native";
+import { useEffect, useMemo } from "react";
 import { TouchableOpacity } from "react-native";
 import ActivityTrackingMap from "./components/ActivityTrackingMap";
 import { useMapControlStore } from "./stores/use-map-control.store";
 
+type ActivityTrackingRouteProp = RouteProp<
+    RootStackParamList,
+    "ActivityTracking"
+>;
+
 export default function ActivityTrackingScreen() {
     useActivityPreviewTracking();
+    const route = useRoute<ActivityTrackingRouteProp>();
+    const activityType = route.params?.type;
+    const setActivityType = useActivityTrackingStore((s) => s.setActivityType);
+
     const isMapExpanded = useMapControlStore((s) => s.isMapExpanded);
     const setIsMapExpanded = useMapControlStore((s) => s.setIsMapExpanded);
     const isMapReady = useMapControlStore((s) => s.isMapReady);
@@ -26,6 +37,12 @@ export default function ActivityTrackingScreen() {
         () => coordinates[coordinates.length - 1] ?? previewCoordinate,
         [coordinates, previewCoordinate],
     );
+
+    useEffect(() => {
+        if (!activityType) return;
+        setActivityType(activityType);
+    }, [activityType]);
+
     return (
         <SafeScreen>
             <ColView className="relative flex-1 gap-0">

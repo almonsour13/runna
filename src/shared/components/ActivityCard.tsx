@@ -5,7 +5,12 @@ import { useNavigation } from "@react-navigation/native";
 import { format, isToday, isYesterday } from "date-fns";
 import { useRef } from "react";
 import { TouchableOpacity, View } from "react-native";
-import { ActivityWithCoordinates, NavigationProp } from "../types/type";
+import { ACTIVITY_TYPE_COLOR } from "../constant/constant";
+import {
+    ActivityType,
+    ActivityWithCoordinates,
+    NavigationProp,
+} from "../types/type";
 import { cn } from "../utils/cn";
 import { convertMtoKm } from "../utils/convert";
 import { formatStats } from "../utils/format";
@@ -111,13 +116,20 @@ export default function ActivityCard({
                                 <Text className="text-xs text-muted-foreground">
                                     {timeRange}
                                 </Text>
-                                <RowView className="items-center gap-2">
+                                <RowView>
                                     {activity.isImported && (
                                         <Text className="capitalize text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                                             Imported
                                         </Text>
                                     )}
-                                    <Text className="capitalize text-xs font-medium text-primary bg-muted px-1.5 py-0.5 rounded">
+                                    <Text
+                                        className="capitalize text-xs font-medium  bg-muted px-1.5 py-0.5 rounded"
+                                        style={{
+                                            color: ACTIVITY_TYPE_COLOR[
+                                                type as ActivityType
+                                            ],
+                                        }}
+                                    >
                                         {type}
                                     </Text>
                                 </RowView>

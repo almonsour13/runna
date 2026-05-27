@@ -19,32 +19,40 @@ export const formatStats = ({
     pace?: number;
 }) => {
     const stats = [];
-    if (distance) {
+
+    if (distance != null) {
         stats.push({
+            key: "distance",
             label: "Distance",
             value: convertMtoKm(distance).toFixed(1),
             unit: "km",
             icon: "navigate",
         });
     }
-    if (duration) {
+
+    if (duration != null) {
         stats.push({
+            key: "duration",
             label: "Duration",
             value: formatDuration(convertMsToS(duration)),
             unit: null,
             icon: "time",
         });
     }
-    if (calories) {
+
+    if (calories != null) {
         stats.push({
+            key: "calories",
             label: "Calories",
             value: formatCalories(calories),
             unit: "kcal",
             icon: "flame",
         });
     }
-    if (steps) {
+
+    if (steps != null) {
         stats.push({
+            key: "steps",
             label: "Steps",
             value: steps.toLocaleString("en-US", {
                 maximumFractionDigits: 0,
@@ -53,16 +61,20 @@ export const formatStats = ({
             icon: "footsteps",
         });
     }
-    if (speed) {
+
+    if (speed != null) {
         stats.push({
+            key: "speed",
             label: "Speed",
             value: formatSpeed(speed),
             unit: "km/h",
             icon: "speedometer",
         });
     }
-    if (pace) {
+
+    if (pace != null) {
         stats.push({
+            key: "pace",
             label: "Pace",
             value: formatPace(pace),
             unit: "/km",

@@ -8,6 +8,7 @@ import { View } from "react-native";
 import { useStatisticContext } from "../context/StatisticContext";
 
 const BAR_HEIGHT = 156;
+const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 export default function StatisticCaloriesTrend() {
     const { activeTab, activities, dateRange } = useStatisticContext();
@@ -74,33 +75,40 @@ export default function StatisticCaloriesTrend() {
                             </Text>
                         ))}
                     </View>
-                    <RowView
-                        className="flex-1 gap-2"
-                        style={{ height: BAR_HEIGHT }}
-                    >
+                    <RowView className="flex-1 gap-2">
                         {barData.map((d, idx) => {
                             const pct =
                                 maxCalories > 0
                                     ? (d.calories / maxCalories) * 100
                                     : 0;
+                            const dayLabel =
+                                activeTab === "Week"
+                                    ? DAY_LABELS[idx % 7]
+                                    : false;
                             return (
-                                <View
-                                    key={idx}
-                                    className="flex-1 justify-end bg-muted/50 rounded overflow-hidden"
-                                    style={{ height: BAR_HEIGHT }}
-                                >
-                                    {!d.isFuture && (
-                                        <View
-                                            style={{ height: `${pct}%` }}
-                                            className={cn(
-                                                "rounded",
-                                                d.isToday
-                                                    ? "bg-amber-500"
-                                                    : "bg-amber-500/30",
-                                            )}
-                                        />
+                                <ColView key={idx} className="flex-1">
+                                    <View
+                                        className="flex-1 justify-end bg-muted/50 rounded overflow-hidden"
+                                        style={{ height: BAR_HEIGHT }}
+                                    >
+                                        {!d.isFuture && (
+                                            <View
+                                                style={{ height: `${pct}%` }}
+                                                className={cn(
+                                                    "rounded",
+                                                    d.isToday
+                                                        ? "bg-amber-500"
+                                                        : "bg-amber-500/30",
+                                                )}
+                                            />
+                                        )}
+                                    </View>
+                                    {dayLabel && (
+                                        <Text className="text-xs text-center">
+                                            {dayLabel}
+                                        </Text>
                                     )}
-                                </View>
+                                </ColView>
                             );
                         })}
                     </RowView>

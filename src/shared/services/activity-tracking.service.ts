@@ -9,6 +9,8 @@ import {
 import { logger } from "../utils/logger";
 import { generateId } from "../utils/utils";
 import { locationService } from "./location/location.service";
+import { activityClassifierService } from "./sensor/activity-classifier.service";
+import { stepCounterService } from "./sensor/step-counter.service";
 import { activityService } from "./storage/activity.service";
 import { profileService } from "./storage/profile.service";
 import { StorageService } from "./storage/storage.service";
@@ -19,6 +21,7 @@ type Metrics = {
     duration: number;
     status?: ActivityTrackingStatus;
     coordinates?: RawCoordinate[] | [];
+    steps?: number;
 };
 
 type ActivityTracking = {
@@ -28,6 +31,7 @@ type ActivityTracking = {
     lastPauseTime: number | null;
     status: ActivityTrackingStatus;
     coordinates: RawCoordinate[] | [];
+    steps: number;
 };
 
 class ActivityTrackingService {
@@ -71,6 +75,9 @@ class ActivityTrackingService {
     // ======================
     private notifyMetricsUpdate(): void {
         if (!this.activity) return;
+        this.activity.steps =
+            this.activity.steps + stepCounterService.getSteps();
+        stepCounterService.reset();
 
         const stats: Metrics = {
             duration: this.getElapsedMs(),
@@ -111,6 +118,26 @@ class ActivityTrackingService {
             this.activeActivityUpdateInterval = null;
         }
     }
+
+    // ======================
+    // Sensors
+    // ======================
+
+    private startSensors(): void {
+        activityClassifierService.start();
+        stepCounterService.start();
+        logger.log("[ActivityService] Sensors started");
+    }
+
+    private stopSensors(): void {
+        activityClassifierService.stop();
+        stepCounterService.stop();
+        logger.log("[ActivityService] Sensors stopped");
+    }
+
+    // ======================
+    // Location
+    // ======================
 
     private startLocationListener(): void {
         this.stopLocationListener();
@@ -159,9 +186,11 @@ class ActivityTrackingService {
                 lastPauseTime: null,
                 status: "active",
                 coordinates: [],
+                steps: 0,
             };
 
             this.startSession();
+            this.startSensors();
             await locationService.start();
             this.startLocationListener();
             this.activityStorage.set(this.activity);
@@ -194,6 +223,7 @@ class ActivityTrackingService {
         this.activity.status = "paused";
         this.activity.lastPauseTime = Date.now();
         this.stopSession();
+        this.stopSensors();
         this.stopLocationListener();
         await locationService.stop();
         this.activityStorage.set(this.activity);
@@ -230,6 +260,7 @@ class ActivityTrackingService {
         }
 
         this.activity.status = "active";
+        this.startSensors();
         this.startSession();
         await locationService.start();
         this.startLocationListener();
@@ -255,6 +286,8 @@ class ActivityTrackingService {
                 totalDuration: this.getElapsedMs(),
             });
 
+            const finalSteps =
+                this.activity.steps + stepCounterService.getSteps();
             const finalDuration = this.getElapsedMs();
             const finalCoordinates = this.activity.coordinates;
             const startTime = new Date(this.activity.startTime);
@@ -277,7 +310,7 @@ class ActivityTrackingService {
                 goal: profile?.goal || 5000,
                 status: "Completed",
                 type: "run",
-                steps: 0,
+                steps: finalSteps,
                 createdAt: startTime,
                 updatedAt: endTime,
             };
@@ -289,6 +322,7 @@ class ActivityTrackingService {
             );
 
             this.stopSession();
+            this.stopSensors();
             this.stopLocationListener();
             await locationService.stop();
             this.activity = null;
@@ -316,6 +350,7 @@ class ActivityTrackingService {
             });
 
             this.stopSession();
+            this.stopSensors();
             this.stopLocationListener();
             await locationService.stop();
             this.activity = null;
@@ -343,10 +378,12 @@ class ActivityTrackingService {
 
             if (storedActivity.status === "active") {
                 this.startSession();
+                this.startSensors();
                 await locationService.start();
                 this.startLocationListener();
             } else {
                 this.stopSession();
+                this.stopSensors();
                 await locationService.stop();
                 this.stopLocationListener();
             }

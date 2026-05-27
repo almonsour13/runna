@@ -28,7 +28,7 @@ function getPercentageChange(
     };
 }
 
-export default function TodayActivity() {
+export default function TodayProgress() {
     const activityGrouperDrawer = useRef<ActivityGroupDrawerHandle>(null);
     const today = useMemo(() => new Date(), []);
 

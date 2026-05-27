@@ -15,7 +15,7 @@ import { addDays, format, isToday, startOfWeek } from "date-fns";
 import { useMemo, useRef } from "react";
 import { TouchableOpacity, View } from "react-native";
 
-export default function WeekActivity() {
+export default function WeekProgress() {
     const activityGrouperDrawer = useRef<ActivityGroupDrawerHandle>(null);
     const today = useMemo(() => new Date(), []);
     const weekStartDate = useMemo(

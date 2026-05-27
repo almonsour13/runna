@@ -2,7 +2,8 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
-import { Activity } from "@/shared/types/type";
+import { ACTIVITY_TYPE_COLOR } from "@/shared/constant/constant";
+import { Activity, ActivityType } from "@/shared/types/type";
 import { convertMtoKm } from "@/shared/utils/convert";
 import { formatRelativeDateLabel, formatStats } from "@/shared/utils/format";
 import { format } from "date-fns";
@@ -81,7 +82,14 @@ export default function ActivityDetailsSummary({
                             Imported
                         </Text>
                     )}
-                    <Text className="capitalize text-xs font-medium text-primary bg-muted px-1.5 py-0.5 rounded">
+                    <Text
+                        className="capitalize text-xs font-medium text-primary bg-muted px-1.5 py-0.5 rounded"
+                        style={{
+                            color: ACTIVITY_TYPE_COLOR[
+                                activity.type as ActivityType
+                            ],
+                        }}
+                    >
                         {activity.type}
                     </Text>
                 </RowView>
@@ -129,10 +137,7 @@ export default function ActivityDetailsSummary({
             <RowView className=" flex-wrap">
                 {stats.map((stat, i) => {
                     return (
-                        <Card
-                            key={stat.label}
-                            className="flex-1 min-w-[30%] border-border border bg-transparent"
-                        >
+                        <Card key={stat.label} className="flex-1 min-w-[30%]">
                             <ColView>
                                 <RowView className="items-center">
                                     <Icon

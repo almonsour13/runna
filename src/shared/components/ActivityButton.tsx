@@ -46,6 +46,7 @@ export default function ActivityButton() {
                             name={icon as any}
                             size={24}
                             className="text-white"
+                            fill="current"
                         />
                     </View>
                     <AnimatedActiveButtonIndicator />
