@@ -29,7 +29,7 @@ export const PREFIX = "@runna/test";
 export const STORAGE_KEYS = {
     onboarding: `${PREFIX}:onboarding`,
     activity: `${PREFIX}:activity`,
-    activityTracking: `${PREFIX}:activityTracking`,
+    record: `${PREFIX}:record`,
     profile: `${PREFIX}:profile`,
     settings: `${PREFIX}:settings`,
 };

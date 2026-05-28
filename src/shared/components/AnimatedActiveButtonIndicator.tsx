@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 import { Animated } from "react-native";
-import { useActivityTrackingStore } from "../stores/use-activity-tracking.store";
+import { useRecordStore } from "../stores/use-record.store";
 import Card from "./ui/Card";
 
 export default function AnimatedActiveButtonIndicator() {
-    const status = useActivityTrackingStore((s) => s.status);
+    const status = useRecordStore((s) => s.status);
 
     const isActive = status === "active";
 

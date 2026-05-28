@@ -1,7 +1,7 @@
 import { RowView } from "@/shared/components/CustomView";
 import Text from "@/shared/components/ui/Text";
 import { useMapStyle } from "@/shared/hooks/use-map-style";
-import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
+import { useRecordStore } from "@/shared/stores/use-record.store";
 import { Camera, Map } from "@maplibre/maplibre-react-native";
 import { useEffect, useMemo, useRef } from "react";
 import { Animated, Easing } from "react-native";
@@ -14,7 +14,7 @@ import MapUserTracker from "./map/MapUserTracker";
 const MAP_HEIGHT = 340;
 const DURATION = 380;
 
-export default function ActivityTrackingMap() {
+export default function RecordMap() {
     const mapRef = useRef<React.ElementRef<typeof Map> | null>(null);
     const cameraRef = useRef<React.ElementRef<typeof Camera> | null>(null);
     const isMapExpanded = useMapControlStore((s) => s.isMapExpanded);
@@ -26,11 +26,9 @@ export default function ActivityTrackingMap() {
     const pitch = useMapControlStore((s) => s.pitch);
 
     const mapStyle = useMapStyle();
-    const coordinates = useActivityTrackingStore((s) => s.coordinates);
-    const previewCoordinate = useActivityTrackingStore(
-        (s) => s.previewCoordinate,
-    );
-    const mode = useActivityTrackingStore((s) => s.mode);
+    const coordinates = useRecordStore((s) => s.coordinates);
+    const previewCoordinate = useRecordStore((s) => s.previewCoordinate);
+    const mode = useRecordStore((s) => s.mode);
 
     const animatedHeight = useRef(new Animated.Value(0)).current;
     const animatedOpacity = useRef(new Animated.Value(0)).current;

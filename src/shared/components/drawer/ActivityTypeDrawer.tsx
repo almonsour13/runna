@@ -5,7 +5,7 @@ import { ACTIVITY_TYPE } from "@/shared/constant/constant";
 import { cn } from "@/shared/utils/cn";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { TouchableOpacity } from "react-native";
-import Icon from "../Icon";
+import Icon from "../ui/Icon";
 
 interface Props {
     value?: string | null;

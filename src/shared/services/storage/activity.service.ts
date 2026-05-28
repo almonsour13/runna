@@ -1,12 +1,10 @@
 import { db } from "@/shared/db";
-import { activity, coordinate } from "@/shared/db/schema";
+import { activity } from "@/shared/db/schema";
 import {
     Activity,
-    ActivityWithCoordinates,
-    Coordinate,
+    ActivityWithCoordinates
 } from "@/shared/types/type";
 import { logger } from "@/shared/utils/logger";
-import { generateId } from "@/shared/utils/utils";
 import { and, asc, desc, eq, gte, lt, lte } from "drizzle-orm";
 
 class ActivityService {
@@ -152,29 +150,10 @@ class ActivityService {
             throw error;
         }
     }
-    async getCoordinatesByActivityId(id: string): Promise<Coordinate[]> {
-        try {
-            const data = await db
-                .select()
-                .from(coordinate)
-                .where(eq(coordinate.activityId, id));
-            logger.log(
-                "[ActivityStorage] getCoordinatesByActivityId → success",
-            );
-            return data;
-        } catch (error) {
-            logger.error(
-                "[ActivityStorage] getCoordinatesByActivityId → error:",
-                error,
-            );
-            throw error;
-        }
-    }
 
     async create(
         activityInput: Omit<Activity, "isImported" | "importedAt">,
-        coordinates?: Omit<Coordinate, "id" | "activityId">[],
-    ): Promise<ActivityWithCoordinates> {
+    ): Promise<Activity> {
         try {
             const result = await db.transaction(async (tx) => {
                 logger.log("1. starting transaction");
@@ -184,27 +163,8 @@ class ActivityService {
                     .values(activityInput)
                     .returning();
                 logger.log("2. activity created:", createdActivity);
-
-                let createdCoordinates: Coordinate[] = [];
-
-                if (coordinates && coordinates.length > 0) {
-                    logger.log("3. inserting coordinates:", coordinates.length);
-                    createdCoordinates = await tx
-                        .insert(coordinate)
-                        .values(
-                            coordinates.map((coord) => ({
-                                ...coord,
-                                id: generateId(),
-                                activityId: createdActivity.id,
-                            })),
-                        )
-                        .returning();
-                    logger.log("4. coordinates created:", createdCoordinates);
-                }
-
                 return {
                     ...createdActivity,
-                    coordinates: createdCoordinates,
                 };
             });
 
@@ -215,26 +175,6 @@ class ActivityService {
             throw error;
         }
     }
-    async createCoordinates(coordinates: Coordinate[]): Promise<Coordinate[]> {
-        if (coordinates.length === 0) {
-            logger.warn(
-                "[ActivityStorage] createCoordinates → skipping, no coordinates",
-            );
-            return [];
-        }
-        try {
-            const data = await db
-                .insert(coordinate)
-                .values(coordinates)
-                .returning();
-            logger.log("[ActivityStorage] createCoordinates → success");
-            return data;
-        } catch (error) {
-            logger.error("[ActivityStorage] createCoordinates → error:", error);
-            throw error;
-        }
-    }
-
     async delete(id: string): Promise<void> {
         try {
             await db.delete(activity).where(eq(activity.id, id));

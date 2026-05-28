@@ -1,6 +1,6 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
-import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
+import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { ACTIVITY_TYPE_COLOR } from "@/shared/constant/constant";
 import { Activity, ActivityType } from "@/shared/types/type";

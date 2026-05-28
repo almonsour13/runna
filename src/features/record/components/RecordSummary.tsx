@@ -1,11 +1,11 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import GoalDrawer from "@/shared/components/drawer/GoalDrawer";
-import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import { DrawerHandle } from "@/shared/components/ui/Drawer";
+import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
-import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
+import { useRecordStore } from "@/shared/stores/use-record.store";
 import { cn } from "@/shared/utils/cn";
 import {
     computeCalories,
@@ -21,12 +21,13 @@ import {
 import { useMemo, useRef } from "react";
 import { TouchableOpacity } from "react-native";
 
-export default function ActivityTrackingSummary() {
+export default function RecordSummary() {
     const profile = useProfileStore((s) => s.profile);
     const goal = profile?.goal || 0;
     const setField = useProfileStore((s) => s.setField);
-    const duration = useActivityTrackingStore((s) => s.duration);
-    const coordinates = useActivityTrackingStore((s) => s.coordinates);
+    const duration = useRecordStore((s) => s.duration);
+    const steps = useRecordStore((s) => s.steps);
+    const coordinates = useRecordStore((s) => s.coordinates);
     const time = formatDurationHHMMSS(duration);
     const goalDrawerRef = useRef<DrawerHandle>(null);
 
@@ -56,12 +57,18 @@ export default function ActivityTrackingSummary() {
                 icon: "flame-outline" as const,
                 color: "text-orange-500",
             },
+            // {
+            //     label: "Pace",
+            //     value: pace,
+            //     unit: "/km",
+            //     icon: "timer-outline" as const,
+            //     color: "text-purple-500",
+            // },
             {
-                label: "Pace",
-                value: pace,
-                unit: "/km",
-                icon: "timer-outline" as const,
-                color: "text-purple-500",
+                label: "Steps",
+                value: steps,
+                icon: "footsteps" as const,
+                color: "text-green-500",
             },
         ];
         return { stats };
@@ -90,9 +97,9 @@ export default function ActivityTrackingSummary() {
                         </Card>
                     </TouchableOpacity>
                 </RowView>
-                <ColView className="gap-1 items-center">
+                <ColView className="items-center">
                     <Text className="text-6xl font-bold">{time}</Text>
-                    <RowView className="gap-1 items-center">
+                    <RowView className="items-center">
                         <Icon
                             name="time-outline"
                             size={12}
@@ -103,31 +110,31 @@ export default function ActivityTrackingSummary() {
                         </Text>
                     </RowView>
                 </ColView>
-                <RowView className="w-full justify-between">
+                <RowView className="justify-between">
                     {stats.map((stat, i) => (
                         <ColView
                             key={stat.label}
-                            className="gap-1 items-center"
+                            className="flex-1 justify-center items-center"
                         >
                             <RowView className="items-end">
                                 <Text className="text-3xl leading-4 font-medium ">
                                     {stat.value}
                                 </Text>
                             </RowView>
-                            <RowView className="gap-1 items-center">
+                            <RowView className="items-center">
                                 <Icon
                                     name={stat.icon}
                                     size={12}
                                     className="hidden text-primary"
                                 />
                                 <Text className="text-xs text-muted-foreground">
-                                    {stat.label} (
+                                    {stat.label}
                                     {stat.unit && (
                                         <Text className=" text-xs font-medium text-muted-foreground">
-                                            {stat.unit}
+                                            {" "}
+                                            ({stat.unit})
                                         </Text>
                                     )}
-                                    )
                                 </Text>
                             </RowView>
                         </ColView>

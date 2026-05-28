@@ -1,3 +1,4 @@
+import { notificationService } from "@/shared/services/notification/notification.service";
 import { scheduleService } from "@/shared/services/storage/schedule.service";
 import { Schedule } from "@/shared/types/type";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,8 +15,12 @@ export const useScheduleMutations = () => {
     const createSchedule = useMutation({
         mutationFn: async (schedule: Schedule) =>
             await scheduleService.create(schedule),
-        onSuccess: invalidate,
+        onSuccess: async (_, schedule) => {
+            invalidate();
+            await notificationService.scheduleActivityNotification(schedule);
+        },
     });
+
     const updateSchedule = useMutation({
         mutationFn: async ({
             scheduleId,
@@ -24,13 +29,20 @@ export const useScheduleMutations = () => {
             scheduleId: string;
             schedule: Schedule;
         }) => await scheduleService.update(scheduleId, schedule),
-
-        onSuccess: invalidate,
+        onSuccess: async (_, { schedule }) => {
+            invalidate();
+            await notificationService.syncScheduleActivityNotification(
+                schedule,
+            );
+        },
     });
 
     const deleteSchedule = useMutation({
         mutationFn: async (id: string) => await scheduleService.delete(id),
-        onSuccess: invalidate,
+        onSuccess: async (_, id) => {
+            invalidate();
+            await notificationService.cancelScheduleActivityNotification(id);
+        },
     });
 
     return {

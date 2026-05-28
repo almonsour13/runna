@@ -1,7 +1,7 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
-import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import { DrawerHandle } from "@/shared/components/ui/Drawer";
+import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { profileService } from "@/shared/services/storage/profile.service";
 import { useProfileStore } from "@/shared/stores/use-profile.store";

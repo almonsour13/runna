@@ -1,6 +1,6 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
-import Icon from "@/shared/components/Icon";
 import Drawer, { DrawerHandle } from "@/shared/components/ui/Drawer";
+import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { cn } from "@/shared/utils/cn";
 import { forwardRef, useImperativeHandle, useRef } from "react";

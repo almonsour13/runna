@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { cn } from "../utils/cn";
+import { cn } from "../../utils/cn";
 
 interface Props extends React.SVGProps<SVGSVGElement> {
     name: keyof typeof Ionicons.glyphMap | any;

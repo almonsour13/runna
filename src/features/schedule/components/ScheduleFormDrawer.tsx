@@ -33,6 +33,7 @@ export type ScheduleFormDrawerHandle = DrawerHandle & {
 const EMPTY_SCHEDULE = (): Schedule => ({
     id: generateId(),
     title: "",
+    description: null,
     time: "",
     goal: 0,
     type: "",
@@ -82,6 +83,7 @@ const ScheduleFormDrawer = forwardRef<
             setSchedule({
                 id: data.id,
                 title: data.title,
+                description: data.description,
                 time: data.time,
                 goal: data.goal,
                 type: data.type,
@@ -129,6 +131,7 @@ const ScheduleFormDrawer = forwardRef<
 
     const isValid = scheduleId
         ? schedule?.title !== data?.title ||
+          schedule?.description !== data?.description ||
           schedule?.time !== data?.time ||
           schedule?.goal !== data?.goal ||
           schedule?.type !== data?.type ||
@@ -175,11 +178,24 @@ const ScheduleFormDrawer = forwardRef<
                             <Text>Title</Text>
                             <Card className="h-16 py-2">
                                 <TextInput
-                                    placeholder="Title"
+                                    placeholder="eg: Morning Run"
                                     value={schedule?.title}
                                     onChangeText={(v) =>
                                         handleChange("title", v)
                                     }
+                                />
+                            </Card>
+                        </ColView>
+                        <ColView>
+                            <Text>Description (Optional)</Text>
+                            <Card className="h-16 py-2">
+                                <TextInput
+                                    placeholder="Enter description"
+                                    value={schedule?.description || ""}
+                                    onChangeText={(v) =>
+                                        handleChange("description", v)
+                                    }
+                                    numberOfLines={2}
                                 />
                             </Card>
                         </ColView>

@@ -1,5 +1,5 @@
 import { RowView } from "@/shared/components/CustomView";
-import Icon from "@/shared/components/Icon";
+import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { NavigationProp } from "@/shared/types/type";
 import { useNavigation } from "@react-navigation/native";

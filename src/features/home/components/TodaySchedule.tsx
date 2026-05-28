@@ -1,6 +1,6 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
-import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
+import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { ACTIVITY_TYPE_COLOR } from "@/shared/constant/constant";
 import { scheduleService } from "@/shared/services/storage/schedule.service";
@@ -41,7 +41,8 @@ export default function TodaySchedule() {
                 contentContainerClassName="px-4 gap-2"
             >
                 {schedules.map((schedule) => {
-                    const { id, time, title, type, goal } = schedule;
+                    const { id, time, title, description, type, goal } =
+                        schedule;
                     const [h, m] = time.split(":").map(Number);
 
                     const scheduledDate = new Date();

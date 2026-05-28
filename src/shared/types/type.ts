@@ -6,8 +6,8 @@ import { schedule } from "../db/schema/schedule";
 export type RootStackParamList = {
     Main: undefined;
     Home: undefined;
-    ActivityTracking: {
-        type?: string;
+    Record: {
+        type?: ActivityType;
     };
     Settings: undefined;
     Onboarding: {
@@ -38,7 +38,7 @@ export type UnitMode = "metric" | "imperial";
 
 export type Gender = "male" | "female" | null;
 
-export type ActivityTrackingStatus = "idle" | "active" | "paused";
+export type RecordStatus = "idle" | "active" | "paused";
 export type ActivityType = (typeof ACTIVITY_TYPE)[number];
 
 export type Activity = typeof activity.$inferSelect;

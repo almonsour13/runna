@@ -1,38 +1,33 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
-import ActivityTrackingController from "./components/ActivityTrackingController";
-import ActivityTrackingHeader from "./components/ActivityTrackingHeader";
-import ActivityTrackingSummary from "./components/ActivityTrackingSummary";
+import RecordController from "./components/RecordController";
+import RecordHeader from "./components/RecordHeader";
+import RecordSummary from "./components/RecordSummary";
 
 import SafeScreen from "@/shared/components/SafeScreen";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { useActivityPreviewTracking } from "@/shared/hooks/use-activity-preview-tracking";
-import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
+import { useRecordStore } from "@/shared/stores/use-record.store";
 import { RootStackParamList } from "@/shared/types/type";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useEffect, useMemo } from "react";
 import { TouchableOpacity } from "react-native";
-import ActivityTrackingMap from "./components/ActivityTrackingMap";
+import RecordMap from "./components/RecordMap";
 import { useMapControlStore } from "./stores/use-map-control.store";
 
-type ActivityTrackingRouteProp = RouteProp<
-    RootStackParamList,
-    "ActivityTracking"
->;
+type RecordRouteProp = RouteProp<RootStackParamList, "Record">;
 
-export default function ActivityTrackingScreen() {
+export default function RecordScreen() {
     useActivityPreviewTracking();
-    const route = useRoute<ActivityTrackingRouteProp>();
+    const route = useRoute<RecordRouteProp>();
     const activityType = route.params?.type;
-    const setActivityType = useActivityTrackingStore((s) => s.setActivityType);
+    const setActivityType = useRecordStore((s) => s.setActivityType);
 
     const isMapExpanded = useMapControlStore((s) => s.isMapExpanded);
     const setIsMapExpanded = useMapControlStore((s) => s.setIsMapExpanded);
     const isMapReady = useMapControlStore((s) => s.isMapReady);
-    const coordinates = useActivityTrackingStore((s) => s.coordinates);
-    const previewCoordinate = useActivityTrackingStore(
-        (s) => s.previewCoordinate,
-    );
+    const coordinates = useRecordStore((s) => s.coordinates);
+    const previewCoordinate = useRecordStore((s) => s.previewCoordinate);
     const currentLocation = useMemo(
         () => coordinates[coordinates.length - 1] ?? previewCoordinate,
         [coordinates, previewCoordinate],
@@ -46,10 +41,10 @@ export default function ActivityTrackingScreen() {
     return (
         <SafeScreen>
             <ColView className="relative flex-1 gap-0">
-                <ActivityTrackingHeader />
+                <RecordHeader />
                 <ColView className="relative flex-1 gap-4">
-                    <ActivityTrackingMap />
-                    <ActivityTrackingSummary />
+                    <RecordMap />
+                    <RecordSummary />
                     {isMapReady && currentLocation && (
                         <RowView className="p-4 justify-center items-center">
                             <TouchableOpacity
@@ -66,7 +61,7 @@ export default function ActivityTrackingScreen() {
                         </RowView>
                     )}
                 </ColView>
-                <ActivityTrackingController />
+                <RecordController />
             </ColView>
         </SafeScreen>
     );

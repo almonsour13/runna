@@ -1,8 +1,8 @@
 import ScheduleFormDrawer, {
     ScheduleFormDrawerHandle,
 } from "@/features/schedule/components/ScheduleFormDrawer";
-import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
+import Icon from "@/shared/components/ui/Icon";
 import { cn } from "@/shared/utils/cn";
 import { useRef } from "react";
 import { TouchableOpacity } from "react-native";

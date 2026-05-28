@@ -1,25 +1,19 @@
 import AnimatedActiveButtonIndicator from "@/shared/components/AnimatedActiveButtonIndicator";
 import { ColView, RowView } from "@/shared/components/CustomView";
-import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
-import { useAcitivityTrackingController } from "@/shared/hooks/use-activity-tracking-controller";
-import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
+import Icon from "@/shared/components/ui/Icon";
+import { useRecordController } from "@/shared/hooks/use-record-controller";
+import { useRecordStore } from "@/shared/stores/use-record.store";
 import { cn } from "@/shared/utils/cn";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { ActivityIndicator, Animated, TouchableOpacity } from "react-native";
 
-export default function ActivityTrackingController() {
-    const { start, resume, pause, stop, reset } =
-        useAcitivityTrackingController();
-    const status = useActivityTrackingStore((s) => s.status);
-    const coordinates = useActivityTrackingStore((s) => s.coordinates);
-    const previewCoordinate = useActivityTrackingStore(
-        (s) => s.previewCoordinate,
-    );
-    const currentLocation = useMemo(
-        () => coordinates[coordinates.length - 1] ?? previewCoordinate,
-        [coordinates, previewCoordinate],
-    );
+export default function RecordController() {
+    const { start, resume, pause, stop, reset } = useRecordController();
+    const status = useRecordStore((s) => s.status);
+    const coordinates = useRecordStore((s) => s.coordinates);
+    const previewCoordinate = useRecordStore((s) => s.previewCoordinate);
+    const currentLocation = true;
     const isIdle = status === "idle";
     const isActive = status === "active";
     const isPaused = status === "paused";

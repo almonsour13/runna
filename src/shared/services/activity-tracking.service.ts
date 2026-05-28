@@ -316,10 +316,7 @@ class ActivityTrackingService {
             };
             logger.log("New Activity: ", newActivity);
 
-            const savedActivity = await activityService.create(
-                newActivity,
-                finalCoordinates,
-            );
+            const savedActivity = await activityService.create(newActivity);
 
             this.stopSession();
             this.stopSensors();

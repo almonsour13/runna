@@ -3,14 +3,14 @@ import HomeScreen from "@/features/home/HomeScreen";
 import StatisticScreen from "@/features/statistic/StatisticScreen";
 import MainTabBar from "@/shared/components/layout/MainTabBar";
 import SafeScreen from "@/shared/components/SafeScreen";
-import { useActivityTracking } from "@/shared/hooks/use-activity-tracking";
+import { useRecord } from "@/shared/hooks/use-record-tracking";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React from "react";
 
 const Tab = createBottomTabNavigator();
 
 export default function MainNavigator() {
-    useActivityTracking();
+    useRecord();
     return (
         <SafeScreen>
             <Tab.Navigator

@@ -4,8 +4,8 @@ import { memo } from "react";
 import { TouchableOpacity, View } from "react-native";
 import ActivityButton from "../ActivityButton";
 import { ColView, RowView } from "../CustomView";
-import Icon from "../Icon";
 import Card from "../ui/Card";
+import Icon from "../ui/Icon";
 import Text from "../ui/Text";
 
 function MainTabBar({ state, navigation }: { state: any; navigation: any }) {

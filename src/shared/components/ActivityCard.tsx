@@ -18,7 +18,7 @@ import { simplifyCoordinates } from "../utils/simplify-coordinates";
 import ActivityActionDrawer, {
     ActivityActionDrawerHandle,
 } from "./drawer/ActivityActionDrawer";
-import Icon from "./Icon";
+import Icon from "./ui/Icon";
 import VectorRouteMap from "./VectorRouteMap";
 
 export default function ActivityCard({

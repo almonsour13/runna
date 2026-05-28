@@ -1,9 +1,9 @@
-import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
+import { useRecordStore } from "@/shared/stores/use-record.store";
 import { Marker } from "@maplibre/maplibre-react-native";
 import { View } from "react-native";
 
 export default function MapStartTracker() {
-    const coordinates = useActivityTrackingStore((s) => s.coordinates);
+    const coordinates = useRecordStore((s) => s.coordinates);
     const startingPoint = coordinates[0];
     if (!startingPoint && coordinates.length < 2) return null;
     return (

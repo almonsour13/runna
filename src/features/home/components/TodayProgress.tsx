@@ -2,8 +2,8 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import ActivityGroupDrawer, {
     ActivityGroupDrawerHandle,
 } from "@/shared/components/drawer/ActivityGroupDrawer";
-import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
+import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { activityService } from "@/shared/services/storage/activity.service";
 import { cn } from "@/shared/utils/cn";

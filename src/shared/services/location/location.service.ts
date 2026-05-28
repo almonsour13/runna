@@ -30,6 +30,7 @@ class LocationService {
         typeof AppState.addEventListener
     > | null = null;
     private appState: AppStateStatus = AppState.currentState;
+    private isTransitioning = false;
 
     // ======================
     // Permissions
@@ -81,25 +82,46 @@ class LocationService {
     // ======================
     async startPreview(): Promise<void> {
         logger.log("[Location] Start preview mode");
+
+        if (this.subscription && this.mode === "preview") {
+            logger.log("[Location] Preview already active, skipping");
+            return;
+        }
+
         this.mode = "preview";
         this.subscription?.remove();
+        this.subscription = null;
         this.lastCoord = null;
 
-        this.subscription = await ExpoLocation.watchPositionAsync(
-            {
-                accuracy: GPS_CONFIG.LOCATION_ACCURACY,
-                timeInterval: GPS_CONFIG.LOCATION_TIME_INTERVAL_MS,
-                distanceInterval: GPS_CONFIG.DISTANCE_INTERVAL_METERS,
-            },
-            (location) => {
-                this.emitLocation(location, true);
-            },
-        );
+        try {
+            this.subscription = await ExpoLocation.watchPositionAsync(
+                {
+                    accuracy: GPS_CONFIG.LOCATION_ACCURACY,
+                    timeInterval: GPS_CONFIG.LOCATION_TIME_INTERVAL_MS,
+                    distanceInterval: GPS_CONFIG.DISTANCE_INTERVAL_METERS,
+                },
+                (location) => {
+                    this.emitLocation(location, true).catch((error) => {
+                        logger.error(
+                            "[Location] Error emitting location:",
+                            error,
+                        );
+                    });
+                },
+            );
+            logger.log("[Location] Preview mode started successfully");
+        } catch (error) {
+            logger.error("[Location] Failed to start preview", {
+                message: (error as Error)?.message,
+                stack: (error as Error)?.stack,
+            });
+            this.subscription = null;
+            throw error;
+        }
     }
 
     async stopPreview(): Promise<void> {
         logger.log("[Location] Stop preview mode");
-
         this.subscription?.remove();
         this.subscription = null;
     }
@@ -113,6 +135,8 @@ class LocationService {
         this.appStateSubscription = AppState.addEventListener(
             "change",
             (state: AppStateStatus) => {
+                this.appState = state;
+
                 if (this.mode !== "recording" || !this.useBackgroundTracking) {
                     return;
                 }
@@ -146,78 +170,121 @@ class LocationService {
     // Start / Stop Tracking
     // ======================
     async start(enableBackground = true): Promise<void> {
+        // FIX: Throw instead of silently returning when a transition is in
+        // progress. The caller (RecordActivityService.startLocationListener)
+        // needs to know GPS did NOT start so it can log/handle it, rather
+        // than assuming tracking is active when it isn't.
+        if (this.isTransitioning) {
+            const msg =
+                "Transition in progress — start() blocked. GPS is not tracking.";
+            logger.warn(`[Location] ${msg}`);
+            throw new Error(msg);
+        }
         if (this.mode === "recording") {
             logger.warn("[Location] Already recording, ignoring start()");
             return;
         }
 
-        this.kalman.reset();
-        const seedCoord = this.lastCoord;
+        this.isTransitioning = true;
+        try {
+            this.kalman.reset();
+            const seedCoord = this.lastCoord;
 
-        await this.stopPreview();
+            await this.stopPreview();
 
-        this.mode = "recording";
-        this.useBackgroundTracking = enableBackground;
-        logger.log(
-            `[Location] Start tracking (${enableBackground ? "background" : "foreground"})`,
-        );
-
-        // Always start foreground tracking first for best accuracy
-        await this.startForegroundTracking();
-
-        if (enableBackground) {
-            // Register background task so it's ready when app goes background
-            await this.startBackgroundTracking();
-            // Listen for app state changes to hand off between fg/bg
-            this.setupAppStateListener();
-        }
-
-        if (seedCoord) {
+            this.mode = "recording";
+            this.useBackgroundTracking = enableBackground;
             logger.log(
-                "[Location] Seeding first recording coord from preview",
-                {
-                    lat: seedCoord.latitude,
-                    lng: seedCoord.longitude,
-                },
+                `[Location] Start tracking (${enableBackground ? "background" : "foreground"})`,
             );
-            this.lastCoord = seedCoord;
-            this.locationUpdateCallbacks.forEach((cb) =>
-                cb(seedCoord, null, "recording"),
-            );
-        }
 
-        logger.log("[Location] State", {
-            mode: this.mode,
-            background: this.useBackgroundTracking,
-        });
+            await this.startForegroundTracking();
+
+            if (enableBackground) {
+                await this.startBackgroundTracking();
+                this.setupAppStateListener();
+            }
+
+            if (seedCoord) {
+                logger.log(
+                    "[Location] Seeding first recording coord from preview",
+                    {
+                        lat: seedCoord.latitude,
+                        lng: seedCoord.longitude,
+                    },
+                );
+                this.lastCoord = seedCoord;
+                this.locationUpdateCallbacks.forEach((cb) =>
+                    cb(seedCoord, null, "recording"),
+                );
+            }
+
+            logger.log("[Location] State", {
+                mode: this.mode,
+                background: this.useBackgroundTracking,
+            });
+        } catch (error) {
+            logger.error("[Location] Failed to start tracking", {
+                message: (error as Error)?.message,
+                stack: (error as Error)?.stack,
+            });
+            // Roll back mode on failure
+            this.mode = "preview";
+            throw error;
+        } finally {
+            this.isTransitioning = false;
+        }
     }
 
     async stop(): Promise<void> {
-        logger.log("[Location] Stop tracking");
-
-        this.teardownAppStateListener();
-
-        await this.stopForegroundTracking();
-
-        if (this.useBackgroundTracking) {
-            await this.stopBackgroundTracking();
+        // FIX: Throw instead of silently returning when a transition is in
+        // progress, for the same reason as start() — callers need to know
+        // whether stop actually completed, especially RecordActivityService
+        // which awaits stopLocationListener() before starting a new session.
+        if (this.isTransitioning) {
+            const msg =
+                "Transition in progress — stop() blocked. Subscription may still be active.";
+            logger.warn(`[Location] ${msg}`);
+            throw new Error(msg);
         }
 
-        this.subscription?.remove();
-        this.subscription = null;
-        this.mode = "preview";
-        this.kalman.reset();
-        this.lastCoord = null;
-        this.startPreview();
+        this.isTransitioning = true;
+        try {
+            logger.log("[Location] Stop tracking");
 
-        logger.log("[Location] Back to preview mode");
+            // Cleanup in order: AppState listener → foreground → background
+            this.teardownAppStateListener();
+            await this.stopForegroundTracking();
+
+            if (this.useBackgroundTracking) {
+                await this.stopBackgroundTracking();
+            }
+
+            // Clean up subscriptions and state
+            this.subscription?.remove();
+            this.subscription = null;
+            this.mode = "preview";
+            this.useBackgroundTracking = false;
+            this.kalman.reset();
+            this.lastCoord = null;
+
+            logger.log("[Location] Tracking stopped successfully");
+        } catch (error) {
+            logger.error("[Location] Failed to stop tracking", {
+                message: (error as Error)?.message,
+                stack: (error as Error)?.stack,
+            });
+            // Don't re-throw to prevent cascading failures in callers
+            logger.error("[Location] Recovered from stop error");
+        } finally {
+            this.isTransitioning = false;
+        }
     }
 
     // ======================
     // Foreground Tracking
     // ======================
     private async startForegroundTracking(): Promise<void> {
-        // Avoid duplicate subscription
         if (this.subscription) {
             logger.log(
                 "[Location] Foreground subscription already active, skipping",
@@ -225,18 +292,33 @@ class LocationService {
             return;
         }
 
-        logger.log("[Location] Foreground tracking started");
+        try {
+            logger.log("[Location] Foreground tracking starting");
 
-        this.subscription = await ExpoLocation.watchPositionAsync(
-            {
-                accuracy: GPS_CONFIG.LOCATION_ACCURACY,
-                timeInterval: GPS_CONFIG.LOCATION_TIME_INTERVAL_MS,
-                distanceInterval: GPS_CONFIG.DISTANCE_INTERVAL_METERS,
-            },
-            (location) => {
-                this.emitLocation(location, true);
-            },
-        );
+            this.subscription = await ExpoLocation.watchPositionAsync(
+                {
+                    accuracy: GPS_CONFIG.LOCATION_ACCURACY,
+                    timeInterval: GPS_CONFIG.LOCATION_TIME_INTERVAL_MS,
+                    distanceInterval: GPS_CONFIG.DISTANCE_INTERVAL_METERS,
+                },
+                (location) => {
+                    this.emitLocation(location, true).catch((error) => {
+                        logger.error(
+                            "[Location] Error emitting foreground location:",
+                            error,
+                        );
+                    });
+                },
+            );
+            logger.log("[Location] Foreground tracking started successfully");
+        } catch (error) {
+            logger.error("[Location] Failed to start foreground tracking", {
+                message: (error as Error)?.message,
+                stack: (error as Error)?.stack,
+            });
+            this.subscription = null;
+            throw error;
+        }
     }
 
     private async stopForegroundTracking(): Promise<void> {
@@ -252,18 +334,19 @@ class LocationService {
     private async startBackgroundTracking(): Promise<void> {
         logger.log("[Location] Background tracking start requested");
 
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        const isRegistered = await TaskManager.isTaskRegisteredAsync(
-            ACTIVITY_BACKGROUND_TASK,
-        );
-
-        if (isRegistered) {
-            logger.log("[Location] Background tracking already running");
-            return;
-        }
-
         try {
+            const isRegistered = await TaskManager.isTaskRegisteredAsync(
+                ACTIVITY_BACKGROUND_TASK,
+            );
+
+            if (isRegistered) {
+                logger.log("[Location] Background tracking already running");
+                return;
+            }
+
+            // Small delay to allow foreground tracking to settle
+            await new Promise((resolve) => setTimeout(resolve, 200));
+
             await ExpoLocation.startLocationUpdatesAsync(
                 ACTIVITY_BACKGROUND_TASK,
                 {
@@ -284,16 +367,21 @@ class LocationService {
                         GPS_BACKGROUND_TRACKING_CONFIG.DEFERRED_UPDATES_DISTANCE,
                 },
             );
+
             const isRegisteredNow = await TaskManager.isTaskRegisteredAsync(
                 ACTIVITY_BACKGROUND_TASK,
             );
-
-            logger.log("[Location] isRegistered:", isRegisteredNow);
-            logger.log("[Location] Background tracking started");
+            logger.log(
+                "[Location] Background tracking registered:",
+                isRegisteredNow,
+            );
+            logger.log("[Location] Background tracking started successfully");
         } catch (error) {
             logger.error("[Location] Failed to start background tracking", {
-                error,
+                message: (error as Error)?.message,
+                stack: (error as Error)?.stack,
             });
+            throw error;
         }
     }
 
@@ -313,8 +401,10 @@ class LocationService {
             logger.log("[Location] Background tracking stopped");
         } catch (error) {
             logger.error("[Location] Failed to stop background tracking", {
-                error,
+                message: (error as Error)?.message,
+                stack: (error as Error)?.stack,
             });
+            // don't re-throw — stopping should always succeed from caller's perspective
         }
     }
 
@@ -324,68 +414,85 @@ class LocationService {
     private async emitLocation(
         location: ExpoLocation.LocationObject,
         filter = true,
-    ) {
-        const raw = {
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-        };
+    ): Promise<void> {
+        try {
+            const raw = {
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+            };
 
-        const smoothed = filter
-            ? this.kalman.update(
-                  raw.latitude,
-                  raw.longitude,
-                  location.timestamp,
-                  location.coords.accuracy ?? 10,
-              )
-            : raw;
-        const coord: RawCoordinate = {
-            latitude: smoothed.latitude,
-            longitude: smoothed.longitude,
-            timestamp: location.timestamp,
-            speed: location.coords.speed ?? 0,
-            accuracy: location.coords.accuracy ?? 999,
-            altitude: location.coords.altitude,
-            heading: location.coords.heading ?? null,
-        };
+            const smoothed = filter
+                ? this.kalman.update(
+                      raw.latitude,
+                      raw.longitude,
+                      location.timestamp,
+                      location.coords.accuracy ?? 10,
+                  )
+                : raw;
 
-        if (this.mode === "preview") {
-            const label = await this.tryReverseGeocodeThrottled(coord);
+            const coord: RawCoordinate = {
+                latitude: smoothed.latitude,
+                longitude: smoothed.longitude,
+                timestamp: location.timestamp,
+                speed: location.coords.speed ?? 0,
+                accuracy: location.coords.accuracy ?? 999,
+                altitude: location.coords.altitude,
+                heading: location.coords.heading ?? null,
+            };
 
-            logger.log("[Location] Preview emit", {
-                lat: coord.latitude,
-                lng: coord.longitude,
-                accuracy: coord.accuracy,
+            if (this.mode === "preview") {
+                const label = await this.tryReverseGeocodeThrottled(coord);
+
+                logger.log("[Location] Preview emit", {
+                    lat: coord.latitude,
+                    lng: coord.longitude,
+                    accuracy: coord.accuracy,
+                });
+
+                this.lastCoord = coord;
+                this.emitLocationToCallbacks(coord, label, this.mode);
+                return;
+            }
+
+            const processedCoord = preprocessLocation(coord, this.lastCoord);
+
+            if (!processedCoord) {
+                logger.log("[Location] Coord dropped by filter", {
+                    lat: coord.latitude,
+                    lng: coord.longitude,
+                    accuracy: coord.accuracy,
+                });
+                return;
+            }
+
+            const label = await this.tryReverseGeocodeThrottled(processedCoord);
+            this.lastCoord = processedCoord;
+
+            logger.log("[Location] Recording emit", {
+                lat: processedCoord.latitude,
+                lng: processedCoord.longitude,
+                accuracy: processedCoord.accuracy,
             });
 
-            this.lastCoord = coord;
-            this.locationUpdateCallbacks.forEach((cb) =>
-                cb(coord, label, this.mode),
-            );
-            return;
+            this.emitLocationToCallbacks(processedCoord, label, this.mode);
+        } catch (error) {
+            logger.error("[Location] Error in emitLocation:", error);
         }
+    }
 
-        const processedCoord = preprocessLocation(coord, this.lastCoord);
-
-        if (!processedCoord) {
-            logger.log("[Location] Coord dropped by filter", {
-                lat: coord.latitude,
-                lng: coord.longitude,
-                accuracy: coord.accuracy,
-            });
-            return;
-        }
-
-        const label = await this.tryReverseGeocodeThrottled(processedCoord);
-        this.lastCoord = processedCoord;
-        logger.log("[Location] Recording emit", {
-            lat: processedCoord.latitude,
-            lng: processedCoord.longitude,
-            accuracy: processedCoord.accuracy,
+    private emitLocationToCallbacks(
+        coord: RawCoordinate,
+        label: string | null,
+        mode: TrackingMode,
+    ): void {
+        // Ensure all callbacks are executed even if one throws
+        this.locationUpdateCallbacks.forEach((cb) => {
+            try {
+                cb(coord, label, mode);
+            } catch (error) {
+                logger.error("[Location] Error in location callback:", error);
+            }
         });
-
-        this.locationUpdateCallbacks.forEach((cb) =>
-            cb(processedCoord, label, this.mode),
-        );
     }
 
     private async tryReverseGeocodeThrottled(
@@ -421,7 +528,6 @@ class LocationService {
     }
 
     emitBackgroundLocation(location: ExpoLocation.LocationObject): void {
-        // Guard: only emit if actively recording
         if (this.mode !== "recording") {
             logger.warn(
                 "[Location] emitBackgroundLocation called outside recording mode — ignoring",
@@ -429,20 +535,47 @@ class LocationService {
             return;
         }
 
-        if (this.appState === "active") return;
-        this.emitLocation(location, true);
+        if (this.appState === "active") {
+            logger.log(
+                "[Location] App is foreground, skipping background location emit",
+            );
+            return;
+        }
+
+        this.emitLocation(location, true).catch((error) => {
+            logger.error(
+                "[Location] Error emitting background location:",
+                error,
+            );
+        });
     }
 
     // ======================
     // Listener
     // ======================
     onLocationUpdate(callback: LocationCallback): () => void {
+        if (!callback) {
+            logger.warn(
+                "[Location] Attempted to register null/undefined callback",
+            );
+            return () => {};
+        }
+
         this.locationUpdateCallbacks.push(callback);
+        logger.log(
+            `[Location] Callback registered (total: ${this.locationUpdateCallbacks.length})`,
+        );
 
         return () => {
+            const initialLength = this.locationUpdateCallbacks.length;
             this.locationUpdateCallbacks = this.locationUpdateCallbacks.filter(
                 (cb) => cb !== callback,
             );
+            if (this.locationUpdateCallbacks.length < initialLength) {
+                logger.log(
+                    `[Location] Callback unregistered (remaining: ${this.locationUpdateCallbacks.length})`,
+                );
+            }
         };
     }
 }

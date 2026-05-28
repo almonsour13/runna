@@ -1,6 +1,6 @@
 import { RowView } from "@/shared/components/CustomView";
-import Icon from "@/shared/components/Icon";
-import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
+import Icon from "@/shared/components/ui/Icon";
+import { useRecordStore } from "@/shared/stores/use-record.store";
 import { cn } from "@/shared/utils/cn";
 import { Camera } from "@maplibre/maplibre-react-native";
 import { useMemo } from "react";
@@ -18,10 +18,8 @@ export default function MapControls({ cameraRef }: Props) {
     const setIs3D = useMapControlStore((s) => s.setIs3D);
     const setPitch = useMapControlStore((s) => s.setPitch);
 
-    const coordinates = useActivityTrackingStore((s) => s.coordinates);
-    const previewCoordinate = useActivityTrackingStore(
-        (s) => s.previewCoordinate,
-    );
+    const coordinates = useRecordStore((s) => s.coordinates);
+    const previewCoordinate = useRecordStore((s) => s.previewCoordinate);
 
     const currentLocation = useMemo(
         () => coordinates[coordinates.length - 1] ?? previewCoordinate,

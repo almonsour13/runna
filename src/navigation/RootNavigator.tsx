@@ -1,5 +1,5 @@
 import ActivityDetailsScreen from "@/features/ActivityDetails/ActivityDetailsScreen";
-import ActivityTrackingScreen from "@/features/ActivityTracking/ActivityTrackingScreen";
+import RecordScreen from "@/features/record/RecordScreen";
 import ScheduleScreen from "@/features/schedule/ScheduleScreen";
 import { useOnboardingContext } from "@/shared/context/OnboardingContext";
 import { db } from "@/shared/db";
@@ -52,9 +52,6 @@ export default function RootNavigator() {
             //     sessionMinPerDay: 2,
             //     sessionMaxPerDay: 3,
             // });
-            // await seedSchedule({
-            //     count: 7,
-            // });
         }
         init();
     }, []);
@@ -85,8 +82,8 @@ export default function RootNavigator() {
                     <>
                         <Stack.Screen name="Main" component={MainNavigator} />
                         <Stack.Screen
-                            name="ActivityTracking"
-                            component={ActivityTrackingScreen}
+                            name="Record"
+                            component={RecordScreen}
                             options={{
                                 animation: "fade",
                             }}

@@ -5,7 +5,7 @@ import { Gender } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { TouchableOpacity } from "react-native";
-import Icon from "../Icon";
+import Icon from "../ui/Icon";
 
 interface Props {
     value?: Gender | null;

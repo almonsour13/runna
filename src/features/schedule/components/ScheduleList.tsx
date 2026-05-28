@@ -3,8 +3,8 @@ import ScheduleActionDrawer, {
 } from "@/features/schedule/components/ScheduleActionDrawer";
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Divider from "@/shared/components/Divider";
-import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
+import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { ACTIVITY_TYPE_COLOR } from "@/shared/constant/constant";
 import { scheduleService } from "@/shared/services/storage/schedule.service";
@@ -69,6 +69,7 @@ export default function ScheduleList() {
                         schedules.map((schedule) => {
                             const {
                                 title,
+                                description,
                                 type,
                                 goal,
                                 time,
@@ -124,6 +125,11 @@ export default function ScheduleList() {
                                                     </Text>
                                                 </RowView>
                                             </RowView>
+                                            {description && (
+                                                <Text className="flex-1 text-sm text-wrap font-medium">
+                                                    {description}
+                                                </Text>
+                                            )}
                                             <Divider />
                                             <RowView className="justify-between items-center">
                                                 <RowView className="">

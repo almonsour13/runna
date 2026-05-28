@@ -2,7 +2,7 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import ActivityActionDrawer, {
     ActivityActionDrawerHandle,
 } from "@/shared/components/drawer/ActivityActionDrawer";
-import Icon from "@/shared/components/Icon";
+import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { Activity } from "@/shared/types/type";
 import { timeSession } from "@/shared/utils/utils";

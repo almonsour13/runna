@@ -78,6 +78,13 @@
       "when": 1779688819111,
       "tag": "0010_mixed_blue_blade",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1779951813019,
+      "tag": "0011_jazzy_cloak",
+      "breakpoints": true
     }
   ]
 }

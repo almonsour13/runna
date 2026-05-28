@@ -1,0 +1,66 @@
+import { create } from "zustand";
+import {
+    ActivityType,
+    Coordinate,
+    RawCoordinate,
+    RecordStatus,
+} from "../types/type";
+type TrackedCoordinate = Omit<Coordinate, "id" | "activityId">;
+type RecordStore = {
+    activityType: ActivityType | null;
+    status: RecordStatus;
+    duration: number;
+    steps: number;
+    previewCoordinate: RawCoordinate | null;
+    coordinates: RawCoordinate[];
+    label: string | null;
+    mode: "preview" | "recording";
+
+    setActivityType: (activityType: ActivityType | null) => void;
+    setDuration: (duration: number) => void;
+    setSteps: (steps: number) => void;
+    setStatus: (status: RecordStatus) => void;
+    setPreviewCoordinate: (coordinate: TrackedCoordinate | null) => void;
+    setCoordinates: (coordinates: TrackedCoordinate[]) => void;
+    addCoordinate: (coordinate: RawCoordinate) => void;
+    setLabel: (label: string | null) => void;
+    setMode: (mode: "preview" | "recording") => void;
+    clearActivity: () => void;
+};
+
+const INITIAL_STATE = {
+    activityType: null,
+    status: "idle" as RecordStatus,
+    duration: 0,
+    steps: 0,
+    previewCoordinate: null,
+    coordinates: [] as Coordinate[],
+    label: null,
+    mode: "preview" as const,
+};
+
+export const useRecordStore = create<RecordStore>((set) => ({
+    ...INITIAL_STATE,
+
+    setActivityType: (activityType) => set({ activityType }),
+    setDuration: (duration) => set({ duration }),
+    setSteps: (steps) => set({ steps }),
+    setStatus: (status) => set({ status }),
+    setPreviewCoordinate: (previewCoordinate) => set({ previewCoordinate }),
+    setCoordinates: (coordinates) => set({ coordinates }),
+    addCoordinate: (coordinate) =>
+        set((state) => ({
+            coordinates: [...state.coordinates, coordinate],
+        })),
+    setLabel: (label) => set({ label }),
+    setMode: (mode) => set({ mode }),
+    clearActivity: () =>
+        set({
+            status: "idle" as RecordStatus,
+            duration: 0,
+            previewCoordinate: null,
+            coordinates: [] as Coordinate[],
+            label: null,
+            mode: "preview" as const,
+        }),
+}));

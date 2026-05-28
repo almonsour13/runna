@@ -1,9 +1,9 @@
-import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
+import { useRecordStore } from "@/shared/stores/use-record.store";
 import { GeoJSONSource, Layer } from "@maplibre/maplibre-react-native";
 import { useMemo } from "react";
 
 export default function MapRouteLayer() {
-    const coordinates = useActivityTrackingStore((s) => s.coordinates);
+    const coordinates = useRecordStore((s) => s.coordinates);
 
     const routeData = useMemo(
         (): GeoJSON.Feature<GeoJSON.LineString> => ({

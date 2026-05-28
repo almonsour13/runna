@@ -1,18 +1,16 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
-import Icon from "@/shared/components/Icon";
+import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
-import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
+import { useRecordStore } from "@/shared/stores/use-record.store";
 import { useNavigation } from "@react-navigation/native";
 import { useMemo } from "react";
 import { TouchableOpacity } from "react-native";
 
-export default function ActivityTrackingHeader() {
+export default function RecordHeader() {
     const navigation = useNavigation();
-    const activityType = useActivityTrackingStore((s) => s.activityType);
-    const coordinates = useActivityTrackingStore((s) => s.coordinates);
-    const previewCoordinate = useActivityTrackingStore(
-        (s) => s.previewCoordinate,
-    );
+    const activityType = useRecordStore((s) => s.activityType);
+    const coordinates = useRecordStore((s) => s.coordinates);
+    const previewCoordinate = useRecordStore((s) => s.previewCoordinate);
     const currentLocation = useMemo(
         () => coordinates[coordinates.length - 1] ?? previewCoordinate,
         [coordinates, previewCoordinate],

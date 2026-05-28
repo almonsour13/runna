@@ -1,6 +1,6 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
-import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
+import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { useOnboardingContext } from "@/shared/context/OnboardingContext";
 import { StorageService } from "@/shared/services/storage/storage.service";

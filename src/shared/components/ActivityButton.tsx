@@ -2,22 +2,22 @@ import { cn } from "@/shared/utils/cn";
 import { useNavigation } from "@react-navigation/native";
 import { useRef } from "react";
 import { TouchableOpacity, View } from "react-native";
-import { useActivityTrackingStore } from "../stores/use-activity-tracking.store";
-import { NavigationProp } from "../types/type";
+import { useRecordStore } from "../stores/use-record.store";
+import { ActivityType, NavigationProp } from "../types/type";
 import { formatDurationHHMMSS } from "../utils/format";
 import AnimatedActiveButtonIndicator from "./AnimatedActiveButtonIndicator";
 import ActivityTypeDrawer from "./drawer/ActivityTypeDrawer";
-import Icon from "./Icon";
 import Card from "./ui/Card";
 import { DrawerHandle } from "./ui/Drawer";
+import Icon from "./ui/Icon";
 import Text from "./ui/Text";
 
 export default function ActivityButton() {
     const navigation = useNavigation<NavigationProp>();
     const activityTypeDrawer = useRef<DrawerHandle>(null);
-    const duration = useActivityTrackingStore((s) => s.duration);
+    const duration = useRecordStore((s) => s.duration);
     const time = formatDurationHHMMSS(duration);
-    const status = useActivityTrackingStore((s) => s.status);
+    const status = useRecordStore((s) => s.status);
     const isIdle = status === "idle";
     const isActive = status === "active";
     const isPaused = status === "paused";
@@ -32,7 +32,7 @@ export default function ActivityButton() {
                     if (isIdle) {
                         activityTypeDrawer.current?.open();
                     } else {
-                        navigation.navigate("ActivityTracking" as never);
+                        navigation.navigate("Record" as never);
                     }
                 }}
             >
@@ -64,8 +64,8 @@ export default function ActivityButton() {
             <ActivityTypeDrawer
                 ref={activityTypeDrawer}
                 onChange={(type) => {
-                    navigation.navigate("ActivityTracking", {
-                        type: type,
+                    navigation.navigate("Record", {
+                        type: type as ActivityType,
                     });
                 }}
             />

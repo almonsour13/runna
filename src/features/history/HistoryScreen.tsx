@@ -1,8 +1,8 @@
 import ActivityCard from "@/shared/components/ActivityCard";
 import { ColView, RowView } from "@/shared/components/CustomView";
-import Icon from "@/shared/components/Icon";
 import Card from "@/shared/components/ui/Card";
 import Drawer, { DrawerHandle } from "@/shared/components/ui/Drawer";
+import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { activityService } from "@/shared/services/storage/activity.service";
 import { Activity } from "@/shared/types/type";

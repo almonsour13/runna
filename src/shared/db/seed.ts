@@ -1,6 +1,7 @@
 import { db } from ".";
 import { ACTIVITY_TYPE } from "../constant/constant";
-import { Coordinate } from "../types/type";
+import { notificationService } from "../services/notification/notification.service";
+import { Coordinate, Schedule } from "../types/type";
 import { logger } from "../utils/logger";
 import { generateId } from "../utils/utils";
 import { activity, coordinate, schedule } from "./schema";
@@ -84,8 +85,8 @@ export const seed = async ({
     sessionMaxPerDay = 3,
 }) => {
     const now = new Date();
-    // await db.delete(coordinate);
-    // await db.delete(activity);
+    await db.delete(coordinate);
+    await db.delete(activity);
 
     const startDate = new Date();
     startDate.setDate(now.getDate() - days);
@@ -215,18 +216,20 @@ function randomName(type: (typeof ACTIVITY_TYPE)[number]) {
 
     return names[type][randomInt(0, names[type].length - 1)];
 }
-
-export const seedSchedule = async ({
-    count = 10,
-}: {
-    count?: number;
-} = {}) => {
+export const seedSchedule = async ({ count = 10 }: { count?: number } = {}) => {
     logger.log("[Schedule Seed] start seeding");
 
     await db.delete(schedule);
+    await notificationService.cancelAllScheduleActivityNotifications();
+
+    const granted = await notificationService.requestPermissions();
+    if (!granted) {
+        logger.warn(
+            "[Schedule Seed] Notification permission denied, skipping notification scheduling",
+        );
+    }
 
     const now = new Date();
-
     const schedules = Array.from({ length: count }).map(() => {
         const type = ACTIVITY_TYPE[randomInt(0, ACTIVITY_TYPE.length - 1)];
         const repeatDays = JSON.stringify(
@@ -235,22 +238,27 @@ export const seedSchedule = async ({
 
         return {
             id: generateId(),
-
             title: randomName(type),
             time: randomTime(),
             goal: randomGoal(type),
-
             type,
             repeatDays,
-
             status: Math.random() > 0.2 ? "active" : "inactive",
-
             createdAt: now,
             updatedAt: now,
         };
     });
 
     await db.insert(schedule).values(schedules);
+
+    if (granted) {
+        const activeSchedules = schedules.filter((s) => s.status === "active");
+        await Promise.all(
+            activeSchedules.map((s) =>
+                notificationService.scheduleActivityNotification(s as Schedule),
+            ),
+        );
+    }
 
     logger.log("[Schedule Seed] seeding complete");
 };

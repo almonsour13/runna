@@ -1,6 +1,5 @@
-import { Activity, Coordinate } from "../types/type";
+import { Activity, Coordinate, RawCoordinate } from "../types/type";
 
-type C = Omit<Coordinate, "id" | "activityId">;
 export const computeStats = (activities: Activity[]) => {
     const distance = activities.reduce(
         (sum, activity) => sum + activity.distance,
@@ -36,7 +35,7 @@ export const computeStats = (activities: Activity[]) => {
         steps,
     };
 };
-export const computeDistance = (a: C, b: C) => {
+export const computeDistance = (a: RawCoordinate, b: RawCoordinate) => {
     const R = 6_371_000;
     const toRad = (deg: number) => (deg * Math.PI) / 180;
 
@@ -52,7 +51,7 @@ export const computeDistance = (a: C, b: C) => {
     return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 };
 
-export const computeTotalDistance = (coordinates: C[]) => {
+export const computeTotalDistance = (coordinates: RawCoordinate[]) => {
     let total = 0;
 
     for (let i = 1; i < coordinates.length; i++) {

@@ -7,9 +7,9 @@ import { format } from "date-fns";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import ActivityCard from "../ActivityCard";
 import { ColView, RowView } from "../CustomView";
-import Icon from "../Icon";
 import Card from "../ui/Card";
 import Drawer, { DrawerHandle } from "../ui/Drawer";
+import Icon from "../ui/Icon";
 import Text from "../ui/Text";
 
 export type ActivityGroupDrawerHandle = DrawerHandle & {

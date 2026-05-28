@@ -1,14 +1,12 @@
 import Card from "@/shared/components/ui/Card";
-import { useActivityTrackingStore } from "@/shared/stores/use-activity-tracking.store";
+import { useRecordStore } from "@/shared/stores/use-record.store";
 import { Marker } from "@maplibre/maplibre-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, View } from "react-native";
 
 export default function MapUserTracker() {
-    const coordinates = useActivityTrackingStore((s) => s.coordinates);
-    const previewCoordinate = useActivityTrackingStore(
-        (s) => s.previewCoordinate,
-    );
+    const coordinates = useRecordStore((s) => s.coordinates);
+    const previewCoordinate = useRecordStore((s) => s.previewCoordinate);
     const currentLocation = useMemo(
         () => coordinates[coordinates.length - 1] ?? previewCoordinate,
         [coordinates, previewCoordinate],
