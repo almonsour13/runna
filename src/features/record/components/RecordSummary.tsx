@@ -15,10 +15,11 @@ import {
 import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
 import {
     formatCalories,
+    formatDuration,
     formatDurationHHMMSS,
     formatPace,
 } from "@/shared/utils/format";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { TouchableOpacity } from "react-native";
 
 export default function RecordSummary() {
@@ -28,8 +29,9 @@ export default function RecordSummary() {
     const duration = useRecordStore((s) => s.duration);
     const steps = useRecordStore((s) => s.steps);
     const coordinates = useRecordStore((s) => s.coordinates);
-    const time = formatDurationHHMMSS(duration);
     const goalDrawerRef = useRef<DrawerHandle>(null);
+
+    const [selectedActiveStat, setSelectedActiveStat] = useState("Duration");
 
     const { stats } = useMemo(() => {
         const distance = computeTotalDistance(coordinates);
@@ -44,11 +46,19 @@ export default function RecordSummary() {
                 : "00:00";
         const stats = [
             {
+                label: "Duration",
+                value:
+                    selectedActiveStat !== "Duration"
+                        ? formatDuration(duration)
+                        : formatDurationHHMMSS(duration),
+                icon: "timer-outline" as const,
+                unit: "min",
+            },
+            {
                 label: "Distance",
                 value: distanceKm.toFixed(2).padStart(2, "0"),
                 unit: "km",
                 icon: "location-outline" as const,
-                color: "text-blue-500",
             },
             {
                 label: "Calories",
@@ -57,23 +67,23 @@ export default function RecordSummary() {
                 icon: "flame-outline" as const,
                 color: "text-orange-500",
             },
-            // {
-            //     label: "Pace",
-            //     value: pace,
-            //     unit: "/km",
-            //     icon: "timer-outline" as const,
-            //     color: "text-purple-500",
-            // },
+            {
+                label: "Pace",
+                value: pace,
+                unit: "/km",
+                icon: "timer-outline" as const,
+            },
             {
                 label: "Steps",
                 value: steps,
                 icon: "footsteps" as const,
-                color: "text-green-500",
             },
         ];
         return { stats };
-    }, [coordinates, duration, profile?.weight]);
+    }, [coordinates, duration, profile?.weight, steps, selectedActiveStat]);
 
+    const activeStat = stats.find((s) => s.label === selectedActiveStat);
+    const updatedStats = stats.filter((s) => s.label !== selectedActiveStat);
     return (
         <>
             <ColView
@@ -98,46 +108,51 @@ export default function RecordSummary() {
                     </TouchableOpacity>
                 </RowView>
                 <ColView className="items-center">
-                    <Text className="text-6xl font-bold">{time}</Text>
+                    <Text className="text-6xl font-bold">
+                        {activeStat?.value}
+                    </Text>
                     <RowView className="items-center">
                         <Icon
-                            name="time-outline"
+                            name={activeStat?.icon}
                             size={12}
                             className="hidden text-primary"
                         />
                         <Text className="text-xs text-muted-foreground">
-                            Duration
+                            {activeStat?.label} {/* ✅ Fix 2: dynamic label */}
                         </Text>
                     </RowView>
                 </ColView>
                 <RowView className="justify-between">
-                    {stats.map((stat, i) => (
-                        <ColView
-                            key={stat.label}
+                    {updatedStats.map((stat, i) => (
+                        <TouchableOpacity
+                            key={i}
+                            onPress={() => setSelectedActiveStat(stat.label)}
                             className="flex-1 justify-center items-center"
                         >
-                            <RowView className="items-end">
-                                <Text className="text-3xl leading-4 font-medium ">
-                                    {stat.value}
-                                </Text>
-                            </RowView>
-                            <RowView className="items-center">
-                                <Icon
-                                    name={stat.icon}
-                                    size={12}
-                                    className="hidden text-primary"
-                                />
-                                <Text className="text-xs text-muted-foreground">
-                                    {stat.label}
-                                    {stat.unit && (
-                                        <Text className=" text-xs font-medium text-muted-foreground">
-                                            {" "}
-                                            ({stat.unit})
-                                        </Text>
-                                    )}
-                                </Text>
-                            </RowView>
-                        </ColView>
+                            <ColView className="">
+                                <RowView className="items-end">
+                                    <Text className="text-2xl leading-4 font-medium ">
+                                        {stat.value}
+                                    </Text>
+                                </RowView>
+                                <RowView className="items-center">
+                                    <Icon
+                                        name={stat.icon}
+                                        size={12}
+                                        className="hidden text-primary"
+                                    />
+                                    <Text className="text-xs text-muted-foreground">
+                                        {stat.label}
+                                        {stat.unit && (
+                                            <Text className=" text-xs font-medium text-muted-foreground">
+                                                {" "}
+                                                ({stat.unit})
+                                            </Text>
+                                        )}
+                                    </Text>
+                                </RowView>
+                            </ColView>
+                        </TouchableOpacity>
                     ))}
                 </RowView>
             </ColView>

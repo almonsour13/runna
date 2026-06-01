@@ -1,9 +1,9 @@
-import HistoryScreen from "@/features/history/HistoryScreen";
-import HomeScreen from "@/features/home/HomeScreen";
-import StatisticScreen from "@/features/statistic/StatisticScreen";
+import HistoryScreen from "@/features/history/screens/HistoryScreen";
+import HomeScreen from "@/features/home/screens/HomeScreen";
+import { useRecord } from "@/features/record/hooks/use-record-tracking";
+import StatisticScreen from "@/features/statistic/screens/StatisticScreen";
 import MainTabBar from "@/shared/components/layout/MainTabBar";
 import SafeScreen from "@/shared/components/SafeScreen";
-import { useRecord } from "@/shared/hooks/use-record-tracking";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React from "react";
 

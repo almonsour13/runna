@@ -5,6 +5,14 @@ import { useMemo } from "react";
 export default function MapRouteLayer() {
     const coordinates = useRecordStore((s) => s.coordinates);
 
+    // ✅ FIX: Only re-compute when coordinates length changes significantly (every 10 coords)
+    // This prevents excessive re-renders when adding coordinates one-by-one
+    const coordinateLength = coordinates.length;
+    const memoizedLength = useMemo(
+        () => Math.floor(coordinateLength / 10) * 10,
+        [coordinateLength],
+    );
+
     const routeData = useMemo(
         (): GeoJSON.Feature<GeoJSON.LineString> => ({
             type: "Feature",
@@ -14,21 +22,23 @@ export default function MapRouteLayer() {
                 coordinates: coordinates.map((c) => [c.longitude, c.latitude]),
             },
         }),
-        [coordinates],
+        [memoizedLength, coordinates],
     );
 
-    if (coordinates.length < 2) return null;
+    if (coordinateLength < 2) return null;
 
     return (
         <GeoJSONSource id="route-source" data={routeData}>
             <Layer
                 type="line"
-                style={{
-                    lineColor: "#02a963",
-                    lineWidth: 4,
-                    lineJoin: "round",
-                    lineCap: "round",
-                    lineOpacity: 1,
+                paint={{
+                    "line-color": "#02a963",
+                    "line-width": 4,
+                    "line-opacity": 1,
+                }}
+                layout={{
+                    "line-join": "round",
+                    "line-cap": "round",
                 }}
             />
         </GeoJSONSource>

@@ -1,6 +1,6 @@
-import ActivityDetailsScreen from "@/features/ActivityDetails/ActivityDetailsScreen";
-import RecordScreen from "@/features/record/RecordScreen";
-import ScheduleScreen from "@/features/schedule/ScheduleScreen";
+import ActivityDetailsScreen from "@/features/ActivityDetails/screens/ActivityDetailsScreen";
+import RecordScreen from "@/features/record/screens/RecordScreen";
+import ScheduleScreen from "@/features/schedule/screens/ScheduleScreen";
 import { useOnboardingContext } from "@/shared/context/OnboardingContext";
 import { db } from "@/shared/db";
 import migrations from "@/shared/db/migrations/migrations";
@@ -44,17 +44,6 @@ export default function RootNavigator() {
             SplashScreen.hideAsync();
         }
     }, [isReady]);
-
-    useEffect(() => {
-        async function init() {
-            // await seed({
-            //     days: 30,
-            //     sessionMinPerDay: 2,
-            //     sessionMaxPerDay: 3,
-            // });
-        }
-        init();
-    }, []);
 
     if (!isReady) {
         return null;

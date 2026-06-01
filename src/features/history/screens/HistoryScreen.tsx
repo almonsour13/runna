@@ -10,8 +10,8 @@ import { cn } from "@/shared/utils/cn";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { FlatList, TouchableOpacity } from "react-native";
-import FilterButton from "./components/FilterButton";
-import HistoryHeader from "./components/HistoryHeader";
+import FilterButton from "../components/FilterButton";
+import HistoryHeader from "../components/HistoryHeader";
 
 const PAGE_LIMIT = 10;
 

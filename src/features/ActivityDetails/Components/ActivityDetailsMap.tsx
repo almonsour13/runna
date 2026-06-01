@@ -14,7 +14,7 @@ import {
 } from "@maplibre/maplibre-react-native";
 import { useMemo, useRef, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
-import { KmSplits } from "../ActivityDetailsScreen";
+import { KmSplits } from "../screens/ActivityDetailsScreen";
 
 const MAP_PADDING = 40;
 export default function ActivityDetailsMap({
@@ -140,12 +140,14 @@ export default function ActivityDetailsMap({
                     <GeoJSONSource id="route-source" data={geoJson}>
                         <Layer
                             type="line"
-                            style={{
-                                lineColor: "#02a963",
-                                lineWidth: 4,
-                                lineJoin: "round",
-                                lineCap: "round",
-                                lineOpacity: 1,
+                            paint={{
+                                "line-color": "#02a963",
+                                "line-width": 4,
+                                "line-opacity": 1,
+                            }}
+                            layout={{
+                                "line-join": "round",
+                                "line-cap": "round",
                             }}
                         />
                     </GeoJSONSource>

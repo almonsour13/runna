@@ -4,18 +4,18 @@ import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 export const activity = sqliteTable("activity", {
     id: text("id").primaryKey(),
     startTime: integer("start_time", { mode: "timestamp" }).notNull(),
-    endTime: integer("end_time", { mode: "timestamp" }).notNull(),
+    endTime: integer("end_time", { mode: "timestamp" }),
 
-    duration: integer("duration").notNull(),
-    distance: real("distance").notNull(),
-    calories: real("calories").notNull(),
-    avgPace: real("avg_pace").notNull(),
-    avgSpeed: real("avg_speed").notNull(),
-    steps: integer("steps").notNull(),
+    duration: integer("duration").notNull().default(0),
+    distance: real("distance").notNull().default(0),
+    calories: real("calories").notNull().default(0),
+    avgPace: real("avg_pace").notNull().default(0),
+    avgSpeed: real("avg_speed").notNull().default(0),
+    steps: integer("steps").notNull().default(0),
 
-    goal: integer("goal").notNull(),
+    goal: integer("goal").notNull().default(0),
     type: text("type").$type<ActivityType>().notNull(),
-    status: text("status").notNull(),
+    status: text("status").notNull().default("inProgress"),
 
     isImported: integer("is_imported", { mode: "boolean" })
         .notNull()

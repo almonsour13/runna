@@ -2,11 +2,11 @@ import { ColView } from "@/shared/components/CustomView";
 import { useActivityMutations } from "@/shared/hooks/use-activity-mutation";
 import { useState } from "react";
 import { RefreshControl, ScrollView } from "react-native";
-import HomeHeader from "./components/HomeHeader";
-import RecentActivities from "./components/RecentActivity";
-import TodayProgress from "./components/TodayProgress";
-import TodaySchedule from "./components/TodaySchedule";
-import WeekProgress from "./components/WeekProgress";
+import HomeHeader from "../components/HomeHeader";
+import RecentActivities from "../components/RecentActivity";
+import TodayProgress from "../components/TodayProgress";
+import TodaySchedule from "../components/TodaySchedule";
+import WeekProgress from "../components/WeekProgress";
 
 export default function HomeScreen() {
     const { invalidate } = useActivityMutations();

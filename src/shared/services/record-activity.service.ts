@@ -15,13 +15,14 @@ import { convertMsToS } from "../utils/convert";
 import { logger } from "../utils/logger";
 import { generateId } from "../utils/utils";
 import { locationService } from "./location/location.service";
-import { notificationService } from "./notification/notification.service";
+import { stepCounterService } from "./step-counter.service";
 import { activityService } from "./storage/activity.service";
 import { coordinateService } from "./storage/coordinates.service";
 import { profileService } from "./storage/profile.service";
 import { StorageService } from "./storage/storage.service";
 
-type DraftActivity = Omit<Activity, "isImported" | "importedAt">;
+export type DraftActivity = Omit<Activity, "isImported" | "importedAt">;
+
 type RecordActivity = {
     id: string;
     startTime: number;
@@ -32,15 +33,30 @@ type RecordActivity = {
     type: ActivityType;
 };
 
+type LiveStats = {
+    distance: number;
+    pace: number;
+    steps: number;
+};
+
 class RecordActivityService {
+    // ======================
+    // State
+    // ======================
     private activityStorage = new StorageService(STORAGE_KEYS.record);
     private activity: RecordActivity | null = null;
     private coordinates: RawCoordinate[] = [];
     private readonly DURATION_UPDATE_INTERVAL = 1000;
     private intervalId: ReturnType<typeof setInterval> | null = null;
     private durationCallbacks: Set<(duration: number) => void> = new Set();
+    private statsCallbacks: Set<(stats: LiveStats) => void> = new Set();
     private locationListener: (() => void) | null = null;
+    private stepListener: (() => void) | null = null;
+    private isTransitioning = false;
 
+    // ======================
+    // Duration
+    // ======================
     private computeDuration(): number {
         if (!this.activity) return 0;
 
@@ -54,40 +70,27 @@ class RecordActivityService {
         return Date.now() - startTime - pausedTime - extraPaused;
     }
 
+    // ======================
+    // Interval (live stats)
+    // ======================
     private startInterval(): void {
         if (this.intervalId !== null) return;
 
-        this.intervalId = setInterval(async () => {
+        this.intervalId = setInterval(() => {
             try {
                 const duration = this.computeDuration();
                 this.durationCallbacks.forEach((cb) => cb(duration));
 
-                // Update progress notification
                 if (this.activity) {
                     const distance = computeTotalDistance(this.coordinates);
                     const pace = computePace(distance, convertMsToS(duration));
-
-                    // Fire and forget - don't await to prevent blocking the interval
-                    notificationService
-                        .updateActivityProgressNotification(
-                            this.activity.id,
-                            duration,
-                            this.activity.type || "Activity",
-                            distance,
-                            pace.toString(),
-                        )
-                        .catch((error) => {
-                            logger.error(
-                                "[ActivityService] Failed to update progress notification:",
-                                error,
-                            );
-                        });
+                    const steps = this.activity.steps;
+                    this.statsCallbacks.forEach((cb) =>
+                        cb({ distance, pace, steps }),
+                    );
                 }
             } catch (error) {
-                logger.error(
-                    "[ActivityService] Error in duration update interval:",
-                    error,
-                );
+                logger.error("[ActivityService] Error in interval:", error);
             }
         }, this.DURATION_UPDATE_INTERVAL);
     }
@@ -98,68 +101,41 @@ class RecordActivityService {
         this.intervalId = null;
     }
 
-    /**
-     * FIX: Made fully async so callers can await it, preventing races between
-     * stop and subsequent start calls on the native location stack.
-     */
-    private async stopLocationListener(): Promise<void> {
-        try {
-            // Unregister the coordinate callback first
-            if (this.locationListener) {
-                this.locationListener();
-                this.locationListener = null;
-            }
+    // ======================
+    // Step counter
+    // ======================
+    private startStepCounter(): void {
+        this.stopStepCounter();
+        stepCounterService.start();
 
-            // FIX: await stop() so the native subscription is fully torn down
-            // before any subsequent start() call is made.
-            await locationService.stop();
+        this.stepListener = stepCounterService.onStep((total) => {
+            if (!this.activity || this.activity.status !== "active") return;
+            this.activity.steps = total;
+            logger.log("[ActivityService] Step recorded", { steps: total });
+        });
 
-            // FIX: await startPreview() so it only begins after stop() settles,
-            // preventing a new watchPositionAsync from racing the old teardown.
-            await locationService.startPreview();
-
-            logger.log("[ActivityService] Location listener stopped");
-        } catch (error) {
-            logger.error("[ActivityService] Failed to stop location listener", {
-                message: (error as Error)?.message,
-                stack: (error as Error)?.stack,
-            });
-        }
+        logger.log("[ActivityService] Step counter started");
     }
 
+    private stopStepCounter(): void {
+        if (this.stepListener) {
+            this.stepListener();
+            this.stepListener = null;
+        }
+        stepCounterService.stop();
+        logger.log("[ActivityService] Step counter stopped");
+    }
+
+    // ======================
+    // Location listener
+    // ======================
     private async startLocationListener(): Promise<void> {
         try {
-            // FIX: await the full teardown before starting anything new,
-            // so we never overlap native GPS subscriptions.
             await this.stopLocationListener();
-
-            // Start location service
-            try {
-                await locationService.stopPreview();
-                await locationService.start();
-            } catch (error) {
-                logger.warn(
-                    "[ActivityService] Location service start warning:",
-                    {
-                        message: (error as Error)?.message,
-                    },
-                );
-
-                // FIX: If locationService.start() was silently dropped due to
-                // isTransitioning, surface it so the caller is aware GPS is not running.
-                const msg = (error as Error)?.message ?? "";
-                if (msg.includes("Transition in progress")) {
-                    logger.error(
-                        "[ActivityService] GPS start was blocked by an in-progress transition — location tracking may not be active.",
-                    );
-                }
-                // Continue anyway — allow activity to proceed without GPS rather than crashing.
-            }
-
             logger.log("[ActivityService] Location listener starting");
 
             this.locationListener = locationService.onLocationUpdate(
-                async (coord: RawCoordinate, _label, mode) => {
+                async (coord: RawCoordinate, mode) => {
                     try {
                         if (
                             !this.activity ||
@@ -175,7 +151,11 @@ class RecordActivityService {
                             ...coord,
                         });
 
-                        logger.log("[ActivityService] Location recorded");
+                        logger.log("[ActivityService] Location recorded", {
+                            activityId: this.activity.id,
+                            lat: coord.latitude,
+                            lng: coord.longitude,
+                        });
                     } catch (error) {
                         logger.error(
                             "[ActivityService] Error recording location:",
@@ -184,6 +164,8 @@ class RecordActivityService {
                     }
                 },
             );
+
+            logger.log("[ActivityService] Location listener started");
         } catch (error) {
             logger.error(
                 "[ActivityService] Failed to start location listener",
@@ -192,18 +174,40 @@ class RecordActivityService {
                     stack: (error as Error)?.stack,
                 },
             );
-            // Don't throw - allow activity to continue without location tracking
+            // Don't throw — allow activity to continue without location tracking.
         }
     }
 
-    async start(type: ActivityType | null): Promise<void> {
-        logger.log("[ActivityService] start() called", { type });
+    private async stopLocationListener(): Promise<void> {
         try {
-            // Clean up any previous state
-            this.stopInterval();
+            if (this.locationListener) {
+                this.locationListener();
+                this.locationListener = null;
+            }
+            logger.log("[ActivityService] Location listener stopped");
+        } catch (error) {
+            logger.error(
+                "[ActivityService] Failed to stop location listener",
+                error,
+            );
+        }
+    }
 
-            // FIX: await the stop so the native layer is fully settled before
-            // we assign a new activity and kick off a new startLocationListener().
+    // ======================
+    // Start
+    // ======================
+    async start(type: ActivityType | null): Promise<void> {
+        if (this.isTransitioning) {
+            throw new Error(
+                "[ActivityService] Transition in progress — start() blocked.",
+            );
+        }
+        this.isTransitioning = true;
+        logger.log("[ActivityService] start() called", { type });
+
+        try {
+            this.stopInterval();
+            this.stopStepCounter();
             await this.stopLocationListener();
 
             this.activity = {
@@ -216,14 +220,22 @@ class RecordActivityService {
                 type: type ?? "run",
             };
             this.coordinates = [];
+            stepCounterService.reset();
 
-            // Store activity first
             await this.activityStorage.set(this.activity);
 
-            // Start location listener (non-blocking errors)
-            await this.startLocationListener();
+            await activityService.createDraft({
+                id: this.activity.id,
+                startTime: new Date(this.activity.startTime),
+                type: this.activity.type,
+            });
 
-            // Start interval after location listener
+            // ✅ Register listener BEFORE locationService.start() so the
+            // seeded coord emitted inside start() is captured immediately.
+            await this.startLocationListener();
+            await locationService.start();
+
+            this.startStepCounter();
             this.startInterval();
 
             logger.log("[ActivityService] Activity started", {
@@ -235,17 +247,21 @@ class RecordActivityService {
                 stack: (error as Error)?.stack,
             });
             this.stopInterval();
-
-            // FIX: await cleanup on failure path too, for the same reason.
+            this.stopStepCounter();
             await this.stopLocationListener();
+            await activityService.delete(this.activity?.id ?? "");
             this.activity = null;
             this.coordinates = [];
             throw error;
+        } finally {
+            this.isTransitioning = false;
         }
     }
 
+    // ======================
+    // Pause
+    // ======================
     async pause(): Promise<void> {
-        logger.log("[ActivityService] pause() called");
         if (!this.activity) {
             logger.error("[ActivityService] Pause failed: no active activity");
             throw new Error("No activity in progress");
@@ -256,28 +272,27 @@ class RecordActivityService {
             });
             return;
         }
+        if (this.isTransitioning) {
+            throw new Error(
+                "[ActivityService] Transition in progress — pause() blocked.",
+            );
+        }
+        this.isTransitioning = true;
+        logger.log("[ActivityService] pause() called");
+
         try {
             this.activity.status = "paused";
             this.activity.lastPauseTime = Date.now();
+
             this.stopInterval();
-
-            // FIX: await so the native subscription is fully stopped before
-            // the activity state is persisted, keeping storage consistent.
+            this.stopStepCounter();
+            await locationService.stop();
             await this.stopLocationListener();
-
-            // Fire and forget - don't block on notification
-            notificationService
-                .cancelActivityProgressNotification(this.activity.id)
-                .catch((error) => {
-                    logger.error(
-                        "[ActivityService] Failed to cancel progress notification:",
-                        error,
-                    );
-                });
-
             await this.activityStorage.set(this.activity);
+
             logger.log("[ActivityService] Activity paused", {
                 id: this.activity.id,
+                steps: this.activity.steps,
             });
         } catch (error) {
             logger.error("[ActivityService] Failed to pause activity", {
@@ -285,11 +300,15 @@ class RecordActivityService {
                 stack: (error as Error)?.stack,
             });
             throw error;
+        } finally {
+            this.isTransitioning = false;
         }
     }
 
+    // ======================
+    // Resume
+    // ======================
     async resume(): Promise<void> {
-        logger.log("[ActivityService] resume() called");
         if (!this.activity) {
             logger.error("[ActivityService] Resume failed: no active activity");
             throw new Error("No activity in progress");
@@ -300,6 +319,13 @@ class RecordActivityService {
             });
             return;
         }
+        if (this.isTransitioning) {
+            throw new Error(
+                "[ActivityService] Transition in progress — resume() blocked.",
+            );
+        }
+        this.isTransitioning = true;
+        logger.log("[ActivityService] resume() called");
 
         try {
             if (this.activity.lastPauseTime != null) {
@@ -313,34 +339,48 @@ class RecordActivityService {
             }
 
             this.activity.status = "active";
-            this.startInterval();
+
+            // ✅ Register listener BEFORE locationService.start() for the
+            // same reason as start() — seed coord must not be missed.
             await this.startLocationListener();
+            await locationService.start();
+            this.startStepCounter();
+            this.startInterval();
             await this.activityStorage.set(this.activity);
+
             logger.log("[ActivityService] Activity resumed", {
                 id: this.activity.id,
+                steps: this.activity.steps,
             });
         } catch (error) {
             logger.error("[ActivityService] Failed to resume activity", {
                 message: (error as Error)?.message,
                 stack: (error as Error)?.stack,
             });
-
-            // Roll back status so the user can try resuming again
             this.activity.status = "paused";
-
-            // FIX: Stop the interval AND the location listener on rollback.
-            // Previously only stopInterval() was called, leaving a dangling
-            // listener if startLocationListener() partially succeeded.
             this.stopInterval();
+            this.stopStepCounter();
             await this.stopLocationListener();
-
             throw error;
+        } finally {
+            this.isTransitioning = false;
         }
     }
 
+    // ======================
+    // Stop
+    // ======================
     async stop(): Promise<void> {
+        if (this.isTransitioning) {
+            throw new Error(
+                "[ActivityService] Transition in progress — stop() blocked.",
+            );
+        }
+        this.isTransitioning = true;
         logger.log("[ActivityService] stop() called");
+
         if (!this.activity) {
+            this.isTransitioning = false;
             logger.error("[ActivityService] Stop failed: no active activity");
             throw new Error("No activity in progress");
         }
@@ -350,9 +390,8 @@ class RecordActivityService {
                 id: this.activity.id,
             });
 
-            const activityId = this.activity.id;
             const profile = await profileService.get();
-            const finalSteps = this.activity.steps;
+            const finalSteps = stepCounterService.getSteps();
             const finalDuration = this.computeDuration();
             const finalCoordinates = this.coordinates;
             const startTime = new Date(this.activity.startTime);
@@ -367,7 +406,7 @@ class RecordActivityService {
             );
 
             const newActivity: DraftActivity = {
-                id: activityId,
+                id: this.activity.id,
                 startTime,
                 endTime,
                 duration: finalDuration,
@@ -376,48 +415,50 @@ class RecordActivityService {
                 avgPace,
                 avgSpeed,
                 goal: profile?.goal ?? 5000,
-                status: "Completed",
+                status: "completed",
                 type: this.activity.type ?? "run",
                 steps: finalSteps,
                 createdAt: startTime,
                 updatedAt: endTime,
             };
 
-            logger.log("[ActivityService] New activity payload", newActivity);
+            logger.log("[ActivityService] Final activity payload", newActivity);
 
-            // FIX: await stopLocationListener() so the native subscription is
-            // fully torn down before we write the final record to storage.
             this.stopInterval();
+            this.stopStepCounter();
             await this.stopLocationListener();
 
-            // Perform cleanup operations in parallel
-            await Promise.all([
-                activityService.create(newActivity),
-                notificationService
-                    .cancelActivityProgressNotification(activityId)
-                    .catch((error) => {
-                        logger.error(
-                            "[ActivityService] Failed to cancel notification during stop:",
-                            error,
-                        );
-                    }),
-            ]);
+            await activityService.update(this.activity.id, newActivity);
+            await this.activityStorage.remove();
 
             this.activity = null;
             this.coordinates = [];
-            this.activityStorage.remove();
-            logger.log("[ActivityService] Activity stopped");
+
+            logger.log("[ActivityService] Activity stopped", {
+                finalSteps,
+                finalDuration,
+                distance,
+            });
         } catch (error) {
             logger.error("[ActivityService] Error stopping activity", {
                 message: (error as Error)?.message,
                 stack: (error as Error)?.stack,
             });
             throw error;
+        } finally {
+            this.isTransitioning = false;
         }
     }
 
+    // ======================
+    // Discard
+    // ======================
     async discard(): Promise<void> {
-        logger.log("[ActivityService] discard() called");
+        if (this.isTransitioning) {
+            throw new Error(
+                "[ActivityService] Transition in progress — discard() blocked.",
+            );
+        }
         if (!this.activity) {
             logger.error(
                 "[ActivityService] Discard failed: no active activity",
@@ -425,37 +466,21 @@ class RecordActivityService {
             throw new Error("No activity in progress");
         }
 
-        // Capture id before any async work
         const activityId = this.activity.id;
+        this.isTransitioning = true;
+        logger.log("[ActivityService] discard() called", { id: activityId });
 
-        // FIX: Stop timers and await location teardown before clearing state,
-        // so we don't leave dangling native subscriptions.
-        this.stopInterval();
-        await this.stopLocationListener();
-
-        // FIX: Clear in-memory state immediately in a finally block so that
-        // a DB failure in coordinateService.deleteByActivityId() no longer
-        // leaves this.activity as a stale, half-discarded object, which
-        // caused subsequent action calls to crash.
         try {
-            logger.log("[ActivityService] Discarding activity", {
+            this.stopInterval();
+            this.stopStepCounter();
+            await this.stopLocationListener();
+            await coordinateService.deleteByActivityId(activityId);
+            await activityService.delete(activityId);
+            await this.activityStorage.remove();
+
+            logger.log("[ActivityService] Activity discarded", {
                 id: activityId,
             });
-
-            // Clean up data in parallel
-            await Promise.all([
-                coordinateService.deleteByActivityId(activityId),
-                notificationService
-                    .cancelActivityProgressNotification(activityId)
-                    .catch((error) => {
-                        logger.error(
-                            "[ActivityService] Failed to cancel notification during discard:",
-                            error,
-                        );
-                    }),
-            ]);
-
-            logger.log("[ActivityService] Activity discarded");
         } catch (error) {
             logger.error("[ActivityService] Error discarding activity", {
                 message: (error as Error)?.message,
@@ -463,19 +488,22 @@ class RecordActivityService {
             });
             throw error;
         } finally {
-            // FIX: Always clear state regardless of DB success/failure.
             this.activity = null;
             this.coordinates = [];
-            this.activityStorage.remove();
+            this.isTransitioning = false;
         }
     }
 
+    // ======================
+    // Restore
+    // ======================
     async restore(): Promise<{
         activity: RecordActivity | null;
         computedDuration: number;
         coordinates: RawCoordinate[];
     } | null> {
         logger.log("[ActivityService] restore() called");
+
         try {
             const storedActivity = await this.activityStorage.get();
 
@@ -484,15 +512,22 @@ class RecordActivityService {
                 return null;
             }
 
-            // if app crashed mid-session, surface as paused
+            logger.log("[ActivityService] Stored activity found", {
+                id: storedActivity.id,
+                status: storedActivity.status,
+            });
+
+            // Crash recovery — surface active session as paused.
             if (storedActivity.status === "active") {
                 storedActivity.status = "paused";
                 storedActivity.lastPauseTime =
                     storedActivity.lastPauseTime ?? Date.now();
                 await this.activityStorage.set(storedActivity);
                 logger.log(
-                    "[ActivityService] Crashed active session surfaced as paused",
-                    { id: storedActivity.id },
+                    "[ActivityService] Crashed session surfaced as paused",
+                    {
+                        id: storedActivity.id,
+                    },
                 );
             }
 
@@ -508,6 +543,7 @@ class RecordActivityService {
             logger.log("[ActivityService] Activity restored", {
                 id: storedActivity.id,
                 status: storedActivity.status,
+                steps: storedActivity.steps,
                 coordinatesCount: this.coordinates.length,
             });
 
@@ -525,11 +561,17 @@ class RecordActivityService {
         }
     }
 
+    // ======================
+    // Public subscription API
+    // ======================
     onDurationUpdate(callback: (duration: number) => void): () => void {
         this.durationCallbacks.add(callback);
-        return () => {
-            this.durationCallbacks.delete(callback);
-        };
+        return () => this.durationCallbacks.delete(callback);
+    }
+
+    onStatsUpdate(callback: (stats: LiveStats) => void): () => void {
+        this.statsCallbacks.add(callback);
+        return () => this.statsCallbacks.delete(callback);
     }
 }
 

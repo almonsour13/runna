@@ -39,7 +39,7 @@ export default function StatisticSummary() {
                           ))
                         : stats.map((stat) => (
                               <Card
-                                  className="flex-1 min-w-[45%] gap-1"
+                                  className="flex-1 min-w-[45%]"
                                   key={stat.label}
                               >
                                   {isLoading ? (

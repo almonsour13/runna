@@ -13,8 +13,7 @@ type RecordStore = {
     steps: number;
     previewCoordinate: RawCoordinate | null;
     coordinates: RawCoordinate[];
-    label: string | null;
-    mode: "preview" | "recording";
+    mode: "preview" | "recording" | null;
 
     setActivityType: (activityType: ActivityType | null) => void;
     setDuration: (duration: number) => void;
@@ -23,7 +22,6 @@ type RecordStore = {
     setPreviewCoordinate: (coordinate: TrackedCoordinate | null) => void;
     setCoordinates: (coordinates: TrackedCoordinate[]) => void;
     addCoordinate: (coordinate: RawCoordinate) => void;
-    setLabel: (label: string | null) => void;
     setMode: (mode: "preview" | "recording") => void;
     clearActivity: () => void;
 };
@@ -35,8 +33,7 @@ const INITIAL_STATE = {
     steps: 0,
     previewCoordinate: null,
     coordinates: [] as Coordinate[],
-    label: null,
-    mode: "preview" as const,
+    mode: null,
 };
 
 export const useRecordStore = create<RecordStore>((set) => ({
@@ -52,15 +49,10 @@ export const useRecordStore = create<RecordStore>((set) => ({
         set((state) => ({
             coordinates: [...state.coordinates, coordinate],
         })),
-    setLabel: (label) => set({ label }),
     setMode: (mode) => set({ mode }),
     clearActivity: () =>
-        set({
-            status: "idle" as RecordStatus,
-            duration: 0,
-            previewCoordinate: null,
-            coordinates: [] as Coordinate[],
-            label: null,
-            mode: "preview" as const,
-        }),
+        set((state) => ({
+            ...INITIAL_STATE,
+            previewCoordinate: state.previewCoordinate,
+        })),
 }));

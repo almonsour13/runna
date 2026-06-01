@@ -3,6 +3,8 @@ import Card from "@/shared/components/ui/Card";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { useOnboardingContext } from "@/shared/context/OnboardingContext";
+import { activityService } from "@/shared/services/storage/activity.service";
+import { coordinateService } from "@/shared/services/storage/coordinates.service";
 import { StorageService } from "@/shared/services/storage/storage.service";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
 import { useSettingsStore } from "@/shared/stores/use-settings-store";
@@ -100,7 +102,23 @@ export default function SettingsScreen() {
                     description: "Permanently delete all recorded sessions",
                     icon: "trash-outline" as const,
                     value: undefined,
-                    onPress: () => console.log("clear activity"),
+                    onPress: async () => {
+                        Alert.alert(
+                            "Clear Activity Data",
+                            "This will permanently delete all recorded sessions. You'll be taken back to onboarding. This cannot be undone.",
+                            [
+                                { text: "Cancel", style: "cancel" },
+                                {
+                                    text: "Clear",
+                                    style: "destructive",
+                                    onPress: async () => {
+                                        await activityService.clear();
+                                        await coordinateService.clear();
+                                    },
+                                },
+                            ],
+                        );
+                    },
                     type: "action",
                     danger: true,
                     visible: true,

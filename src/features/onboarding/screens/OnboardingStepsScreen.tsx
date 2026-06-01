@@ -15,12 +15,12 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import FinishSteps from "./components/FinishSteps";
-import PermissionSteps from "./components/PermissionSteps";
-import ProfileSteps from "./components/ProfileSteps";
+import FinishSteps from "../components/FinishSteps";
+import PermissionSteps from "../components/PermissionSteps";
+import ProfileSteps from "../components/ProfileSteps";
 
 const { width } = Dimensions.get("window");
-const STEPS = ["Profile", "Permission", "Finish"];
+const ONBOARDING_STEPS = ["Profile", "Permission", "Finish"];
 
 type PermissionStatus = "idle" | "granted" | "denied";
 export type Permissions = {
@@ -53,10 +53,10 @@ export default function OnboardingStepsScreen() {
 
     const flatListRef = useRef<FlatList>(null);
     const isFirstStep = index === 0;
-    const isLastStep = index === STEPS.length - 1;
+    const isLastStep = index === ONBOARDING_STEPS.length - 1;
 
     const nextStep = () => {
-        if (index < STEPS.length - 1) {
+        if (index < ONBOARDING_STEPS.length - 1) {
             flatListRef.current?.scrollToIndex({ index: index + 1 });
         }
     };
@@ -95,13 +95,11 @@ export default function OnboardingStepsScreen() {
                 });
                 setTimeout(() => {
                     navigation.navigate("Main");
+                    setIsFinishing(false);
                 }, 300);
             })
             .catch((e) => {
                 console.error("Failed to save profile", e);
-            })
-            .finally(() => {
-                setIsFinishing(false);
             });
     };
     return (
@@ -110,7 +108,7 @@ export default function OnboardingStepsScreen() {
                 {(() => {
                     const animatedVals = useRef<Animated.Value[] | null>(null);
                     if (!animatedVals.current) {
-                        animatedVals.current = STEPS.map(
+                        animatedVals.current = ONBOARDING_STEPS.map(
                             (_, i) => new Animated.Value(i <= index ? 1 : 0),
                         );
                     }
@@ -127,7 +125,7 @@ export default function OnboardingStepsScreen() {
                         Animated.parallel(anims).start();
                     }, [index]);
 
-                    return STEPS.map((s, i) => {
+                    return ONBOARDING_STEPS.map((s, i) => {
                         const av = (animatedVals.current || [])[i];
                         const width = av
                             ? av.interpolate({
@@ -154,7 +152,7 @@ export default function OnboardingStepsScreen() {
             <View className="flex-1">
                 <FlatList
                     ref={flatListRef}
-                    data={STEPS}
+                    data={ONBOARDING_STEPS}
                     keyExtractor={(item) => item}
                     horizontal
                     pagingEnabled

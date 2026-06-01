@@ -1,10 +1,7 @@
-import { db } from ".";
-import { ACTIVITY_TYPE } from "../constant/constant";
-import { notificationService } from "../services/notification/notification.service";
-import { Coordinate, Schedule } from "../types/type";
-import { logger } from "../utils/logger";
-import { generateId } from "../utils/utils";
-import { activity, coordinate, schedule } from "./schema";
+import { Coordinate } from "@/shared/types/type";
+import { generateId } from "@/shared/utils/utils";
+import { db } from "..";
+import { activity, coordinate } from "../schema";
 
 function random(min: number, max: number) {
     return Math.random() * (max - min) + min;
@@ -78,15 +75,15 @@ function generateEarthCoordinates(
     return coordinates;
 }
 
-export const seed = async ({
+export const seedActivity = async ({
     days = 10,
     goal = 5000,
     sessionMinPerDay = 2,
     sessionMaxPerDay = 3,
 }) => {
     const now = new Date();
-    await db.delete(coordinate);
-    await db.delete(activity);
+    await db.delete(coordinate).run();
+    await db.delete(activity).run();
 
     const startDate = new Date();
     startDate.setDate(now.getDate() - days);
@@ -95,7 +92,7 @@ export const seed = async ({
 
     const baseLat = 6.891719;
     const baseLng = 126.074069;
-    logger.log("[Seed] start seeding");
+    console.log("[Seed] start seeding");
 
     for (
         let day = new Date(startDate);
@@ -160,105 +157,39 @@ export const seed = async ({
                     steps,
                     type,
                     status: "completed",
-                    isImported: isImportedBatch, // 👈 whole day's batch
+                    isImported: isImportedBatch,
                     importedAt: isImportedBatch ? new Date(start) : null,
                     createdAt: start,
                     updatedAt: start,
                 })
-                .returning();
+                .returning()
+                .all();
 
-            await db.insert(coordinate).values(
-                coords.map((c) => ({
-                    ...c,
-                    id: generateId(),
-                    activityId: act.id,
-                })),
-            );
+            await db
+                .insert(coordinate)
+                .values(
+                    coords.map((c) => ({
+                        ...c,
+                        id: generateId(),
+                        activityId: act.id,
+                    })),
+                )
+                .run();
         }
     }
-    logger.log("[Seed] seeding complete");
+    console.log("[Seed] seeding complete");
 };
-
-const WEEKLY_PATTERNS = [
-    [1, 3, 5], // Mon Wed Fri
-    [0, 6], // Weekend
-    [2, 4], // Tue Thu
-    [1, 2, 3, 4, 5], // Weekdays
-];
-
-function randomTime() {
-    const hour = randomInt(5, 20);
-    const minute = randomInt(0, 59);
-
-    return `${hour.toString().padStart(2, "0")}:${minute
-        .toString()
-        .padStart(2, "0")}`;
-}
-
-function randomGoal(type: (typeof ACTIVITY_TYPE)[number]) {
-    switch (type) {
-        case "run":
-            return randomInt(5000, 15000);
-
-        case "walk":
-            return randomInt(2000, 8000);
-
-        default:
-            return 5000;
-    }
-}
-
-function randomName(type: (typeof ACTIVITY_TYPE)[number]) {
-    const names = {
-        walk: ["Morning Walk", "Evening Walk", "Daily Walk"],
-        run: ["Morning Run", "Tempo Run", "Recovery Run"],
-    };
-
-    return names[type][randomInt(0, names[type].length - 1)];
-}
-export const seedSchedule = async ({ count = 10 }: { count?: number } = {}) => {
-    logger.log("[Schedule Seed] start seeding");
-
-    await db.delete(schedule);
-    await notificationService.cancelAllScheduleActivityNotifications();
-
-    const granted = await notificationService.requestPermissions();
-    if (!granted) {
-        logger.warn(
-            "[Schedule Seed] Notification permission denied, skipping notification scheduling",
-        );
-    }
-
-    const now = new Date();
-    const schedules = Array.from({ length: count }).map(() => {
-        const type = ACTIVITY_TYPE[randomInt(0, ACTIVITY_TYPE.length - 1)];
-        const repeatDays = JSON.stringify(
-            WEEKLY_PATTERNS[randomInt(0, WEEKLY_PATTERNS.length - 1)],
-        );
-
-        return {
-            id: generateId(),
-            title: randomName(type),
-            time: randomTime(),
-            goal: randomGoal(type),
-            type,
-            repeatDays,
-            status: Math.random() > 0.2 ? "active" : "inactive",
-            createdAt: now,
-            updatedAt: now,
-        };
+seedActivity({
+    days: 30,
+    goal: 5000,
+    sessionMinPerDay: 1,
+    sessionMaxPerDay: 3,
+})
+    .then(() => {
+        console.log("🌱 Seed complete");
+        process.exit(0);
+    })
+    .catch((error) => {
+        console.error("❌ Seed failed:", error);
+        process.exit(1);
     });
-
-    await db.insert(schedule).values(schedules);
-
-    if (granted) {
-        const activeSchedules = schedules.filter((s) => s.status === "active");
-        await Promise.all(
-            activeSchedules.map((s) =>
-                notificationService.scheduleActivityNotification(s as Schedule),
-            ),
-        );
-    }
-
-    logger.log("[Schedule Seed] seeding complete");
-};

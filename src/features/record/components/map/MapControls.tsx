@@ -3,7 +3,7 @@ import Icon from "@/shared/components/ui/Icon";
 import { useRecordStore } from "@/shared/stores/use-record.store";
 import { cn } from "@/shared/utils/cn";
 import { Camera } from "@maplibre/maplibre-react-native";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { TouchableOpacity } from "react-native";
 import { useMapControlStore } from "../../stores/use-map-control.store";
 
@@ -26,7 +26,8 @@ export default function MapControls({ cameraRef }: Props) {
         [coordinates, previewCoordinate],
     );
 
-    const recenter = () => {
+    // ✅ FIX: Memoize expensive functions with useCallback
+    const recenter = useCallback(() => {
         if (!currentLocation || !cameraRef.current) return;
         setIsFollowingUser(true);
         cameraRef.current.easeTo({
@@ -34,9 +35,10 @@ export default function MapControls({ cameraRef }: Props) {
             zoom: 17,
             duration: 500,
         });
-    };
+    }, [currentLocation, setIsFollowingUser]);
 
-    const fitRoute = () => {
+    // ✅ FIX: Memoize fitRoute calculation to prevent expensive re-computation
+    const fitRoute = useCallback(() => {
         if (coordinates.length < 2 || !cameraRef.current) return;
         setIsFollowingUser(false);
 
@@ -67,15 +69,15 @@ export default function MapControls({ cameraRef }: Props) {
                 duration: 1000,
             },
         );
-    };
+    }, [coordinates, setIsFollowingUser]);
 
-    const toggle3D = () => {
+    const toggle3D = useCallback(() => {
         if (!cameraRef.current) return;
         const next = !is3D;
         setIs3D(next);
         const pitchValue = next ? 60 : 0;
         setPitch(pitchValue);
-    };
+    }, [is3D, setIs3D, setPitch]);
 
     return (
         <RowView className="absolute right-4 top-4">

@@ -36,19 +36,21 @@ export const STORAGE_KEYS = {
 
 export const ACTIVITY_BACKGROUND_TASK = "ACTIVITY_BACKGROUND_TASK";
 
+const MAPTILER_KEY = process.env.EXPO_PUBLIC_MAPTILER_KEY;
+
 export const MAP_STYLES = [
     {
         name: "Streets",
         style: {
-            light: "https://api.maptiler.com/maps/streets-v4/style.json?key=oanYTqJDReVoeo0ZLIK4",
-            dark: "https://api.maptiler.com/maps/streets-v4-dark/style.json?key=oanYTqJDReVoeo0ZLIK4",
+            light: `https://api.maptiler.com/maps/streets-v4/style.json?key=${MAPTILER_KEY}`,
+            dark: `https://api.maptiler.com/maps/streets-v4-dark/style.json?key=${MAPTILER_KEY}`,
         },
     },
     {
         name: "Open Streets Map",
         style: {
-            light: "https://api.maptiler.com/maps/openstreetmap/style.json?key=oanYTqJDReVoeo0ZLIK4",
-            dark: "https://api.maptiler.com/maps/openstreetmap-dark/style.json?key=oanYTqJDReVoeo0ZLIK4",
+            light: `https://api.maptiler.com/maps/openstreetmap/style.json?key=${MAPTILER_KEY}`,
+            dark: `https://api.maptiler.com/maps/openstreetmap-dark/style.json?key=${MAPTILER_KEY}`,
         },
     },
 ];

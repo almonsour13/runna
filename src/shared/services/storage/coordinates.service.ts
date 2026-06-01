@@ -23,7 +23,7 @@ class CoordinateService {
             throw error;
         }
     }
-    async create(coordinateInput: Coordinate) {
+    async create(coordinateInput: Coordinate): Promise<void> {
         try {
             const data = await db.insert(coordinate).values(coordinateInput);
             logger.log("[ActivityStorage] createCoordinates → success");
@@ -32,7 +32,7 @@ class CoordinateService {
             throw error;
         }
     }
-    async deleteByActivityId(activityId: string) {
+    async deleteByActivityId(activityId: string): Promise<void> {
         try {
             await db
                 .delete(coordinate)
@@ -45,6 +45,15 @@ class CoordinateService {
                 "[ActivityStorage] deleteCoordinatesByActivityId → error:",
                 error,
             );
+            throw error;
+        }
+    }
+    async clear(): Promise<void> {
+        try {
+            await db.delete(coordinate);
+            logger.log("[ActivityStorage] clearCoordinates → success");
+        } catch (error) {
+            logger.error("[ActivityStorage] clearCoordinates → error:", error);
             throw error;
         }
     }

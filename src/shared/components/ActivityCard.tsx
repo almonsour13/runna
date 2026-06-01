@@ -68,17 +68,6 @@ export default function ActivityCard({
         0.0001,
         false,
     );
-    // const { data: coordinates, isLoading: isCoordinatesLoading } = useQuery({
-    //     queryKey: ["coordinates", id],
-    //     queryFn: async () => {
-    //         const data = await activityService.getCoordinatesByActivityId(
-    //             activity.id,
-    //         );
-    //         const s = simplifyCoordinates(data, 0.0001, false);
-    //         activity.coordinates = s;
-    //         return s;
-    //     },
-    // });
 
     const stats = formatStats({
         distance,

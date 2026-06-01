@@ -9,7 +9,7 @@ import * as Notifications from "expo-notifications";
 import { Accelerometer } from "expo-sensors";
 import { useEffect } from "react";
 import { Dimensions, TouchableOpacity, View } from "react-native";
-import { Permissions } from "../OnboardingStepsScreen";
+import { Permissions } from "../screens/OnboardingStepsScreen";
 
 const { width } = Dimensions.get("window");
 

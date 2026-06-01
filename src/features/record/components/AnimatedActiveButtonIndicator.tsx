@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Animated } from "react-native";
-import { useRecordStore } from "../stores/use-record.store";
-import Card from "./ui/Card";
+import Card from "../../../shared/components/ui/Card";
+import { useRecordStore } from "../../../shared/stores/use-record.store";
 
 export default function AnimatedActiveButtonIndicator() {
     const status = useRecordStore((s) => s.status);

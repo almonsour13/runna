@@ -1,24 +1,23 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
-import RecordController from "./components/RecordController";
-import RecordHeader from "./components/RecordHeader";
-import RecordSummary from "./components/RecordSummary";
+import RecordController from "../components/RecordController";
+import RecordHeader from "../components/RecordHeader";
+import RecordSummary from "../components/RecordSummary";
 
 import SafeScreen from "@/shared/components/SafeScreen";
 import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
-import { useActivityPreviewTracking } from "@/shared/hooks/use-activity-preview-tracking";
 import { useRecordStore } from "@/shared/stores/use-record.store";
 import { RootStackParamList } from "@/shared/types/type";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { TouchableOpacity } from "react-native";
-import RecordMap from "./components/RecordMap";
-import { useMapControlStore } from "./stores/use-map-control.store";
+import { useRecordPreviewTracking } from "../hooks/use-record-preview-tracking";
+import { useMapControlStore } from "../stores/use-map-control.store";
 
 type RecordRouteProp = RouteProp<RootStackParamList, "Record">;
 
 export default function RecordScreen() {
-    useActivityPreviewTracking();
+    useRecordPreviewTracking();
     const route = useRoute<RecordRouteProp>();
     const activityType = route.params?.type;
     const setActivityType = useRecordStore((s) => s.setActivityType);
@@ -26,12 +25,6 @@ export default function RecordScreen() {
     const isMapExpanded = useMapControlStore((s) => s.isMapExpanded);
     const setIsMapExpanded = useMapControlStore((s) => s.setIsMapExpanded);
     const isMapReady = useMapControlStore((s) => s.isMapReady);
-    const coordinates = useRecordStore((s) => s.coordinates);
-    const previewCoordinate = useRecordStore((s) => s.previewCoordinate);
-    const currentLocation = useMemo(
-        () => coordinates[coordinates.length - 1] ?? previewCoordinate,
-        [coordinates, previewCoordinate],
-    );
 
     useEffect(() => {
         if (!activityType) return;
@@ -43,9 +36,9 @@ export default function RecordScreen() {
             <ColView className="relative flex-1 gap-0">
                 <RecordHeader />
                 <ColView className="relative flex-1 gap-4">
-                    <RecordMap />
+                    {/* <RecordMap /> */}
                     <RecordSummary />
-                    {isMapReady && currentLocation && (
+                    {isMapReady && (
                         <RowView className="p-4 justify-center items-center">
                             <TouchableOpacity
                                 onPress={() => setIsMapExpanded(!isMapExpanded)}

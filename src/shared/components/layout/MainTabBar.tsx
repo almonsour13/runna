@@ -2,7 +2,7 @@ import { cn } from "@/shared/utils/cn";
 import clsx from "clsx";
 import { memo } from "react";
 import { TouchableOpacity, View } from "react-native";
-import ActivityButton from "../ActivityButton";
+import RecordButton from "../../../features/record/components/RecordButton";
 import { ColView, RowView } from "../CustomView";
 import Card from "../ui/Card";
 import Icon from "../ui/Icon";
@@ -47,8 +47,8 @@ function MainTabBar({ state, navigation }: { state: any; navigation: any }) {
                             >
                                 <Card
                                     className={cn(
-                                        "h-16 aspect-square justify-center items-center border border-border",
-                                        // isActive && "bg-primary-foreground",
+                                        "h-16 aspect-square bg-card justify-center items-center border border-border",
+                                        isActive && "",
                                     )}
                                 >
                                     <ColView className="gap-2 justify-center items-center ">
@@ -80,7 +80,7 @@ function MainTabBar({ state, navigation }: { state: any; navigation: any }) {
                         );
                     })}
             </RowView>
-            <ActivityButton />
+            <RecordButton />
         </RowView>
     );
 }

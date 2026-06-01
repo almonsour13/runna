@@ -1,5 +1,5 @@
-import OnboardingIntroScreen from "@/features/onboarding/OnboardingScreen";
-import OnboardingStepsScreen from "@/features/onboarding/OnboardingStepsScreen";
+import OnboardingIntroScreen from "@/features/onboarding/screens/OnboardingScreen";
+import OnboardingStepsScreen from "@/features/onboarding/screens/OnboardingStepsScreen";
 import SafeScreen from "@/shared/components/SafeScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 

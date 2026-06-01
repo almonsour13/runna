@@ -57,12 +57,13 @@ const ActivityGroupDrawer = forwardRef<
             .filter(Boolean)
             .join(" • ");
 
-    const { distance, calories, duration, goal, pace, speed } =
+    const { distance, calories, duration, goal, pace, speed, steps } =
         computeStats(activities);
     const stats = formatStats({
         distance,
         duration,
         calories,
+        steps,
     });
     return (
         <>
@@ -99,19 +100,19 @@ const ActivityGroupDrawer = forwardRef<
                             </Text>
                         </RowView>
 
-                        <RowView className="justify-between gap-2">
+                        <RowView className="flex-wrap">
                             {isLoading
-                                ? Array.from({ length: 3 }).map((_, i) => (
+                                ? Array.from({ length: 4 }).map((_, i) => (
                                       <Card
                                           key={i}
-                                          className="flex-1 h-22 border border-border"
+                                          className="flex-1 min-w-[45%] h-24 border border-border"
                                       />
                                   ))
                                 : stats.map((stat, i) => (
                                       <Card
                                           key={stat.label}
                                           className={cn(
-                                              "flex-1",
+                                              "flex-1 min-w-[45%]",
                                               "border border-border",
                                           )}
                                       >
@@ -126,7 +127,7 @@ const ActivityGroupDrawer = forwardRef<
                                                       {stat.label}
                                                   </Text>
                                               </RowView>
-                                              <Text className={cn("text-xl")}>
+                                              <Text className={cn("text-3xl")}>
                                                   {stat.value}{" "}
                                                   {stat.unit && (
                                                       <Text className="text-xs font-normal text-muted-foreground">

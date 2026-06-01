@@ -12,10 +12,10 @@ import {
     ScrollView,
     View,
 } from "react-native";
-import ActivityDetailsEmptyState from "./Components/ActivityDetailsEmptyState";
-import ActivityDetailsHeader from "./Components/ActivityDetailsHeader";
-import ActivityDetailsMap from "./Components/ActivityDetailsMap";
-import ActivitySummary from "./Components/ActivityDetailsSummary";
+import ActivityDetailsEmptyState from "../components/ActivityDetailsEmptyState";
+import ActivityDetailsHeader from "../components/ActivityDetailsHeader";
+import ActivityDetailsMap from "../components/ActivityDetailsMap";
+import ActivitySummary from "../components/ActivityDetailsSummary";
 
 export type KmSplits = {
     km: number;

@@ -9,6 +9,7 @@ import { TouchableOpacity } from "react-native";
 export default function RecordHeader() {
     const navigation = useNavigation();
     const activityType = useRecordStore((s) => s.activityType);
+    const mode = useRecordStore((s) => s.mode);
     const coordinates = useRecordStore((s) => s.coordinates);
     const previewCoordinate = useRecordStore((s) => s.previewCoordinate);
     const currentLocation = useMemo(
@@ -72,7 +73,7 @@ export default function RecordHeader() {
             </RowView>
             <RowView className="hidden flex-1 justify-start items-center">
                 <ColView className="gap-0 justify-center items-center">
-                    <Text className="text-xl">Morning Walk</Text>
+                    <Text className="text-xl">Morning Walk </Text>
                     <Text className="hidden text-xs font-medium text-muted-foreground">
                         {date}
                     </Text>
@@ -80,7 +81,7 @@ export default function RecordHeader() {
             </RowView>
             <RowView className="px-4 items-center justify-between gap-4">
                 <Text className="capitalize font-medium text-muted-foreground">
-                    {activityType}
+                    {activityType} {mode}
                 </Text>
                 <RowView className="items-center">
                     <Icon name="locate" size={16} />

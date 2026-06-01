@@ -1,8 +1,8 @@
-import AnimatedActiveButtonIndicator from "@/shared/components/AnimatedActiveButtonIndicator";
+import AnimatedActiveButtonIndicator from "@/features/record/components/AnimatedActiveButtonIndicator";
+import { useRecordController } from "@/features/record/hooks/use-record-controller";
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Icon from "@/shared/components/ui/Icon";
-import { useRecordController } from "@/shared/hooks/use-record-controller";
 import { useRecordStore } from "@/shared/stores/use-record.store";
 import { cn } from "@/shared/utils/cn";
 import { useEffect, useRef } from "react";
@@ -18,16 +18,16 @@ export default function RecordController() {
     const isActive = status === "active";
     const isPaused = status === "paused";
 
-    const mainAction = () => {
+    const mainAction = async () => {
         switch (status) {
             case "idle":
-                start();
+                await start();
                 break;
             case "active":
-                pause();
+                await pause();
                 break;
             case "paused":
-                resume();
+                await resume();
                 break;
 
             default:
@@ -74,7 +74,12 @@ export default function RecordController() {
                         opacity: resetOpacity,
                     }}
                 >
-                    <TouchableOpacity disabled={isDisable} onPress={reset}>
+                    <TouchableOpacity
+                        disabled={isDisable}
+                        onPress={async () => {
+                            await reset();
+                        }}
+                    >
                         <Card className="h-16 aspect-square bg-card items-center justify-center">
                             <Icon
                                 name="refresh"

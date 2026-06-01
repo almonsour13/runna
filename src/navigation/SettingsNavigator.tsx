@@ -1,6 +1,6 @@
+import SettingsScreen from "@/features/settings/screens/SettingsScreen";
 import ThemeScreen from "@/features/settings/screens/ThemeScreen";
 import UnitsScreen from "@/features/settings/screens/UnitsScreen";
-import SettingsScreen from "@/features/settings/SettingsScreen";
 import SafeScreen from "@/shared/components/SafeScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 

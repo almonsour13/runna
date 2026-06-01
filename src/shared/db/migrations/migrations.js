@@ -13,6 +13,8 @@ import m0008 from './0008_polite_deathstrike.sql';
 import m0009 from './0009_third_matthew_murdock.sql';
 import m0010 from './0010_mixed_blue_blade.sql';
 import m0011 from './0011_jazzy_cloak.sql';
+import m0012 from './0012_crazy_hammerhead.sql';
+import m0013 from './0013_special_moon_knight.sql';
 
   export default {
     journal,
@@ -28,7 +30,9 @@ m0007,
 m0008,
 m0009,
 m0010,
-m0011
+m0011,
+m0012,
+m0013
     }
   }
   

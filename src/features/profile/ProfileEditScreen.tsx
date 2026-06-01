@@ -89,7 +89,7 @@ export default function ProfileEditScreen() {
     return (
         <>
             <ColView className="flex-1 gap-8">
-                <RowView className="px-4 pt-8 justify-between items-center">
+                <RowView className="p-4 justify-between items-center">
                     <RowView className="gap-4 items-center">
                         <TouchableOpacity onPress={() => navigation.goBack()}>
                             <Icon

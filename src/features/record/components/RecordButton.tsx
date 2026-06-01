@@ -2,17 +2,17 @@ import { cn } from "@/shared/utils/cn";
 import { useNavigation } from "@react-navigation/native";
 import { useRef } from "react";
 import { TouchableOpacity, View } from "react-native";
-import { useRecordStore } from "../stores/use-record.store";
-import { ActivityType, NavigationProp } from "../types/type";
-import { formatDurationHHMMSS } from "../utils/format";
+import ActivityTypeDrawer from "../../../shared/components/drawer/ActivityTypeDrawer";
+import Card from "../../../shared/components/ui/Card";
+import { DrawerHandle } from "../../../shared/components/ui/Drawer";
+import Icon from "../../../shared/components/ui/Icon";
+import Text from "../../../shared/components/ui/Text";
+import { useRecordStore } from "../../../shared/stores/use-record.store";
+import { ActivityType, NavigationProp } from "../../../shared/types/type";
+import { formatDurationHHMMSS } from "../../../shared/utils/format";
 import AnimatedActiveButtonIndicator from "./AnimatedActiveButtonIndicator";
-import ActivityTypeDrawer from "./drawer/ActivityTypeDrawer";
-import Card from "./ui/Card";
-import { DrawerHandle } from "./ui/Drawer";
-import Icon from "./ui/Icon";
-import Text from "./ui/Text";
 
-export default function ActivityButton() {
+export default function RecordButton() {
     const navigation = useNavigation<NavigationProp>();
     const activityTypeDrawer = useRef<DrawerHandle>(null);
     const duration = useRecordStore((s) => s.duration);
@@ -29,11 +29,13 @@ export default function ActivityButton() {
             <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => {
-                    if (isIdle) {
-                        activityTypeDrawer.current?.open();
-                    } else {
-                        navigation.navigate("Record" as never);
-                    }
+                    // if (isIdle) {
+                    //     activityTypeDrawer.current?.open();
+                    // } else {
+                    navigation.navigate("Record", {
+                        type: "run",
+                    });
+                    // }
                 }}
             >
                 <Card

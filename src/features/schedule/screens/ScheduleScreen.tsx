@@ -2,9 +2,9 @@ import { ColView } from "@/shared/components/CustomView";
 import SafeScreen from "@/shared/components/SafeScreen";
 import { useState } from "react";
 import { RefreshControl, ScrollView } from "react-native";
-import AddScheduleButton from "./components/AddScheduleButton";
-import ScheduleHeader from "./components/ScheduleHeader";
-import ScheduleList from "./components/ScheduleList";
+import AddScheduleButton from "../components/AddScheduleButton";
+import ScheduleHeader from "../components/ScheduleHeader";
+import ScheduleList from "../components/ScheduleList";
 
 export default function ScheduleScreen() {
     const [isRefreshing, setIsRefreshing] = useState(false);

@@ -4,7 +4,17 @@
         "strict": true,
         "paths": {
             "@/*": ["./src/*"]
-        }
+        },
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "skipLibCheck": true
+    },
+    "ts-node": {
+        "esm": true,
+        "experimentalEsm": true,
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true
     },
     "include": [
         "**/*.ts",
