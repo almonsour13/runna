@@ -1,5 +1,7 @@
 import { RowView } from "@/shared/components/CustomView";
+import MapStyleDrawer from "@/shared/components/drawer/MapStyleDrawer";
 import Card from "@/shared/components/ui/Card";
+import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { useMapStyle } from "@/shared/hooks/use-map-style";
@@ -25,9 +27,13 @@ export default function ActivityDetailsMap({
     coordinates: Coordinate[];
 }) {
     const cameraRef = useRef<React.ElementRef<typeof Camera> | null>(null);
+    const mapStyleDrawerRef = useRef<DrawerHandle>(null);
+    const [selectedStyleIndex, setSelectedStyleIndex] = useState(0);
+
+    // Open drawer: mapStyleDrawerRef.current?.open()
     const [isMapReady, setIsMapReady] = useState(false);
     const [isKmMarkersVisible, setIsKmMarkersVisible] = useState(false);
-    const mapStyle = useMapStyle();
+    const mapStyle = useMapStyle(selectedStyleIndex);
 
     const geoJson = useMemo(
         (): GeoJSON.Feature<GeoJSON.LineString> => ({
@@ -94,126 +100,135 @@ export default function ActivityDetailsMap({
     };
 
     return (
-        <View
-            style={{
-                height: coordinates.length ? undefined : 0,
-                overflow: "hidden",
-            }}
-            className="relative min-h-92 flex-1"
-        >
-            <Map
-                mapStyle={mapStyle}
-                logo={false}
-                attribution={false}
-                compass={false}
-                touchZoom={false}
-                touchRotate={false}
-                touchPitch={false}
-                doubleTapZoom={false}
-                dragPan={false}
-                doubleTapHoldZoom={false}
-                onDidFinishLoadingMap={() => setIsMapReady(true)}
-                className="relative"
+        <>
+            <View
+                style={{
+                    height: coordinates.length ? undefined : 0,
+                    overflow: "hidden",
+                }}
+                className="relative min-h-92 flex-1"
             >
-                {bounds && (
-                    <Camera
-                        ref={cameraRef}
-                        initialViewState={{
-                            bounds,
-                            padding: {
+                <Map
+                    mapStyle={mapStyle}
+                    logo={false}
+                    attribution={false}
+                    compass={false}
+                    touchZoom={false}
+                    touchRotate={false}
+                    touchPitch={false}
+                    doubleTapZoom={false}
+                    dragPan={false}
+                    doubleTapHoldZoom={false}
+                    onDidFinishLoadingMap={() => setIsMapReady(true)}
+                    className="relative"
+                >
+                    {bounds && (
+                        <Camera
+                            ref={cameraRef}
+                            initialViewState={{
+                                bounds,
+                                padding: {
+                                    top: MAP_PADDING,
+                                    bottom: MAP_PADDING,
+                                    left: MAP_PADDING,
+                                    right: MAP_PADDING,
+                                },
+                            }}
+                            padding={{
                                 top: MAP_PADDING,
                                 bottom: MAP_PADDING,
                                 left: MAP_PADDING,
                                 right: MAP_PADDING,
-                            },
-                        }}
-                        padding={{
-                            top: MAP_PADDING,
-                            bottom: MAP_PADDING,
-                            left: MAP_PADDING,
-                            right: MAP_PADDING,
-                        }}
-                    />
-                )}
-
-                {coordinates.length >= 2 && (
-                    <GeoJSONSource id="route-source" data={geoJson}>
-                        <Layer
-                            type="line"
-                            paint={{
-                                "line-color": "#02a963",
-                                "line-width": 4,
-                                "line-opacity": 1,
-                            }}
-                            layout={{
-                                "line-join": "round",
-                                "line-cap": "round",
                             }}
                         />
-                    </GeoJSONSource>
-                )}
+                    )}
 
-                {startPoint && (
-                    <Marker
-                        id="start-point"
-                        lngLat={[startPoint.longitude, startPoint.latitude]}
-                    >
-                        <View className="h-5 w-5 border-2 border-white rounded-full bg-green-600" />
-                    </Marker>
-                )}
-                {endPoint && (
-                    <Marker
-                        id="end-point"
-                        lngLat={[endPoint.longitude, endPoint.latitude]}
-                    >
-                        <View className="h-5 w-5 border-2 border-white rounded-full bg-red-600" />
-                    </Marker>
-                )}
+                    {coordinates.length >= 2 && (
+                        <GeoJSONSource id="route-source" data={geoJson}>
+                            <Layer
+                                type="line"
+                                paint={{
+                                    "line-color": "#02a963",
+                                    "line-width": 4,
+                                    "line-opacity": 1,
+                                }}
+                                layout={{
+                                    "line-join": "round",
+                                    "line-cap": "round",
+                                }}
+                            />
+                        </GeoJSONSource>
+                    )}
 
-                {isKmMarkersVisible &&
-                    kmMarkers.map(({ km, coord }) => (
+                    {startPoint && (
                         <Marker
-                            key={km}
-                            id={`km-${km}`}
-                            lngLat={[coord.longitude, coord.latitude]}
+                            id="start-point"
+                            lngLat={[startPoint.longitude, startPoint.latitude]}
                         >
-                            <View className="h-5 w-5 rounded-full bg-card justify-center items-center border border-border/40">
-                                <Text className="text-[8px] font-medium">
-                                    {km}
-                                </Text>
-                            </View>
+                            <View className="h-5 w-5 border-2 border-white rounded-full bg-green-600" />
                         </Marker>
-                    ))}
-            </Map>
+                    )}
+                    {endPoint && (
+                        <Marker
+                            id="end-point"
+                            lngLat={[endPoint.longitude, endPoint.latitude]}
+                        >
+                            <View className="h-5 w-5 border-2 border-white rounded-full bg-red-600" />
+                        </Marker>
+                    )}
 
-            <RowView className="hidden absolute right-4 bottom-4 gap-2">
-                <TouchableOpacity
-                    className="h-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40"
-                    onPress={fitBounds}
-                >
-                    <Icon
-                        name="scan-outline"
-                        size={16}
-                        className="text-foreground"
-                    />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => setIsKmMarkersVisible((prev) => !prev)}
-                >
-                    <Card
-                        className={cn(
-                            "p-2 rounded-full aspect-square border border-border/40",
-                            isKmMarkersVisible && "bg-primary",
-                        )}
+                    {isKmMarkersVisible &&
+                        kmMarkers.map(({ km, coord }) => (
+                            <Marker
+                                key={km}
+                                id={`km-${km}`}
+                                lngLat={[coord.longitude, coord.latitude]}
+                            >
+                                <View className="h-5 w-5 rounded-full bg-card justify-center items-center border border-border/40">
+                                    <Text className="text-[8px] font-medium">
+                                        {km}
+                                    </Text>
+                                </View>
+                            </Marker>
+                        ))}
+                </Map>
+
+                <RowView className="absolute right-4 bottom-4 gap-2">
+                    <TouchableOpacity
+                        className="h-10 aspect-square rounded-full bg-card justify-center items-center border border-border/40"
+                        onPress={() => mapStyleDrawerRef.current?.open()}
                     >
                         <Icon
-                            name="flag"
-                            size={20}
-                            className={cn("text-white")}
+                            name="map-outline"
+                            size={16}
+                            className="text-foreground"
                         />
-                    </Card>
-                </TouchableOpacity>
-            </RowView>
-        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setIsKmMarkersVisible((prev) => !prev)}
+                    >
+                        <Card
+                            className={cn(
+                                "hidden p-2 rounded-full aspect-square border border-border/40",
+                                isKmMarkersVisible && "bg-primary",
+                            )}
+                        >
+                            <Icon
+                                name="flag"
+                                size={20}
+                                className={cn("text-white")}
+                            />
+                        </Card>
+                    </TouchableOpacity>
+                </RowView>
+            </View>
+            <MapStyleDrawer
+                value={selectedStyleIndex}
+                onChange={(styleIndex) => {
+                    setSelectedStyleIndex(styleIndex);
+                }}
+                ref={mapStyleDrawerRef}
+            />
+        </>
     );
 }
