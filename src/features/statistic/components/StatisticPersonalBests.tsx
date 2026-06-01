@@ -3,7 +3,7 @@ import Card from "@/shared/components/ui/Card";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
-import { formatDuration, formatPace } from "@/shared/utils/format";
+import { formatDurationReadable, formatPace } from "@/shared/utils/format";
 import { format } from "date-fns";
 import { useMemo } from "react";
 import { useStatisticContext } from "../context/StatisticContext";
@@ -44,31 +44,60 @@ export default function StatisticPersonalBests() {
     if (!isLoading && (!bestDistance || !bestDuration || !bestCalories))
         return null;
 
+    const formattedDuration = formatDurationReadable(
+        convertMsToS(bestDuration?.duration ?? 0),
+    );
     const stats = [
         {
+            key: "distance",
             label: "Longest Distance",
-            value: `${convertMtoKm(bestDistance?.distance ?? 0).toFixed(1)}`,
+            value: [
+                {
+                    value: convertMtoKm(bestDistance?.distance ?? 0).toFixed(2),
+                    unit: "km",
+                },
+            ],
             date: bestDistance?.createdAt ?? null,
             icon: "navigate",
-            unit: "km",
         },
         {
+            key: "duration",
             label: "Longest Duration",
-            value: formatDuration(convertMsToS(bestDuration?.duration ?? 0)),
+
+            value: [
+                {
+                    value: formattedDuration.value[0].value,
+                    unit: formattedDuration.value[0].unit,
+                },
+                {
+                    value: formattedDuration.value[1].value,
+                    unit: formattedDuration.value[1].unit,
+                },
+            ],
             date: bestDuration?.createdAt ?? null,
             icon: "time",
-            unit: null,
         },
         {
+            key: "calories",
             label: "Most Calories",
-            value: `${(bestCalories?.calories ?? 0).toFixed(0)}`,
+            value: [
+                {
+                    value: `${(bestCalories?.calories ?? 0).toFixed(0)}`,
+                    unit: "kcal",
+                },
+            ],
             date: bestCalories?.createdAt ?? null,
             icon: "flame",
-            unit: "kcal",
         },
         {
+            key: "pace",
             label: "Best Pace",
-            value: formatPace(bestPace?.avgPace ?? 0),
+            value: [
+                {
+                    value: formatPace(bestPace?.avgPace ?? 0),
+                    unit: "min/km",
+                },
+            ],
             date: bestPace?.createdAt ?? null,
             icon: "timer",
         },
@@ -111,21 +140,19 @@ export default function StatisticPersonalBests() {
                                         </Text>
                                     </RowView>
                                 </ColView>
-                                <RowView
-                                    style={{
-                                        alignItems: "baseline",
-                                        gap: 2,
-                                        flexShrink: 0,
-                                    }}
-                                >
-                                    <Text className="text-2xl font-medium">
-                                        {stat.value}
-                                    </Text>
-                                    {stat.unit && (
-                                        <Text className="text-xs text-muted-foreground">
-                                            {stat.unit}
+                                <RowView>
+                                    {stat.value.map((v, i) => (
+                                        <Text
+                                            key={i}
+                                            className="text-2xl font-medium leading-none"
+                                        >
+                                            {v.value}
+                                            {stat.key !== "duration" && " "}
+                                            <Text className="text-lg font-medium">
+                                                {v.unit}
+                                            </Text>
                                         </Text>
-                                    )}
+                                    ))}
                                 </RowView>
                             </RowView>
                         )}

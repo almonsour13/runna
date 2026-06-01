@@ -42,7 +42,7 @@ export default function RecordSummary() {
         const durationSec = convertMsToS(duration);
         const pace =
             distanceKm > 0.01
-                ? formatPace(computePace(distance, convertMsToS(duration)))
+                ? formatPace(computePace(distance, durationSec))
                 : "00:00";
         const stats = [
             {

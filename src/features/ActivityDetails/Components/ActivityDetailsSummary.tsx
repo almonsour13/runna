@@ -56,7 +56,7 @@ export default function ActivityDetailsSummary({
         activity &&
         [
             format(activity.startTime, "h:mm a"),
-            format(activity.endTime, "h:mm a"),
+            activity.endTime && format(activity.endTime, "h:mm a"),
         ].join(" - ");
     const stats = formatStats({
         distance,
@@ -110,12 +110,12 @@ export default function ActivityDetailsSummary({
                         )}
                     </RowView>
                 </RowView>
-                <View className="h-1 bg-muted rounded overflow-hidden">
+                <View className="h-1 bg-muted rounded-full overflow-hidden">
                     <View
                         style={{
-                            height: `${pct}%`,
+                            width: `${barPct}%`,
                         }}
-                        className="h-2 bg-primary"
+                        className="h-1 bg-primary rounded-full"
                     />
                 </View>
                 <RowView className="justify-between">
@@ -149,14 +149,20 @@ export default function ActivityDetailsSummary({
                                         {stat.label}
                                     </Text>
                                 </RowView>
-                                <Text className="text-xl font-medium leading-none">
-                                    {stat.value}{" "}
-                                    {stat.unit && (
-                                        <Text className="text-xs">
-                                            {stat.unit}
+                                <RowView>
+                                    {stat.value.map((v, i) => (
+                                        <Text
+                                            key={i}
+                                            className="text-xl font-medium leading-none"
+                                        >
+                                            {v.value}
+                                            {stat.key !== "duration" && " "}
+                                            <Text className="text-base font-medium">
+                                                {v.unit}
+                                            </Text>
                                         </Text>
-                                    )}
-                                </Text>
+                                    ))}
+                                </RowView>
                             </ColView>
                         </Card>
                     );

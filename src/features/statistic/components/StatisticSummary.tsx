@@ -2,6 +2,7 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
+import { cn } from "@/shared/utils/cn";
 import { formatStats } from "@/shared/utils/format";
 import { useMemo } from "react";
 import { useStatisticContext } from "../context/StatisticContext";
@@ -60,14 +61,23 @@ export default function StatisticSummary() {
                                                   {stat.label}
                                               </Text>
                                           </RowView>
-                                          <Text className="text-3xl font-medium">
-                                              {stat.value}{" "}
-                                              {stat.unit && (
-                                                  <Text className="text-xs font-normal text-muted-foreground">
-                                                      {stat.unit}
+                                          <RowView>
+                                              {stat.value.map((v, i) => (
+                                                  <Text
+                                                      key={i}
+                                                      className={cn(
+                                                          "text-3xl font-medium",
+                                                      )}
+                                                  >
+                                                      {v.value}
+                                                      {stat.key !==
+                                                          "duration" && " "}
+                                                      <Text className="text-xl font-medium">
+                                                          {v.unit}
+                                                      </Text>
                                                   </Text>
-                                              )}
-                                          </Text>
+                                              ))}
+                                          </RowView>
                                       </ColView>
                                   )}
                               </Card>

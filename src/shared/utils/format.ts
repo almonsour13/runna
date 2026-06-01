@@ -1,5 +1,5 @@
 import { isToday, isYesterday } from "date-fns";
-import { convertMsToS, convertMtoKm } from "./convert";
+import { convertMtoKm } from "./convert";
 
 const pad = (n: number) => n.toString().padStart(2, "0");
 
@@ -24,18 +24,31 @@ export const formatStats = ({
         stats.push({
             key: "distance",
             label: "Distance",
-            value: convertMtoKm(distance).toFixed(1),
-            unit: "km",
+            value: [
+                {
+                    value: convertMtoKm(distance).toFixed(2),
+                    unit: "km",
+                },
+            ],
             icon: "navigate",
         });
     }
 
     if (duration != null) {
+        const formattedDuration = formatDurationReadable(duration);
         stats.push({
             key: "duration",
             label: "Duration",
-            value: formatDuration(convertMsToS(duration)),
-            unit: null,
+            value: [
+                {
+                    value: formattedDuration.value[0].value,
+                    unit: formattedDuration.value[0].unit,
+                },
+                {
+                    value: formattedDuration.value[1].value,
+                    unit: formattedDuration.value[1].unit,
+                },
+            ],
             icon: "time",
         });
     }
@@ -44,8 +57,12 @@ export const formatStats = ({
         stats.push({
             key: "calories",
             label: "Calories",
-            value: formatCalories(calories),
-            unit: "kcal",
+            value: [
+                {
+                    value: formatCalories(calories),
+                    unit: "kcal",
+                },
+            ],
             icon: "flame",
         });
     }
@@ -54,10 +71,12 @@ export const formatStats = ({
         stats.push({
             key: "steps",
             label: "Steps",
-            value: steps.toLocaleString("en-US", {
-                maximumFractionDigits: 0,
-            }),
-            unit: null,
+            value: [
+                {
+                    value: steps.toLocaleString("en-US"),
+                    unit: "",
+                },
+            ],
             icon: "footsteps",
         });
     }
@@ -66,8 +85,12 @@ export const formatStats = ({
         stats.push({
             key: "speed",
             label: "Speed",
-            value: formatSpeed(speed),
-            unit: "km/h",
+            value: [
+                {
+                    value: formatSpeed(speed),
+                    unit: "km/h",
+                },
+            ],
             icon: "speedometer",
         });
     }
@@ -76,8 +99,12 @@ export const formatStats = ({
         stats.push({
             key: "pace",
             label: "Pace",
-            value: formatPace(pace),
-            unit: "/km",
+            value: [
+                {
+                    value: formatPace(pace),
+                    unit: "/km",
+                },
+            ],
             icon: "speedometer",
         });
     }
@@ -97,7 +124,18 @@ export function formatDurationReadable(ms: number) {
 
     const parts: string[] = [];
 
-    return `${hours}${hours > 1 ? "hrs" : "hr"} ${minutes}${minutes > 1 ? "mins" : "min"}`;
+    return {
+        value: [
+            {
+                value: hours,
+                unit: "h",
+            },
+            {
+                value: minutes,
+                unit: "m",
+            },
+        ],
+    };
 }
 export const formatDurationHHMMSS = (ms: number): string => {
     const totalSeconds = Math.floor(ms / 1000);

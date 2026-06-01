@@ -144,18 +144,24 @@ export default function WeekProgress() {
                                                         {stat.label}
                                                     </Text>
                                                 </RowView>
-                                                <Text
-                                                    className={cn(
-                                                        "text-3xl font-medium",
-                                                    )}
-                                                >
-                                                    {stat.value}{" "}
-                                                    {stat.unit && (
-                                                        <Text className="text-xs font-normal text-muted-foreground">
-                                                            {stat.unit}
+                                                <RowView>
+                                                    {stat.value.map((v, i) => (
+                                                        <Text
+                                                            key={i}
+                                                            className={cn(
+                                                                "text-3xl font-medium",
+                                                            )}
+                                                        >
+                                                            {v.value}
+                                                            {stat.key !==
+                                                                "duration" &&
+                                                                " "}
+                                                            <Text className="text-xl font-medium">
+                                                                {v.unit}
+                                                            </Text>
                                                         </Text>
-                                                    )}
-                                                </Text>
+                                                    ))}
+                                                </RowView>
                                             </ColView>
                                         );
                                     })}

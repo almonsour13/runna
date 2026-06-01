@@ -131,14 +131,22 @@ export default function ActivityCard({
                                             className="items-center gap-1"
                                         >
                                             <Icon name={stat.icon} size={12} />
-                                            <Text className="text-sm font-medium">
-                                                {stat.value}{" "}
-                                                {stat.unit && (
-                                                    <Text className="text-xs font-medium  text-muted-foreground">
-                                                        {stat.unit}
+                                            {stat.value.map((v, i) => (
+                                                <Text
+                                                    key={i}
+                                                    className={cn(
+                                                        "text-sm font-medium",
+                                                    )}
+                                                >
+                                                    {v.value}
+
+                                                    {stat.label !==
+                                                        "Duration" && " "}
+                                                    <Text className="text-xs font-medium">
+                                                        {v.unit}
                                                     </Text>
-                                                )}
-                                            </Text>
+                                                </Text>
+                                            ))}
                                         </RowView>
                                     );
                                 })}
