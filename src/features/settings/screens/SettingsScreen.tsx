@@ -142,7 +142,7 @@ export default function SettingsScreen() {
                                         setIsOnboarded(false);
                                         setTimeout(() => {
                                             navigation.navigate("Onboarding", {
-                                                screen: "Intro",
+                                                screen: "OnboardingScreen",
                                             });
                                         }, 1000);
                                     },
@@ -166,7 +166,7 @@ export default function SettingsScreen() {
         >
             <ColView className="flex-1 gap-0">
                 <RowView className="p-4">
-                    <RowView className="items-center">
+                    <RowView className="items-center gap-4">
                         <TouchableOpacity onPress={() => navigation.goBack()}>
                             <Icon
                                 name="arrow-back"
@@ -187,7 +187,7 @@ export default function SettingsScreen() {
                                     <Text className="text-sm text-muted-foreground">
                                         {section.title}
                                     </Text>
-                                    <ColView className="gap-2">
+                                    <ColView className="gap-1">
                                         {items
                                             .filter((item) => item.visible)
                                             .map((item, it) => {

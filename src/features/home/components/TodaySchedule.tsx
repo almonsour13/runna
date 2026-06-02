@@ -38,7 +38,7 @@ export default function TodaySchedule() {
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerClassName="px-4 gap-2"
+                contentContainerClassName="px-4 gap-1"
             >
                 {schedules.map((schedule) => {
                     const { id, time, title, description, type, goal } =

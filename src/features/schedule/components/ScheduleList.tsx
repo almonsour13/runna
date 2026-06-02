@@ -41,7 +41,7 @@ export default function ScheduleList() {
                         </Text>
                     )}
                 </RowView>
-                <ColView className="flex-1 px-4 gap-2">
+                <ColView className="flex-1 px-4 gap-1">
                     {isLoading ? (
                         <>
                             {Array.from({ length: 8 }).map((_, i) => (

@@ -1,9 +1,11 @@
-import { RowView } from "@/shared/components/CustomView";
+import { ColView } from "@/shared/components/CustomView";
+import MapStyleDrawer from "@/shared/components/drawer/MapStyleDrawer";
+import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Icon from "@/shared/components/ui/Icon";
 import { useRecordStore } from "@/shared/stores/use-record.store";
 import { cn } from "@/shared/utils/cn";
 import { Camera } from "@maplibre/maplibre-react-native";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { TouchableOpacity } from "react-native";
 import { useMapControlStore } from "../../stores/use-map-control.store";
 
@@ -12,6 +14,10 @@ type Props = {
 };
 
 export default function MapControls({ cameraRef }: Props) {
+    const mapStyleDrawerRef = useRef<DrawerHandle>(null);
+    const mapStyleIndex = useMapControlStore((s) => s.mapStyleIndex);
+    const setMapStyleIndex = useMapControlStore((s) => s.setMapStyleIndex);
+
     const isFollowingUser = useMapControlStore((s) => s.isFollowingUser);
     const setIsFollowingUser = useMapControlStore((s) => s.setIsFollowingUser);
     const is3D = useMapControlStore((s) => s.is3D);
@@ -26,7 +32,6 @@ export default function MapControls({ cameraRef }: Props) {
         [coordinates, previewCoordinate],
     );
 
-    // ✅ FIX: Memoize expensive functions with useCallback
     const recenter = useCallback(() => {
         if (!currentLocation || !cameraRef.current) return;
         setIsFollowingUser(true);
@@ -37,7 +42,6 @@ export default function MapControls({ cameraRef }: Props) {
         });
     }, [currentLocation, setIsFollowingUser]);
 
-    // ✅ FIX: Memoize fitRoute calculation to prevent expensive re-computation
     const fitRoute = useCallback(() => {
         if (coordinates.length < 2 || !cameraRef.current) return;
         setIsFollowingUser(false);
@@ -80,50 +84,69 @@ export default function MapControls({ cameraRef }: Props) {
     }, [is3D, setIs3D, setPitch]);
 
     return (
-        <RowView className="absolute right-4 top-4">
-            <TouchableOpacity
-                className={cn(
-                    "h-8 w-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40",
-                    isFollowingUser && "bg-primary",
-                )}
-                onPress={recenter}
-            >
-                <Icon
-                    name="locate-outline"
-                    size={16}
-                    className={cn(
-                        "text-foreground",
-                        isFollowingUser && "text-white",
-                    )}
-                />
-            </TouchableOpacity>
-
-            {coordinates.length >= 2 && (
+        <>
+            <ColView className="absolute right-4 bottom-4">
                 <TouchableOpacity
-                    className="h-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40"
-                    onPress={fitRoute}
+                    className="h-10 aspect-square rounded-full bg-card justify-center items-center border border-border/40"
+                    onPress={() => mapStyleDrawerRef.current?.open()}
                 >
                     <Icon
-                        name="scan-outline"
+                        name="map-outline"
                         size={16}
                         className="text-foreground"
                     />
                 </TouchableOpacity>
-            )}
-
-            <TouchableOpacity
-                className={cn(
-                    "hidden h-8 w-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40",
-                    is3D && "bg-primary",
+                {coordinates.length >= 2 && (
+                    <TouchableOpacity
+                        className="h-10 aspect-square rounded-full bg-card justify-center items-center border border-border/40"
+                        onPress={fitRoute}
+                    >
+                        <Icon
+                            name="scan-outline"
+                            size={16}
+                            className="text-foreground"
+                        />
+                    </TouchableOpacity>
                 )}
-                onPress={toggle3D}
-            >
-                <Icon
-                    name="cube-outline"
-                    size={16}
-                    className="text-foreground"
-                />
-            </TouchableOpacity>
-        </RowView>
+                <TouchableOpacity
+                    className={cn(
+                        "hidden h-8 w-8 aspect-square rounded-full bg-card justify-center items-center border border-border/40",
+                        is3D && "bg-primary",
+                    )}
+                    onPress={toggle3D}
+                >
+                    <Icon
+                        name="cube-outline"
+                        size={16}
+                        className="text-foreground"
+                    />
+                </TouchableOpacity>
+                {currentLocation && (
+                    <TouchableOpacity
+                        className={cn(
+                            "h-10 aspect-square rounded-full bg-card justify-center items-center border border-border/40",
+                            isFollowingUser && "bg-primary",
+                        )}
+                        onPress={recenter}
+                    >
+                        <Icon
+                            name="locate-outline"
+                            size={16}
+                            className={cn(
+                                "text-foreground",
+                                isFollowingUser && "text-white",
+                            )}
+                        />
+                    </TouchableOpacity>
+                )}
+            </ColView>
+            <MapStyleDrawer
+                value={mapStyleIndex}
+                onChange={(styleIndex) => {
+                    setMapStyleIndex(styleIndex);
+                }}
+                ref={mapStyleDrawerRef}
+            />
+        </>
     );
 }

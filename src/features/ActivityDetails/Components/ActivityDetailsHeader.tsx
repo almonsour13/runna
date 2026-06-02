@@ -1,28 +1,26 @@
-import { ColView, RowView } from "@/shared/components/CustomView";
+import { RowView } from "@/shared/components/CustomView";
 import ActivityActionDrawer, {
     ActivityActionDrawerHandle,
 } from "@/shared/components/drawer/ActivityActionDrawer";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
-import { Activity } from "@/shared/types/type";
-import { timeSession } from "@/shared/utils/utils";
+import { NavigationProp } from "@/shared/types/type";
 import { useNavigation } from "@react-navigation/native";
 import { useRef } from "react";
 import { TouchableOpacity } from "react-native";
+import { useActivityDetailsContext } from "../context/ActivityDetailsContext";
 
-export default function ActivityDetailsHeader({
-    activity,
-}: {
-    activity: Activity | null;
-}) {
-    const navigation = useNavigation();
+export default function ActivityDetailsHeader() {
+    const { activity } = useActivityDetailsContext();
+
+    const navigation = useNavigation<NavigationProp>();
 
     const activityActionDrawerRef = useRef<ActivityActionDrawerHandle>(null);
 
     return (
         <>
             <RowView className="p-4 items-center">
-                <RowView className="flex-1 items-center">
+                <RowView className="gap-4 flex-1 items-center">
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Icon
                             name="arrow-back"
@@ -30,17 +28,25 @@ export default function ActivityDetailsHeader({
                             className="text-foreground"
                         />
                     </TouchableOpacity>
-                    {activity && (
-                        <ColView className="gap-0">
-                            <Text className="text-2xl font-medium capitalize">
-                                {timeSession(activity.startTime.toDateString())}{" "}
-                                {activity.type}
-                            </Text>
-                        </ColView>
-                    )}
+                    <Text className="text-2xl font-medium capitalize">
+                        Activity Details
+                    </Text>
                 </RowView>
                 {activity && (
                     <RowView className="gap-4">
+                        <TouchableOpacity
+                            onPress={() =>
+                                navigation.navigate(
+                                    "ActivityDetailsShareScreen" as never,
+                                )
+                            }
+                        >
+                            <Icon
+                                name="share-social"
+                                size={20}
+                                className="text-foreground"
+                            />
+                        </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() =>
                                 activityActionDrawerRef.current?.openWithActivityId(

@@ -168,7 +168,7 @@ export default function WeekProgress() {
                                 </RowView>
                             </ColView>
                             <RowView className="gap-2">
-                                <RowView className="flex-1 items-end gap-2">
+                                <RowView className="flex-1 items-end gap-1">
                                     {weekDays.map((day, i) => {
                                         const maxDayDistance = Math.max(
                                             ...weekDays.map(

@@ -110,6 +110,7 @@ export default function ProfileEditScreen() {
                                 placeholder="Enter your name"
                                 value={newProfile?.name}
                                 onChangeText={(v) => handleChange("name", v)}
+                                className="text-foreground"
                             />
                         </Card>
                     </ColView>

@@ -1,11 +1,8 @@
 import { create } from "zustand";
-import {
-    ActivityType,
-    Coordinate,
-    RawCoordinate,
-    RecordStatus,
-} from "../types/type";
-type TrackedCoordinate = Omit<Coordinate, "id" | "activityId">;
+import { ActivityType, RawCoordinate, RecordStatus } from "../types/type";
+
+type TrackedCoordinate = Omit<RawCoordinate, "id" | "activityId">;
+
 type RecordStore = {
     activityType: ActivityType | null;
     status: RecordStatus;
@@ -19,8 +16,8 @@ type RecordStore = {
     setDuration: (duration: number) => void;
     setSteps: (steps: number) => void;
     setStatus: (status: RecordStatus) => void;
-    setPreviewCoordinate: (coordinate: TrackedCoordinate | null) => void;
-    setCoordinates: (coordinates: TrackedCoordinate[]) => void;
+    setPreviewCoordinate: (coordinate: RawCoordinate | null) => void;
+    setCoordinates: (coordinates: RawCoordinate[]) => void;
     addCoordinate: (coordinate: RawCoordinate) => void;
     setMode: (mode: "preview" | "recording") => void;
     clearActivity: () => void;
@@ -32,7 +29,7 @@ const INITIAL_STATE = {
     duration: 0,
     steps: 0,
     previewCoordinate: null,
-    coordinates: [] as Coordinate[],
+    coordinates: [] as RawCoordinate[],
     mode: null,
 };
 

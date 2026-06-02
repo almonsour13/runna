@@ -5,7 +5,7 @@ import Card from "@/shared/components/ui/Card";
 import Icon from "@/shared/components/ui/Icon";
 import { useRecordStore } from "@/shared/stores/use-record.store";
 import { cn } from "@/shared/utils/cn";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { ActivityIndicator, Animated, TouchableOpacity } from "react-native";
 
 export default function RecordController() {
@@ -13,7 +13,10 @@ export default function RecordController() {
     const status = useRecordStore((s) => s.status);
     const coordinates = useRecordStore((s) => s.coordinates);
     const previewCoordinate = useRecordStore((s) => s.previewCoordinate);
-    const currentLocation = true;
+    const currentLocation = useMemo(
+        () => coordinates[coordinates.length - 1] ?? previewCoordinate,
+        [coordinates, previewCoordinate],
+    );
     const isIdle = status === "idle";
     const isActive = status === "active";
     const isPaused = status === "paused";

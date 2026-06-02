@@ -9,7 +9,7 @@ export default function ScheduleHeader() {
     const navigation = useNavigation<NavigationProp>();
     return (
         <RowView className="p-4">
-            <RowView className="items-center">
+            <RowView className="gap-4 items-center">
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Icon
                         name="arrow-back"

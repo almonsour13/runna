@@ -52,7 +52,7 @@ export default function StatisticTypeBreakdown() {
                             </Text>
                             <Text className="">{total}</Text>
                         </RowView>
-                        <RowView className="h-2 w-full rounded-full overflow-hidden">
+                        <RowView className="gap-1 h-2 w-full rounded-full overflow-hidden">
                             {breakdown.map(({ type, count, pct, color }) => (
                                 <View
                                     key={type}

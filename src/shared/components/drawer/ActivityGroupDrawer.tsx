@@ -100,12 +100,12 @@ const ActivityGroupDrawer = forwardRef<
                             </Text>
                         </RowView>
 
-                        <RowView className="flex-wrap">
+                        <RowView className="flex-wrap gap-1">
                             {isLoading
                                 ? Array.from({ length: 4 }).map((_, i) => (
                                       <Card
                                           key={i}
-                                          className="flex-1 min-w-[45%] h-24 border border-border"
+                                          className="flex-1 min-w-[45%] h-24 bg-muted"
                                       />
                                   ))
                                 : stats.map((stat, i) => (
@@ -113,7 +113,7 @@ const ActivityGroupDrawer = forwardRef<
                                           key={stat.label}
                                           className={cn(
                                               "flex-1 min-w-[45%]",
-                                              "border border-border",
+                                              "bg-muted",
                                           )}
                                       >
                                           <ColView>
@@ -127,14 +127,23 @@ const ActivityGroupDrawer = forwardRef<
                                                       {stat.label}
                                                   </Text>
                                               </RowView>
-                                              <Text className={cn("text-3xl")}>
-                                                  {stat.value}{" "}
-                                                  {stat.unit && (
-                                                      <Text className="text-xs font-normal text-muted-foreground">
-                                                          {stat.unit}
+                                              <RowView>
+                                                  {stat.value.map((v, i) => (
+                                                      <Text
+                                                          key={i}
+                                                          className={cn(
+                                                              "text-3xl font-medium",
+                                                          )}
+                                                      >
+                                                          {v.value}
+                                                          {stat.key !==
+                                                              "duration" && " "}
+                                                          <Text className="text-xl font-medium">
+                                                              {v.unit}
+                                                          </Text>
                                                       </Text>
-                                                  )}
-                                              </Text>
+                                                  ))}
+                                              </RowView>
                                           </ColView>
                                       </Card>
                                   ))}
@@ -143,19 +152,19 @@ const ActivityGroupDrawer = forwardRef<
                             <Text className="text-lg font-medium">
                                 Activities
                             </Text>
-                            <ColView className="gap-2">
+                            <ColView className="gap-1">
                                 {isLoading
                                     ? Array.from({ length: 3 }).map((_, i) => (
                                           <Card
                                               key={i}
-                                              className="h-22 border border-border"
+                                              className="h-22 bg-muted"
                                           />
                                       ))
                                     : activities.map((activity) => (
                                           <ActivityCard
                                               key={activity.id}
                                               activity={activity}
-                                              className="border border-border"
+                                              className="bg-muted"
                                           />
                                       ))}
                             </ColView>

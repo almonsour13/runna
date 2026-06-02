@@ -11,7 +11,7 @@ export type RootStackParamList = {
     };
     Settings: undefined;
     Onboarding: {
-        screen?: "Intro" | "OnboardingSteps";
+        screen?: "OnboardingScreen" | "OnboardingSteps";
     };
     History: {
         initialFilter?:
@@ -23,6 +23,7 @@ export type RootStackParamList = {
     };
     ActivityDetails: {
         activityId: string;
+        screen?: "ActivityDetailsScreen" | "ActivityDetailsShareScreen";
     };
     Profile: {
         screen?: "ProfileScreen" | "ProfileEdit";

@@ -2,18 +2,21 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
+import { NavigationProp } from "@/shared/types/type";
 import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
 import { formatDurationReadable, formatPace } from "@/shared/utils/format";
+import { useNavigation } from "@react-navigation/native";
 import { format } from "date-fns";
 import { useMemo } from "react";
+import { TouchableOpacity } from "react-native";
 import { useStatisticContext } from "../context/StatisticContext";
 
 export default function StatisticPersonalBests() {
+    const navigation = useNavigation<NavigationProp>();
     const { activities, isLoading } = useStatisticContext();
 
     const { bestDistance, bestDuration, bestCalories, bestPace } =
         useMemo(() => {
-            // ✅ Guard — return nulls if no activities
             if (!activities.length)
                 return {
                     bestDistance: null,
@@ -49,6 +52,7 @@ export default function StatisticPersonalBests() {
     );
     const stats = [
         {
+            id: bestDistance?.id ?? "",
             key: "distance",
             label: "Longest Distance",
             value: [
@@ -61,6 +65,7 @@ export default function StatisticPersonalBests() {
             icon: "navigate",
         },
         {
+            id: bestDuration?.id ?? "",
             key: "duration",
             label: "Longest Duration",
 
@@ -78,6 +83,7 @@ export default function StatisticPersonalBests() {
             icon: "time",
         },
         {
+            id: bestCalories?.id ?? "",
             key: "calories",
             label: "Most Calories",
             value: [
@@ -90,6 +96,7 @@ export default function StatisticPersonalBests() {
             icon: "flame",
         },
         {
+            id: bestPace?.id ?? "",
             key: "pace",
             label: "Best Pace",
             value: [
@@ -106,58 +113,69 @@ export default function StatisticPersonalBests() {
     return (
         <ColView className="px-4 gap-1">
             <Text className="text-lg font-medium">Personal Bests</Text>
-            <ColView className="gap-2">
-                {stats.map((stat) => (
-                    <Card key={stat.label} className="flex-1">
-                        {isLoading ? (
-                            <Card className="flex-1 h-12" />
-                        ) : (
-                            <RowView className="justify-between">
-                                <ColView>
-                                    <RowView className="gap-2 items-center">
-                                        <Icon
-                                            name={stat.icon}
-                                            size={12}
-                                            className="text-primary"
-                                        />
-                                        <Text className="text-sm text-muted-foreground">
-                                            {stat.label}
-                                        </Text>
-                                    </RowView>
-                                    <RowView className="gap-2 items-center">
-                                        <Icon
-                                            name="calendar"
-                                            size={10}
-                                            className="text-primary"
-                                        />
-                                        <Text className="text-xs text-muted-foreground">
-                                            {stat.date
-                                                ? format(
-                                                      new Date(stat.date),
-                                                      "MMM d, yyyy",
-                                                  )
-                                                : "—"}
-                                        </Text>
-                                    </RowView>
-                                </ColView>
-                                <RowView>
-                                    {stat.value.map((v, i) => (
-                                        <Text
-                                            key={i}
-                                            className="text-2xl font-medium leading-none"
-                                        >
-                                            {v.value}
-                                            {stat.key !== "duration" && " "}
-                                            <Text className="text-lg font-medium">
-                                                {v.unit}
-                                            </Text>
-                                        </Text>
-                                    ))}
-                                </RowView>
-                            </RowView>
-                        )}
-                    </Card>
-                ))}
+            <ColView className="gap-1">
+                {isLoading
+                    ? Array.from({ length: 4 }).map((_, i) => (
+                          <Card key={i} className="h-20" />
+                      ))
+                    : stats.map((stat) => (
+                          <TouchableOpacity
+                              key={stat.label}
+                              className=""
+                              onPress={() =>
+                                  navigation.navigate("ActivityDetails", {
+                                      activityId: stat.id,
+                                  })
+                              }
+                          >
+                              <Card className="flex-1">
+                                  <RowView className="justify-between">
+                                      <ColView>
+                                          <RowView className="gap-2 items-center">
+                                              <Icon
+                                                  name={stat.icon}
+                                                  size={12}
+                                                  className="text-primary"
+                                              />
+                                              <Text className="text-sm text-muted-foreground">
+                                                  {stat.label}
+                                              </Text>
+                                          </RowView>
+                                          <RowView className="gap-2 items-center">
+                                              <Icon
+                                                  name="calendar"
+                                                  size={10}
+                                                  className="text-primary"
+                                              />
+                                              <Text className="text-xs text-muted-foreground">
+                                                  {stat.date
+                                                      ? format(
+                                                            new Date(stat.date),
+                                                            "MMM d, yyyy",
+                                                        )
+                                                      : "—"}
+                                              </Text>
+                                          </RowView>
+                                      </ColView>
+                                      <RowView>
+                                          {stat.value.map((v, i) => (
+                                              <Text
+                                                  key={i}
+                                                  className="text-2xl font-medium leading-none"
+                                              >
+                                                  {v.value}
+                                                  {stat.key !== "duration" &&
+                                                      " "}
+                                                  <Text className="text-lg font-medium">
+                                                      {v.unit}
+                                                  </Text>
+                                              </Text>
+                                          ))}
+                                      </RowView>
+                                  </RowView>
+                              </Card>
+                          </TouchableOpacity>
+                      ))}
             </ColView>
         </ColView>
     );

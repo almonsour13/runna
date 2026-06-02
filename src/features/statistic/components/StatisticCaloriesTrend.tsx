@@ -75,7 +75,7 @@ export default function StatisticCaloriesTrend() {
                             </Text>
                         ))}
                     </View>
-                    <RowView className="flex-1 gap-2">
+                    <RowView className="flex-1 gap-1">
                         {barData.map((d, idx) => {
                             const pct =
                                 maxCalories > 0

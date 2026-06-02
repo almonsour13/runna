@@ -92,7 +92,7 @@ export default function HistoryScreen() {
                 data={activities}
                 onEndReached={handleLoadMore}
                 keyExtractor={(item) => item.id.toString()}
-                contentContainerClassName="gap-2 pb-28"
+                contentContainerClassName="gap-1 pb-28"
                 showsVerticalScrollIndicator={false}
                 onEndReachedThreshold={0.5}
                 maxToRenderPerBatch={10}

@@ -20,7 +20,7 @@ export default function StatisticTabs() {
 
     return (
         <ColView className="px-4 gap-2">
-            <RowView className="gap-2">
+            <RowView className="gap-1">
                 {TABS.map((tab) => {
                     return (
                         <TouchableOpacity

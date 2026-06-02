@@ -94,7 +94,6 @@ export default function ActivityCard({
                             {simplifiedCoordinates && (
                                 <VectorRouteMap
                                     coordinates={simplifiedCoordinates}
-                                    type={type}
                                     strokeWidth={2}
                                     size={120}
                                 />
@@ -112,7 +111,7 @@ export default function ActivityCard({
                                         </Text>
                                     )}
                                     <Text
-                                        className="capitalize text-xs font-medium  bg-muted px-1.5 py-0.5 rounded"
+                                        className="capitalize text-xs font-medium"
                                         style={{
                                             color: ACTIVITY_TYPE_COLOR[
                                                 type as ActivityType

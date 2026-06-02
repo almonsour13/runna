@@ -1,5 +1,4 @@
 import { useActivityMutations } from "@/shared/hooks/use-activity-mutation";
-import { activityActionService } from "@/shared/services/activity-action.service";
 import { NavigationProp } from "@/shared/types/type";
 import { useNavigation } from "@react-navigation/native";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
@@ -47,20 +46,20 @@ const ActivityActionDrawer = forwardRef<
         },
         {
             label: "Share",
-            icon: "share",
+            icon: "share-social",
             onPress: async () => {
-                await activityActionService.share(activityId);
+                navigation.navigate("ActivityDetails", {
+                    screen: "ActivityDetailsShareScreen",
+                    activityId,
+                });
                 drawerRef.current?.close();
             },
             visible: true,
         },
         {
-            label: "Download",
+            label: "Export",
             icon: "download",
-            onPress: async () => {
-                await activityActionService.download(activityId);
-                drawerRef.current?.close();
-            },
+            onPress: async () => {},
             visible: true,
         },
         {

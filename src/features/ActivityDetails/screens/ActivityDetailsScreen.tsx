@@ -1,11 +1,6 @@
-import { ColView } from "@/shared/components/CustomView";
-import SafeScreen from "@/shared/components/SafeScreen";
-import { activityService } from "@/shared/services/storage/activity.service";
+import { ColView, RowView } from "@/shared/components/CustomView";
+import Text from "@/shared/components/ui/Text";
 import { Coordinate } from "@/shared/types/type";
-import { computeKmSplits } from "@/shared/utils/compute";
-import { useRoute } from "@react-navigation/native";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
 import {
     ActivityIndicator,
     RefreshControl,
@@ -16,6 +11,7 @@ import ActivityDetailsEmptyState from "../components/ActivityDetailsEmptyState";
 import ActivityDetailsHeader from "../components/ActivityDetailsHeader";
 import ActivityDetailsMap from "../components/ActivityDetailsMap";
 import ActivitySummary from "../components/ActivityDetailsSummary";
+import { useActivityDetailsContext } from "../context/ActivityDetailsContext";
 
 export type KmSplits = {
     km: number;
@@ -25,61 +21,33 @@ export type KmSplits = {
 }[];
 
 export default function ActivityDetailsScreen() {
-    const route = useRoute();
-    const { activityId } = route.params as { activityId: string };
-    const id = activityId;
-    const [isRefreshing, setIsRefreshing] = useState(false);
-
-    const {
-        data: activity,
-        isLoading,
-        refetch,
-    } = useQuery({
-        queryKey: ["activity", id],
-        queryFn: async () => activityService.getById(id),
-        enabled: !!id,
-    });
-
-    const coordinates = activity?.coordinates || [];
-
-    const kmSplits = useMemo(
-        () => (coordinates.length > 0 ? computeKmSplits(coordinates) : []),
-        [coordinates],
-    );
-
-    const refresh = () => {
-        setIsRefreshing(true);
-        refetch().finally(() => setIsRefreshing(false));
-    };
-
+    const { activity, coordinates, isLoading, isRefreshing, refetch } =
+        useActivityDetailsContext();
     return (
-        <SafeScreen className="">
-            <ScrollView
-                contentContainerStyle={{ flexGrow: 1 }}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={isRefreshing}
-                        onRefresh={refresh}
-                    />
-                }
-            >
-                {isLoading ? (
-                    <View className="flex-1 items-center justify-center py-20">
-                        <ActivityIndicator size="large" />
-                    </View>
-                ) : activity && coordinates.length > 0 ? (
-                    <ColView className="relative flex-1 gap-0">
-                        <ActivityDetailsHeader activity={activity} />
-                        <ActivityDetailsMap
-                            kmSplits={kmSplits}
-                            coordinates={coordinates}
-                        />
-                        <ActivitySummary activity={activity} />
+        <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            refreshControl={
+                <RefreshControl refreshing={isRefreshing} onRefresh={refetch} />
+            }
+        >
+            {isLoading ? (
+                <View className="flex-1 items-center justify-center py-20">
+                    <ActivityIndicator size="large" />
+                </View>
+            ) : activity && coordinates.length > 0 ? (
+                <ColView className="relative flex-1 gap-0">
+                    <ActivityDetailsHeader />
+                    <ActivityDetailsMap />
+                    <ActivitySummary />
+                    <ColView className="hidden">
+                        <RowView className="px-4">
+                            <Text className="text-base">Media</Text>
+                        </RowView>
                     </ColView>
-                ) : (
-                    <ActivityDetailsEmptyState />
-                )}
-            </ScrollView>
-        </SafeScreen>
+                </ColView>
+            ) : (
+                <ActivityDetailsEmptyState />
+            )}
+        </ScrollView>
     );
 }

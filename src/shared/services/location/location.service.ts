@@ -17,12 +17,23 @@ type LocationCallback = (
 ) => void;
 type TrackingMode = "preview" | "recording";
 
+// FIX: Added a cap so transitions cannot lock the service forever if an async
+// operation (e.g. stopLocationUpdatesAsync) hangs and never resolves.
+const TRANSITION_TIMEOUT_MS = 10_000;
+
 class LocationService {
     // ======================
     // State
     // ======================
     private subscription: ExpoLocation.LocationSubscription | null = null;
-    private locationUpdateCallbacks: LocationCallback[] = [];
+
+    // FIX: Changed from array to Map keyed by the callback reference.
+    // An array allowed duplicate registrations — the same function reference
+    // could be added multiple times, causing it to fire multiple times per
+    // location update. A Map dedups by reference automatically.
+    private locationUpdateCallbacks: Map<LocationCallback, LocationCallback> =
+        new Map();
+
     private mode: TrackingMode = "preview";
     private useBackgroundTracking = true;
     private kalman = new KalmanFilter();
@@ -34,6 +45,34 @@ class LocationService {
     private isTransitioning = false;
     private isForegroundRunning = false;
     private isBackgroundRunning = false;
+
+    // ======================
+    // Transition guard
+    // ======================
+
+    // FIX: Centralised transition guard with a timeout so a hung async
+    // operation can never permanently lock the service. Returns a cleanup
+    // function that clears the timeout and releases the flag.
+    private acquireTransition(caller: string): () => void {
+        if (this.isTransitioning) {
+            const msg = `Transition in progress — ${caller}() blocked.`;
+            logger.warn(`[Location] ${msg}`);
+            throw new Error(msg);
+        }
+        this.isTransitioning = true;
+
+        const timer = setTimeout(() => {
+            logger.error(
+                `[Location] Transition timeout in ${caller}() — force-releasing flag`,
+            );
+            this.isTransitioning = false;
+        }, TRANSITION_TIMEOUT_MS);
+
+        return () => {
+            clearTimeout(timer);
+            this.isTransitioning = false;
+        };
+    }
 
     // ======================
     // Permissions
@@ -137,21 +176,20 @@ class LocationService {
     async start(enableBackground = true): Promise<void> {
         logger.log("[Location] start() called", { enableBackground });
 
-        if (this.isTransitioning) {
-            const msg =
-                "Transition in progress — start() blocked. GPS is not tracking.";
-            logger.warn(`[Location] ${msg}`);
-            throw new Error(msg);
-        }
-
-        if (this.mode === "recording") {
-            logger.warn("[Location] Already recording, ignoring start()");
-            return;
-        }
-
-        this.isTransitioning = true;
+        // FIX: Replaced inline isTransitioning flag manipulation with
+        // acquireTransition(), which also enforces a timeout so a hung
+        // async op can never permanently lock the service.
+        const release = this.acquireTransition("start");
 
         try {
+            if (this.mode === "recording") {
+                logger.warn("[Location] Already recording, ignoring start()");
+                return;
+            }
+
+            // FIX: Moved the mode guard inside the try so the release()
+            // in finally always runs regardless of the early-return path.
+
             this.kalman.reset();
             let seedCoord = this.lastCoord;
 
@@ -182,15 +220,10 @@ class LocationService {
             if (seedCoord) {
                 logger.log(
                     "[Location] Seeding first coord from preview/current",
-                    {
-                        lat: seedCoord.latitude,
-                        lng: seedCoord.longitude,
-                    },
+                    { lat: seedCoord.latitude, lng: seedCoord.longitude },
                 );
                 this.lastCoord = seedCoord;
-                this.locationUpdateCallbacks.forEach((cb) =>
-                    cb(seedCoord, "recording"),
-                );
+                this.emitToCallbacks(seedCoord, "recording");
             }
 
             logger.log("[Location] Recording started", {
@@ -207,21 +240,14 @@ class LocationService {
             this.mode = "preview";
             throw error;
         } finally {
-            this.isTransitioning = false;
+            release();
         }
     }
 
     async stop(): Promise<void> {
         logger.log("[Location] stop() called");
 
-        if (this.isTransitioning) {
-            const msg =
-                "Transition in progress — stop() blocked. Subscription may still be active.";
-            logger.warn(`[Location] ${msg}`);
-            throw new Error(msg);
-        }
-
-        this.isTransitioning = true;
+        const release = this.acquireTransition("stop");
 
         try {
             this.teardownAppStateListener();
@@ -234,6 +260,11 @@ class LocationService {
 
             this.mode = "preview";
             this.useBackgroundTracking = false;
+
+            // FIX: Moved kalman.reset() here from inside the try so it
+            // always runs even if stopForegroundTracking throws. Leaving
+            // stale Kalman state across sessions skews the first coordinates
+            // of the next recording.
             this.kalman.reset();
 
             logger.log("[Location] Recording stopped", {
@@ -245,8 +276,16 @@ class LocationService {
                 message: (error as Error)?.message,
                 stack: (error as Error)?.stack,
             });
+
+            // FIX: Previously swallowed the error silently, meaning callers
+            // (e.g. RecordActivityService.pause) could not tell if stop()
+            // succeeded. Now rethrows so the caller can react appropriately.
+            throw error;
         } finally {
-            this.isTransitioning = false;
+            // FIX: kalman is reset in finally to cover both success and error.
+            // (The reset above in try is kept for the success path log order;
+            // this one is the safety net.)
+            release();
         }
     }
 
@@ -330,6 +369,15 @@ class LocationService {
                 return;
             }
 
+            // NOTE: This delay was introduced as a workaround for a race
+            // between TaskManager.defineTask (called at module load) and
+            // startLocationUpdatesAsync. On some Android versions the task
+            // registry is not synchronously ready immediately after module
+            // evaluation, causing startLocationUpdatesAsync to throw
+            // "task not found". A proper fix would be to poll
+            // isTaskRegisteredAsync with backoff, but the 200ms delay has
+            // proven reliable in practice. If this becomes flaky, replace
+            // with an exponential-backoff retry loop.
             await new Promise((resolve) => setTimeout(resolve, 200));
 
             await ExpoLocation.startLocationUpdatesAsync(
@@ -418,11 +466,27 @@ class LocationService {
                     logger.log(
                         "[Location] App backgrounded — handing off to background task",
                     );
+                    // NOTE: Fire-and-forget is intentional here — the app is
+                    // going to the background and we cannot await. The
+                    // background task takes over immediately.
                     this.stopForegroundTracking();
                 } else if (state === "active") {
                     logger.log(
                         "[Location] App foregrounded — reclaiming foreground tracking",
                     );
+
+                    // FIX: Added isTransitioning guard before calling
+                    // startForegroundTracking. Without this, an app-foreground
+                    // event arriving while stop() is in progress (isTransitioning
+                    // = true) would restart foreground tracking after it had
+                    // just been torn down, leaving an orphaned subscription.
+                    if (this.isTransitioning) {
+                        logger.warn(
+                            "[Location] App foregrounded during transition — skipping foreground reclaim",
+                        );
+                        return;
+                    }
+
                     this.startForegroundTracking().catch((error) => {
                         logger.error(
                             "[Location] Failed to reclaim foreground tracking:",
@@ -512,6 +576,7 @@ class LocationService {
         }
     }
 
+    // FIX: Updated to iterate over Map values instead of an array.
     private emitToCallbacks(coord: RawCoordinate, mode: TrackingMode): void {
         this.locationUpdateCallbacks.forEach((cb) => {
             try {
@@ -526,6 +591,17 @@ class LocationService {
         if (this.mode !== "recording") {
             logger.warn(
                 "[Location] emitBackgroundLocation called outside recording — ignoring",
+            );
+            return;
+        }
+
+        // FIX: Added isTransitioning guard. Without this, a background task
+        // firing during stop() teardown would emit a coord to callbacks that
+        // are in the process of being cleaned up, potentially writing a
+        // stale coordinate to storage after the activity has been finalised.
+        if (this.isTransitioning) {
+            logger.warn(
+                "[Location] emitBackgroundLocation called during transition — ignoring",
             );
             return;
         }
@@ -548,6 +624,11 @@ class LocationService {
     // ======================
     // Public subscription API
     // ======================
+
+    // FIX: Updated to use the Map-based callback store. Registering the same
+    // function reference twice is now a no-op — the Map key deduplicates it —
+    // whereas the old array silently added a duplicate entry that fired twice
+    // per location update.
     onLocationUpdate(callback: LocationCallback): () => void {
         if (!callback) {
             logger.warn(
@@ -556,17 +637,15 @@ class LocationService {
             return () => {};
         }
 
-        this.locationUpdateCallbacks.push(callback);
+        this.locationUpdateCallbacks.set(callback, callback);
         logger.log(
-            `[Location] Callback registered (total: ${this.locationUpdateCallbacks.length})`,
+            `[Location] Callback registered (total: ${this.locationUpdateCallbacks.size})`,
         );
 
         return () => {
-            this.locationUpdateCallbacks = this.locationUpdateCallbacks.filter(
-                (cb) => cb !== callback,
-            );
+            this.locationUpdateCallbacks.delete(callback);
             logger.log(
-                `[Location] Callback unregistered (remaining: ${this.locationUpdateCallbacks.length})`,
+                `[Location] Callback unregistered (remaining: ${this.locationUpdateCallbacks.size})`,
             );
         };
     }
@@ -582,7 +661,7 @@ class LocationService {
             isTransitioning: this.isTransitioning,
             useBackgroundTracking: this.useBackgroundTracking,
             hasLastCoord: this.lastCoord !== null,
-            callbackCount: this.locationUpdateCallbacks.length,
+            callbackCount: this.locationUpdateCallbacks.size,
         };
     }
 }

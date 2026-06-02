@@ -57,6 +57,7 @@ export default function ProfileSteps({
                                 onChangeText={(v) =>
                                     setProfile({ ...profile, name: v })
                                 }
+                                className="text-foreground"
                             />
                         </Card>
                     </ColView>

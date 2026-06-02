@@ -35,7 +35,7 @@ export default function RecordScreen() {
         <SafeScreen>
             <ColView className="relative flex-1 gap-0">
                 <RecordHeader />
-                <ColView className="relative flex-1 gap-4">
+                <ColView className="relative flex-1">
                     {/* <RecordMap /> */}
                     <RecordSummary />
                     {isMapReady && (

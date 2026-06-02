@@ -5,7 +5,6 @@ import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { useMapStyle } from "@/shared/hooks/use-map-style";
-import { Coordinate } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
 import {
     Camera,
@@ -16,21 +15,15 @@ import {
 } from "@maplibre/maplibre-react-native";
 import { useMemo, useRef, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
-import { KmSplits } from "../screens/ActivityDetailsScreen";
+import { useActivityDetailsContext } from "../context/ActivityDetailsContext";
 
 const MAP_PADDING = 40;
-export default function ActivityDetailsMap({
-    kmSplits,
-    coordinates,
-}: {
-    kmSplits: KmSplits;
-    coordinates: Coordinate[];
-}) {
+export default function ActivityDetailsMap() {
+    const { coordinates, kmSplits } = useActivityDetailsContext();
     const cameraRef = useRef<React.ElementRef<typeof Camera> | null>(null);
     const mapStyleDrawerRef = useRef<DrawerHandle>(null);
     const [selectedStyleIndex, setSelectedStyleIndex] = useState(0);
 
-    // Open drawer: mapStyleDrawerRef.current?.open()
     const [isMapReady, setIsMapReady] = useState(false);
     const [isKmMarkersVisible, setIsKmMarkersVisible] = useState(false);
     const mapStyle = useMapStyle(selectedStyleIndex);
@@ -206,10 +199,11 @@ export default function ActivityDetailsMap({
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => setIsKmMarkersVisible((prev) => !prev)}
+                        className="hidden "
                     >
                         <Card
                             className={cn(
-                                "hidden p-2 rounded-full aspect-square border border-border/40",
+                                "p-2 rounded-full aspect-square border border-border/40",
                                 isKmMarkersVisible && "bg-primary",
                             )}
                         >

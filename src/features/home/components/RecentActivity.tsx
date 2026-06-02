@@ -45,7 +45,7 @@ export default function RecentActivities() {
                 )}
             </RowView>
             {isLoading ? (
-                <ColView className="px-4 gap-2">
+                <ColView className="px-4 gap-1">
                     {Array.from({ length: 5 }).map((_, i) => (
                         <Card key={i} className="h-22" />
                     ))}
@@ -65,7 +65,7 @@ export default function RecentActivities() {
                     </Text>
                 </ColView>
             ) : (
-                <ColView className="px-4 gap-2">
+                <ColView className="px-4 gap-1">
                     {activities.map((activity) => (
                         <ActivityCard key={activity.id} activity={activity} />
                     ))}

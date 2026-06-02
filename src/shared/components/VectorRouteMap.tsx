@@ -5,7 +5,6 @@ import { Coordinate } from "../types/type";
 
 interface RouteMapProps {
     coordinates: Coordinate[];
-    type: "walk" | "run" | string;
     size?: number;
     color?: string;
     strokeWidth?: number;
@@ -13,24 +12,8 @@ interface RouteMapProps {
 
 const PAD = 40;
 
-function hexToRgba(hex: string, alpha: number): string {
-    const clean = hex.replace("#", "");
-    const full =
-        clean.length === 3
-            ? clean
-                  .split("")
-                  .map((c) => c + c)
-                  .join("")
-            : clean;
-    const r = parseInt(full.slice(0, 2), 16);
-    const g = parseInt(full.slice(2, 4), 16);
-    const b = parseInt(full.slice(4, 6), 16);
-    return `rgba(${r},${g},${b},${alpha})`;
-}
-
 export default function VectorRouteMap({
     coordinates,
-    type,
     size,
     color = "#02a963",
     strokeWidth = 8,
@@ -87,40 +70,13 @@ export default function VectorRouteMap({
         endX: 0,
         endY: 0,
     };
-
-    const gradientId = `routeGrad_${type}_${color.replace("#", "")}`;
-    const glowColor = hexToRgba(color, 0.25);
+    // const glowColor = hexToRgba(color, 0.25);
 
     if (coordinates.length < 2) return null;
 
     return (
         <View style={[styles.wrapper, { width, height }]}>
             <Svg width={width} height={height}>
-                {/* <Defs>
-                    <LinearGradient
-                        id={gradientId}
-                        x1={startX}
-                        y1={startY}
-                        x2={endX}
-                        y2={endY}
-                        gradientUnits="userSpaceOnUse"
-                    >
-                        <Stop offset="0" stopColor={color} stopOpacity={0.6} />
-                        <Stop offset="1" stopColor={color} stopOpacity={1} />
-                    </LinearGradient>
-                </Defs> */}
-
-                {/* Glow */}
-                <Path
-                    d={pathD}
-                    stroke={glowColor}
-                    strokeWidth={strokeWidth * 2.5}
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    fill="none"
-                />
-
-                {/* Route */}
                 <Path
                     d={pathD}
                     stroke={color}

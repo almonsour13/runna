@@ -1,8 +1,8 @@
-// rename file to use-map-style.ts
-import { MAP_STYLES } from "../constant/constant";
+import { MAP_STYLES } from "../constant/map";
 import { useTheme } from "./use-theme";
 
-export const useMapStyle = () => {
+export const useMapStyle = (styleIndex: number) => {
     const theme = useTheme();
-    return MAP_STYLES[0].style[theme];
+
+    return MAP_STYLES[styleIndex].style;
 };

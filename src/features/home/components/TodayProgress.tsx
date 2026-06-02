@@ -13,7 +13,7 @@ import { formatStats } from "@/shared/utils/format";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useMemo, useRef } from "react";
-import { ScrollView, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 
 function getPercentageChange(
     current: number,
@@ -128,125 +128,113 @@ export default function TodayProgress() {
                         )}
                     </TouchableOpacity>
                 </RowView>
-                <ColView className=" gap-2">
-                    {isLoading || isPreviousLoading ? (
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerClassName="px-4 gap-2"
-                        >
-                            {Array.from({ length: 4 }).map((_, i) => (
-                                <Card key={i} className="h-28 min-w-40" />
-                            ))}
-                        </ScrollView>
-                    ) : (
-                        <RowView className="flex-wrap px-4">
-                            {isLoading
-                                ? Array.from({ length: 4 }).map((_, i) => (
-                                      <Card
-                                          className="flex-1 min-w-[45%] gap-1 h-24"
-                                          key={i}
-                                      />
-                                  ))
-                                : stats.map((stat, i) => (
-                                      <Card
-                                          key={stat.label}
-                                          className="flex-1 min-w-[45%]"
-                                      >
-                                          <ColView>
-                                              <RowView className="justify-between">
-                                                  <RowView className="items-center">
-                                                      <Icon
-                                                          name={stat.icon}
-                                                          size={11}
-                                                          className="text-primary"
-                                                      />
-                                                      <Text className="text-xs text-muted-foreground">
-                                                          {stat.label}
-                                                      </Text>
-                                                  </RowView>
-                                                  {hasPreviousActivities &&
-                                                      hasActivities && (
-                                                          <RowView>
-                                                              {(() => {
-                                                                  const change =
-                                                                      getChanges(
-                                                                          stat.label,
-                                                                      );
-                                                                  if (!change)
-                                                                      return null;
-                                                                  const {
-                                                                      value,
-                                                                      direction,
-                                                                  } = change;
-                                                                  const isUp =
-                                                                      direction ===
-                                                                      "up";
-
-                                                                  const iconName =
-                                                                      isUp
-                                                                          ? "trending-up"
-                                                                          : "trending-down";
-                                                                  return (
-                                                                      <RowView>
-                                                                          <Icon
-                                                                              name={
-                                                                                  iconName
-                                                                              }
-                                                                              size={
-                                                                                  12
-                                                                              }
-                                                                              className={cn(
-                                                                                  isUp
-                                                                                      ? "text-success"
-                                                                                      : "text-destructive",
-                                                                              )}
-                                                                          />
-                                                                          <Text
-                                                                              className={cn(
-                                                                                  "text-xs",
-                                                                                  isUp
-                                                                                      ? "text-success"
-                                                                                      : "text-destructive",
-                                                                              )}
-                                                                          >
-                                                                              {isUp
-                                                                                  ? "+"
-                                                                                  : "-"}
-                                                                              {value.toFixed(
-                                                                                  1,
-                                                                              )}
-                                                                              %
-                                                                          </Text>
-                                                                      </RowView>
+                <ColView>
+                    <RowView className="flex-wrap px-4 gap-1">
+                        {isLoading || isPreviousLoading
+                            ? Array.from({ length: 4 }).map((_, i) => (
+                                  <Card
+                                      className="flex-1 min-w-[45%] gap-1 h-24"
+                                      key={i}
+                                  />
+                              ))
+                            : stats.map((stat, i) => (
+                                  <Card
+                                      key={stat.label}
+                                      className="flex-1 min-w-[45%]"
+                                  >
+                                      <ColView>
+                                          <RowView className="justify-between">
+                                              <RowView className="items-center">
+                                                  <Icon
+                                                      name={stat.icon}
+                                                      size={11}
+                                                      className="text-primary"
+                                                  />
+                                                  <Text className="text-xs text-muted-foreground">
+                                                      {stat.label}
+                                                  </Text>
+                                              </RowView>
+                                              {hasPreviousActivities &&
+                                                  hasActivities && (
+                                                      <RowView>
+                                                          {(() => {
+                                                              const change =
+                                                                  getChanges(
+                                                                      stat.label,
                                                                   );
-                                                              })()}
-                                                          </RowView>
-                                                      )}
-                                              </RowView>
+                                                              if (!change)
+                                                                  return null;
+                                                              const {
+                                                                  value,
+                                                                  direction,
+                                                              } = change;
+                                                              const isUp =
+                                                                  direction ===
+                                                                  "up";
 
-                                              <RowView>
-                                                  {stat.value.map((v, i) => (
-                                                      <Text
-                                                          key={i}
-                                                          className={cn(
-                                                              "text-3xl font-medium",
-                                                          )}
-                                                      >
-                                                          {v.value}
-                                                          {stat.key !==
-                                                              "duration" && " "}
-                                                          <Text className="text-xl font-medium">
-                                                              {v.unit}
-                                                          </Text>
+                                                              const iconName =
+                                                                  isUp
+                                                                      ? "trending-up"
+                                                                      : "trending-down";
+                                                              return (
+                                                                  <RowView>
+                                                                      <Icon
+                                                                          name={
+                                                                              iconName
+                                                                          }
+                                                                          size={
+                                                                              12
+                                                                          }
+                                                                          className={cn(
+                                                                              isUp
+                                                                                  ? "text-success"
+                                                                                  : "text-destructive",
+                                                                          )}
+                                                                      />
+                                                                      <Text
+                                                                          className={cn(
+                                                                              "text-xs",
+                                                                              isUp
+                                                                                  ? "text-success"
+                                                                                  : "text-destructive",
+                                                                          )}
+                                                                      >
+                                                                          {isUp
+                                                                              ? "+"
+                                                                              : "-"}
+                                                                          {value.toFixed(
+                                                                              1,
+                                                                          )}
+                                                                          %
+                                                                      </Text>
+                                                                  </RowView>
+                                                              );
+                                                          })()}
+                                                      </RowView>
+                                                  )}
+                                          </RowView>
+
+                                          <RowView>
+                                              {stat.value.map((v, i) => (
+                                                  <Text
+                                                      key={i}
+                                                      className={cn(
+                                                          "text-3xl font-medium",
+                                                      )}
+                                                  >
+                                                      {v.value}
+                                                      {stat.key !==
+                                                          "duration" && " "}
+                                                      <Text className="text-xl font-medium">
+                                                          {v.unit}
                                                       </Text>
-                                                  ))}
-                                              </RowView>
-                                          </ColView>
-                                      </Card>
-                                  ))}
-                        </RowView>
-                    )}
+                                                  </Text>
+                                              ))}
+                                          </RowView>
+                                      </ColView>
+                                  </Card>
+                              ))}
+                    </RowView>
                 </ColView>
             </ColView>
             <ActivityGroupDrawer ref={activityGrouperDrawer} />

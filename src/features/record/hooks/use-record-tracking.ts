@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { locationService } from "../../../shared/services/location/location.service";
 import { recordActivityService } from "../../../shared/services/record-activity.service";
-import { stepCounterService } from "../../../shared/services/step-counter.service";
+import { stepCounterService } from "../../../shared/services/sensor/step-counter.service";
 import { useRecordStore } from "../../../shared/stores/use-record.store";
 import { logger } from "../../../shared/utils/logger";
 
@@ -64,7 +64,7 @@ export const useRecord = () => {
     }, [setMode, addCoordinate]);
 
     useEffect(() => {
-        const unsubscribe = stepCounterService.onStep((steps) => {
+        const unsubscribe = stepCounterService.onStepUpdate((steps) => {
             setSteps(steps);
         });
         return () => unsubscribe();

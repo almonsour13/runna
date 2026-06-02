@@ -26,7 +26,7 @@ export const formatStats = ({
             label: "Distance",
             value: [
                 {
-                    value: convertMtoKm(distance).toFixed(2),
+                    value: convertMtoKm(distance).toFixed(1),
                     unit: "km",
                 },
             ],
@@ -38,7 +38,7 @@ export const formatStats = ({
         const formattedDuration = formatDurationReadable(duration);
         stats.push({
             key: "duration",
-            label: "Duration",
+            label: "Time",
             value: [
                 {
                     value: formattedDuration.value[0].value,
@@ -105,7 +105,7 @@ export const formatStats = ({
                     unit: "/km",
                 },
             ],
-            icon: "speedometer",
+            icon: "timer",
         });
     }
 

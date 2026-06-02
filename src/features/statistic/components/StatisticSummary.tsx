@@ -30,7 +30,7 @@ export default function StatisticSummary() {
         <ColView className="px-4 gap-2">
             <Text className="text-lg font-medium">Summary</Text>
             <ColView className="gap-1">
-                <RowView className="gap-2 flex-wrap">
+                <RowView className="gap-1 flex-wrap">
                     {isLoading
                         ? Array.from({ length: 4 }).map((_, i) => (
                               <Card

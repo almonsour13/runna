@@ -1,6 +1,6 @@
-import ActivityDetailsScreen from "@/features/ActivityDetails/screens/ActivityDetailsScreen";
 import RecordScreen from "@/features/record/screens/RecordScreen";
 import ScheduleScreen from "@/features/schedule/screens/ScheduleScreen";
+import SplashScreen from "@/screens/SplashScreen";
 import { useOnboardingContext } from "@/shared/context/OnboardingContext";
 import { db } from "@/shared/db";
 import migrations from "@/shared/db/migrations/migrations";
@@ -16,14 +16,13 @@ import {
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
-import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import ActivityDetailsNavigator from "./ActivityDetailsNavigator";
 import MainNavigator from "./MainNavigator";
 import OnboardingNavigator from "./OnboardingNavigator";
 import ProfileNavigator from "./ProfileNavigator";
 import SettingsNavigator from "./SettingsNavigator";
+// import "@/shared/db/seed/activity.seed";
 
-SplashScreen.preventAutoHideAsync();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
@@ -39,14 +38,8 @@ export default function RootNavigator() {
 
     const isReady = loaded && success && !isLoading;
 
-    useEffect(() => {
-        if (isReady) {
-            SplashScreen.hideAsync();
-        }
-    }, [isReady]);
-
     if (!isReady) {
-        return null;
+        return <SplashScreen />;
     }
 
     return (
@@ -79,7 +72,7 @@ export default function RootNavigator() {
                         />
                         <Stack.Screen
                             name="ActivityDetails"
-                            component={ActivityDetailsScreen}
+                            component={ActivityDetailsNavigator}
                             options={{
                                 animation: "slide_from_right",
                             }}
