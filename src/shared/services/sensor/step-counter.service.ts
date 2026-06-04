@@ -1,21 +1,5 @@
-import { Accelerometer } from "expo-sensors";
+import { Pedometer } from "expo-sensors";
 import { logger } from "../../utils/logger";
-
-// Minimum time between two detected steps (ms). Filters out noise / double-counts.
-// Human cadence is ~1–3 steps/sec, so anything faster than ~250 ms is noise.
-const STEP_COOLDOWN_MS = 300;
-
-// Acceleration magnitude threshold to register as a step.
-// A relaxed walking gait peaks around 1.2–1.5 g; 1.15 is a safe floor that
-// still ignores minor arm / device jitter.
-const STEP_THRESHOLD = 1.15;
-
-// Accelerometer poll interval in ms. 100 ms (10 Hz) is sufficient for gait
-// detection and keeps battery impact low.
-const UPDATE_INTERVAL_MS = 100;
-
-// How long to wait for the first accelerometer event before giving up.
-const AVAILABILITY_CHECK_TIMEOUT_MS = 3_000;
 
 type StepCallback = (totalSteps: number) => void;
 
@@ -23,67 +7,37 @@ class StepCounterService {
     // ======================
     // State
     // ======================
-
-    private subscription: ReturnType<typeof Accelerometer.addListener> | null =
+    private subscription: ReturnType<typeof Pedometer.watchStepCount> | null =
         null;
-
-    // Total steps for this session (offset + steps detected since start).
     private steps = 0;
-
-    // Pre-crash step count added to every reading during a restored session.
     private stepOffset = 0;
-
-    // Timestamp of the last accepted step — used to enforce STEP_COOLDOWN_MS.
-    private lastStepTime = 0;
-
     private isAvailable: boolean | null = null;
-
     private stepCallbacks: Set<StepCallback> = new Set();
 
     // ======================
     // Availability / Permissions
     // ======================
-
     async requestPermissions(): Promise<boolean> {
         if (this.isAvailable !== null) return this.isAvailable;
 
         try {
-            // Probe availability by attempting to subscribe and waiting for
-            // the first event. Accelerometer.isAvailableAsync() exists in
-            // newer Expo SDK versions but isn't universally available, so
-            // we fall back to an event-based check that works everywhere.
-            const available = await Promise.race([
-                new Promise<boolean>((resolve) => {
-                    // If isAvailableAsync exists, prefer it.
-                    if (typeof Accelerometer.isAvailableAsync === "function") {
-                        Accelerometer.isAvailableAsync()
-                            .then(resolve)
-                            .catch(() => resolve(false));
-                    } else {
-                        // Fallback: try subscribing; if we get an event it works.
-                        const probe = Accelerometer.addListener(() => {
-                            probe.remove();
-                            resolve(true);
-                        });
-                        Accelerometer.setUpdateInterval(UPDATE_INTERVAL_MS);
-                    }
-                }),
-                new Promise<false>((resolve) =>
-                    setTimeout(
-                        () => resolve(false),
-                        AVAILABILITY_CHECK_TIMEOUT_MS,
-                    ),
-                ),
-            ]);
+            const { status } = await Pedometer.requestPermissionsAsync();
 
+            if (status !== "granted") {
+                logger.warn("[StepCounter] Pedometer permission denied");
+                this.isAvailable = false;
+                return false;
+            }
+
+            const available = await Pedometer.isAvailableAsync();
             this.isAvailable = available;
 
             if (!available) {
                 logger.warn(
-                    "[StepCounter] Accelerometer not available on this device",
+                    "[StepCounter] Pedometer not available on this device",
                 );
             } else {
-                logger.log("[StepCounter] Accelerometer available");
+                logger.log("[StepCounter] Pedometer available");
             }
 
             return available;
@@ -99,7 +53,6 @@ class StepCounterService {
     // ======================
     // Start
     // ======================
-
     async start(): Promise<boolean> {
         logger.log("[StepCounter] start() called", {
             stepOffset: this.stepOffset,
@@ -107,45 +60,32 @@ class StepCounterService {
 
         this.stop();
         this.steps = this.stepOffset;
-        this.lastStepTime = 0;
 
         const available = await this.requestPermissions();
 
         if (!available) {
             logger.warn(
-                "[StepCounter] start() skipped — accelerometer not available",
+                "[StepCounter] start() skipped — pedometer not available",
             );
             return false;
         }
 
         try {
-            Accelerometer.setUpdateInterval(UPDATE_INTERVAL_MS);
+            this.subscription = Pedometer.watchStepCount(({ steps }) => {
+                // steps from watchStepCount is cumulative from when watch started
+                // so we add the offset for restored sessions
+                const total = this.stepOffset + steps;
+                this.steps = total;
 
-            this.subscription = Accelerometer.addListener(({ x, y, z }) => {
-                // Compute the total acceleration magnitude (in g).
-                // A flat, stationary phone reads ~1 g on the z-axis; walking
-                // produces a noticeable spike above that baseline.
-                const magnitude = Math.sqrt(x * x + y * y + z * z);
+                logger.log("[StepCounter] Step detected", {
+                    steps,
+                    total,
+                });
 
-                const now = Date.now();
-
-                if (
-                    magnitude > STEP_THRESHOLD &&
-                    now - this.lastStepTime > STEP_COOLDOWN_MS
-                ) {
-                    this.lastStepTime = now;
-                    this.steps += 1;
-
-                    logger.log("[StepCounter] Step detected", {
-                        magnitude: magnitude.toFixed(3),
-                        total: this.steps,
-                    });
-
-                    this.emitToCallbacks(this.steps);
-                }
+                this.emitToCallbacks(total);
             });
 
-            logger.log("[StepCounter] Listening for steps via accelerometer");
+            logger.log("[StepCounter] Listening for steps via pedometer");
             return true;
         } catch (error) {
             logger.error("[StepCounter] Failed to start", {
@@ -156,15 +96,10 @@ class StepCounterService {
             return false;
         }
     }
-    async pause(): Promise<void> {
-        logger.log("[StepCounter] pause() called");
-        this.stop();
-    }
 
     // ======================
     // Stop
     // ======================
-
     stop(): void {
         if (!this.subscription) {
             logger.log("[StepCounter] stop() called — no active subscription");
@@ -179,15 +114,22 @@ class StepCounterService {
             });
         } finally {
             this.subscription = null;
-            this.resetSeed();
             logger.log("[StepCounter] Stopped", { finalSteps: this.steps });
         }
     }
 
     // ======================
+    // Reset
+    // ======================
+    reset(): void {
+        this.steps = 0;
+        this.stepOffset = 0;
+        logger.log("[StepCounter] Reset");
+    }
+
+    // ======================
     // Seed (crash restore)
     // ======================
-
     seedSteps(restoredSteps: number): void {
         this.stepOffset = restoredSteps;
         logger.log("[StepCounter] Step seed set", {
@@ -195,14 +137,9 @@ class StepCounterService {
         });
     }
 
-    private resetSeed(): void {
-        this.stepOffset = 0;
-    }
-
     // ======================
     // Getters
     // ======================
-
     getSteps(): number {
         return this.steps;
     }
@@ -214,7 +151,6 @@ class StepCounterService {
     // ======================
     // Callbacks
     // ======================
-
     private emitToCallbacks(totalSteps: number): void {
         this.stepCallbacks.forEach((cb) => {
             try {
@@ -251,7 +187,6 @@ class StepCounterService {
     // ======================
     // Debug / Status
     // ======================
-
     getStatus() {
         return {
             isAvailable: this.isAvailable,
