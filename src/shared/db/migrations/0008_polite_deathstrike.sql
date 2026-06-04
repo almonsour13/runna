@@ -1,1 +1,0 @@
-ALTER TABLE `schedule` DROP COLUMN `repeat_type`;

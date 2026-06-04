@@ -129,7 +129,7 @@ export default function RecordSummary() {
                             onPress={() => setSelectedActiveStat(stat.label)}
                             className="flex-1 justify-center items-center"
                         >
-                            <ColView className="">
+                            <ColView className="items-center">
                                 <RowView className="items-end">
                                     <Text className="text-2xl leading-4 font-medium ">
                                         {stat.value}

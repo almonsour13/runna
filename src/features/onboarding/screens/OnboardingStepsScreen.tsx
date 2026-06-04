@@ -40,7 +40,7 @@ export default function OnboardingStepsScreen() {
         weight: 65,
         height: 165,
         gender: "male",
-        goal: 0,
+        goal: 5000,
     });
     const [permissions, setPermissions] = useState<Permissions>({
         location: "idle",
@@ -54,6 +54,7 @@ export default function OnboardingStepsScreen() {
     const flatListRef = useRef<FlatList>(null);
     const isFirstStep = index === 0;
     const isLastStep = index === ONBOARDING_STEPS.length - 1;
+    const step = ONBOARDING_STEPS[index];
 
     const nextStep = () => {
         if (index < ONBOARDING_STEPS.length - 1) {
@@ -169,6 +170,7 @@ export default function OnboardingStepsScreen() {
                             case "Profile":
                                 return (
                                     <ProfileSteps
+                                        step={step}
                                         profile={profile}
                                         setProfile={setProfile}
                                     />
@@ -176,6 +178,7 @@ export default function OnboardingStepsScreen() {
                             case "Permission":
                                 return (
                                     <PermissionSteps
+                                        step={step}
                                         permissions={permissions}
                                         setPermissions={setPermissions}
                                     />

@@ -3,7 +3,7 @@ import Card from "@/shared/components/ui/Card";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { NavigationProp } from "@/shared/types/type";
-import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
+import { convertMtoKm } from "@/shared/utils/convert";
 import { formatDurationReadable, formatPace } from "@/shared/utils/format";
 import { useNavigation } from "@react-navigation/native";
 import { format } from "date-fns";
@@ -15,23 +15,23 @@ export default function StatisticPersonalBests() {
     const navigation = useNavigation<NavigationProp>();
     const { activities, isLoading } = useStatisticContext();
 
-    const { bestDistance, bestDuration, bestCalories, bestPace } =
+    const { longestDistance, longestDuration, mostCalories, bestPace } =
         useMemo(() => {
             if (!activities.length)
                 return {
-                    bestDistance: null,
-                    bestDuration: null,
-                    bestCalories: null,
+                    longestDistance: null,
+                    longestDuration: null,
+                    mostCalories: null,
                     bestPace: null,
                 };
 
-            const bestDistance = activities.reduce((a, b) =>
+            const longestDistance = activities.reduce((a, b) =>
                 a.distance > b.distance ? a : b,
             );
-            const bestDuration = activities.reduce((a, b) =>
+            const longestDuration = activities.reduce((a, b) =>
                 a.duration > b.duration ? a : b,
             );
-            const bestCalories = activities.reduce((a, b) =>
+            const mostCalories = activities.reduce((a, b) =>
                 a.calories > b.calories ? a : b,
             );
             const bestPace =
@@ -42,30 +42,32 @@ export default function StatisticPersonalBests() {
                         activities[0],
                     ) ?? null;
 
-            return { bestDistance, bestDuration, bestCalories, bestPace };
+            return { longestDistance, longestDuration, mostCalories, bestPace };
         }, [activities]);
-    if (!isLoading && (!bestDistance || !bestDuration || !bestCalories))
+    if (!isLoading && (!longestDistance || !longestDuration || !mostCalories))
         return null;
 
     const formattedDuration = formatDurationReadable(
-        convertMsToS(bestDuration?.duration ?? 0),
+        longestDuration?.duration ?? 0,
     );
     const stats = [
         {
-            id: bestDistance?.id ?? "",
+            id: longestDistance?.id ?? "",
             key: "distance",
             label: "Longest Distance",
             value: [
                 {
-                    value: convertMtoKm(bestDistance?.distance ?? 0).toFixed(2),
+                    value: convertMtoKm(longestDistance?.distance ?? 0).toFixed(
+                        2,
+                    ),
                     unit: "km",
                 },
             ],
-            date: bestDistance?.createdAt ?? null,
+            date: longestDistance?.createdAt ?? null,
             icon: "navigate",
         },
         {
-            id: bestDuration?.id ?? "",
+            id: longestDuration?.id ?? "",
             key: "duration",
             label: "Longest Duration",
 
@@ -79,20 +81,20 @@ export default function StatisticPersonalBests() {
                     unit: formattedDuration.value[1].unit,
                 },
             ],
-            date: bestDuration?.createdAt ?? null,
+            date: longestDuration?.createdAt ?? null,
             icon: "time",
         },
         {
-            id: bestCalories?.id ?? "",
+            id: mostCalories?.id ?? "",
             key: "calories",
             label: "Most Calories",
             value: [
                 {
-                    value: `${(bestCalories?.calories ?? 0).toFixed(0)}`,
+                    value: `${(mostCalories?.calories ?? 0).toFixed(0)}`,
                     unit: "kcal",
                 },
             ],
-            date: bestCalories?.createdAt ?? null,
+            date: mostCalories?.createdAt ?? null,
             icon: "flame",
         },
         {
@@ -128,7 +130,7 @@ export default function StatisticPersonalBests() {
                                   })
                               }
                           >
-                              <Card className="flex-1">
+                              <Card>
                                   <RowView className="justify-between">
                                       <ColView>
                                           <RowView className="gap-2 items-center">

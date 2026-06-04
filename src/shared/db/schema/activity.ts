@@ -16,12 +16,7 @@ export const activity = sqliteTable("activity", {
     goal: integer("goal").notNull().default(0),
     type: text("type").$type<ActivityType>().notNull(),
     status: text("status").notNull().default("inProgress"),
-
-    isImported: integer("is_imported", { mode: "boolean" })
-        .notNull()
-        .default(false),
-    importedAt: integer("imported_at", { mode: "timestamp" }),
-
+    source: text("source").notNull().default("manual"),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });

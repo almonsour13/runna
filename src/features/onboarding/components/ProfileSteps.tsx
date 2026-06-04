@@ -16,9 +16,11 @@ const { width } = Dimensions.get("window");
 export default function ProfileSteps({
     profile,
     setProfile,
+    step,
 }: {
     profile: Profile;
     setProfile: React.Dispatch<React.SetStateAction<Profile>>;
+    step: string;
 }) {
     const ageDrawerRef = useRef<DrawerHandle>(null);
     const genderDrawerRef = useRef<DrawerHandle>(null);

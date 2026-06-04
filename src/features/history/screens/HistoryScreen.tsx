@@ -103,7 +103,7 @@ export default function HistoryScreen() {
                 ListHeaderComponent={HeaderComponent}
                 ListFooterComponent={
                     isFetchingNextPage ? (
-                        <ColView className="px-4 gap-2">
+                        <ColView className="px-4 gap-1">
                             {Array.from({ length: PAGE_LIMIT }).map((_, i) => (
                                 <Card key={i} className="h-22" />
                             ))}
@@ -118,7 +118,7 @@ export default function HistoryScreen() {
                 }
                 ListEmptyComponent={
                     isLoading ? (
-                        <ColView className="px-4 gap-2">
+                        <ColView className="px-4 gap-1">
                             {Array.from({ length: PAGE_LIMIT }).map((_, i) => (
                                 <Card key={i} className="h-22" />
                             ))}

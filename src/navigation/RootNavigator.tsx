@@ -2,46 +2,25 @@ import RecordScreen from "@/features/record/screens/RecordScreen";
 import ScheduleScreen from "@/features/schedule/screens/ScheduleScreen";
 import SplashScreen from "@/screens/SplashScreen";
 import { useOnboardingContext } from "@/shared/context/OnboardingContext";
-import { db } from "@/shared/db";
-import migrations from "@/shared/db/migrations/migrations";
 import { useAppInit } from "@/shared/hooks/use-app-init";
 import { RootStackParamList } from "@/shared/types/type";
-import {
-    DMSans_400Regular,
-    DMSans_500Medium,
-    DMSans_600SemiBold,
-    DMSans_700Bold,
-    useFonts,
-} from "@expo-google-fonts/dm-sans";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import ActivityDetailsNavigator from "./ActivityDetailsNavigator";
 import MainNavigator from "./MainNavigator";
 import OnboardingNavigator from "./OnboardingNavigator";
 import ProfileNavigator from "./ProfileNavigator";
 import SettingsNavigator from "./SettingsNavigator";
-// import "@/shared/db/seed/activity.seed";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
     const { isOnboarded } = useOnboardingContext();
-    const { success } = useMigrations(db, migrations);
-    const [loaded] = useFonts({
-        DMSans_400Regular,
-        DMSans_500Medium,
-        DMSans_600SemiBold,
-        DMSans_700Bold,
-    });
-    const { isLoading } = useAppInit();
-
-    const isReady = loaded && success && !isLoading;
+    const { isReady } = useAppInit();
 
     if (!isReady) {
         return <SplashScreen />;
     }
-
     return (
         <NavigationContainer>
             <Stack.Navigator

@@ -156,20 +156,9 @@ class StepCounterService {
             return false;
         }
     }
-
-    // ======================
-    // Seed (crash restore)
-    // ======================
-
-    seedSteps(restoredSteps: number): void {
-        this.stepOffset = restoredSteps;
-        logger.log("[StepCounter] Step seed set", {
-            stepOffset: this.stepOffset,
-        });
-    }
-
-    private resetSeed(): void {
-        this.stepOffset = 0;
+    async pause(): Promise<void> {
+        logger.log("[StepCounter] pause() called");
+        this.stop();
     }
 
     // ======================
@@ -193,6 +182,21 @@ class StepCounterService {
             this.resetSeed();
             logger.log("[StepCounter] Stopped", { finalSteps: this.steps });
         }
+    }
+
+    // ======================
+    // Seed (crash restore)
+    // ======================
+
+    seedSteps(restoredSteps: number): void {
+        this.stepOffset = restoredSteps;
+        logger.log("[StepCounter] Step seed set", {
+            stepOffset: this.stepOffset,
+        });
+    }
+
+    private resetSeed(): void {
+        this.stepOffset = 0;
     }
 
     // ======================

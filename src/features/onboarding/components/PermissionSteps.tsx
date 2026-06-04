@@ -34,9 +34,11 @@ function StatusIcon({ status }: { status: PermissionStatus }) {
 }
 
 export default function PermissionSteps({
+    step,
     permissions,
     setPermissions,
 }: {
+    step: string;
     permissions: Permissions;
     setPermissions: React.Dispatch<React.SetStateAction<Permissions>>;
 }) {
@@ -74,9 +76,11 @@ export default function PermissionSteps({
                       : "denied",
             });
         }
-
-        requestAllPermissions();
-    }, []);
+        if (step === "Permission") {
+            requestAllPermissions();
+            console.log("Requesting permissions...");
+        }
+    }, [step]);
 
     const permissionsList = [
         {

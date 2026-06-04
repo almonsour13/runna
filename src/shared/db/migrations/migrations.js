@@ -1,38 +1,12 @@
 // This file is required for Expo/React Native SQLite migrations - https://orm.drizzle.team/quick-sqlite/expo
 
 import journal from './meta/_journal.json';
-import m0000 from './0000_pink_quentin_quire.sql';
-import m0001 from './0001_complex_naoko.sql';
-import m0002 from './0002_nasty_namorita.sql';
-import m0003 from './0003_burly_sugar_man.sql';
-import m0004 from './0004_white_lila_cheney.sql';
-import m0005 from './0005_living_pestilence.sql';
-import m0006 from './0006_sudden_ghost_rider.sql';
-import m0007 from './0007_dark_proudstar.sql';
-import m0008 from './0008_polite_deathstrike.sql';
-import m0009 from './0009_third_matthew_murdock.sql';
-import m0010 from './0010_mixed_blue_blade.sql';
-import m0011 from './0011_jazzy_cloak.sql';
-import m0012 from './0012_crazy_hammerhead.sql';
-import m0013 from './0013_special_moon_knight.sql';
+import m0000 from './0000_pink_joystick.sql';
 
   export default {
     journal,
     migrations: {
-      m0000,
-m0001,
-m0002,
-m0003,
-m0004,
-m0005,
-m0006,
-m0007,
-m0008,
-m0009,
-m0010,
-m0011,
-m0012,
-m0013
+      m0000
     }
   }
   

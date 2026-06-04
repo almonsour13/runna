@@ -21,7 +21,10 @@ import { coordinateService } from "./storage/coordinates.service";
 import { profileService } from "./storage/profile.service";
 import { StorageService } from "./storage/storage.service";
 
-export type DraftActivity = Omit<Activity, "isImported" | "importedAt">;
+export type DraftActivity = Omit<
+    Activity,
+    "isImported" | "importedAt" | "source"
+>;
 
 type RecordActivity = {
     id: string;
@@ -167,6 +170,11 @@ class RecordActivityService {
     private async startStepCounter(): Promise<void> {
         // Always clear any previous listener before registering a new one.
         this.stopStepCounter();
+        // Seed the offset with whatever is already on this.activity.steps.
+        // For a fresh activity that is 0. For a restored session it is the
+        // count that was persisted before the crash, so new steps accumulate
+        // on top rather than overwriting it.
+        stepCounterService.seedSteps(this.activity?.steps ?? 0);
 
         const available = await stepCounterService.start();
 
@@ -176,12 +184,6 @@ class RecordActivityService {
             );
             return;
         }
-
-        // Seed the offset with whatever is already on this.activity.steps.
-        // For a fresh activity that is 0. For a restored session it is the
-        // count that was persisted before the crash, so new steps accumulate
-        // on top rather than overwriting it.
-        stepCounterService.seedSteps(this.activity?.steps ?? 0);
 
         this.stepListener = stepCounterService.onStepUpdate((totalSteps) => {
             if (!this.activity) return;

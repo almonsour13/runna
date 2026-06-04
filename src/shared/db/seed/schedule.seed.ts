@@ -1,10 +1,10 @@
-import { ACTIVITY_TYPE } from "@/shared/constant/constant.js";
-import { db } from "@/shared/db/index.js";
-import { schedule } from "@/shared/db/schema/schedule.js";
-import { notificationService } from "@/shared/services/notification/notification.service.js";
-import { Schedule } from "@/shared/types/type.js";
-import { logger } from "@/shared/utils/logger.js";
-import { generateId } from "@/shared/utils/utils.js";
+import { ACTIVITY_TYPE } from "@/shared/constant/constant";
+import { db } from "@/shared/db/index";
+import { schedule } from "@/shared/db/schema/schedule";
+import { notificationService } from "@/shared/services/notification/notification.service";
+import { Schedule } from "@/shared/types/type";
+import { logger } from "@/shared/utils/logger";
+import { generateId } from "@/shared/utils/utils";
 
 function random(min: number, max: number) {
     return Math.random() * (max - min) + min;
@@ -97,7 +97,7 @@ export const seedSchedule = async ({ count = 10 }: { count?: number } = {}) => {
 
     logger.log("[Schedule Seed] seeding complete");
 };
-seedSchedule({ count: 10 }).catch((err) => {
-    logger.error("[Schedule Seed] seeding failed", err);
-    process.exit(1);
-});
+// seedSchedule({ count: 10 }).catch((err) => {
+//     logger.error("[Schedule Seed] seeding failed", err);
+//     process.exit(1);
+// });

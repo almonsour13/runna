@@ -4,9 +4,7 @@ export default defineConfig({
     schema: "./src/shared/db/schema/index.ts",
     out: "./src/shared/db/migrations",
     dialect: "sqlite",
-    dbCredentials: {
-        url: "app.db",
-    },
+    driver: "expo",
     verbose: true,
     strict: true,
 });

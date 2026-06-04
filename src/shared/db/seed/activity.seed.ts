@@ -1,5 +1,6 @@
 import { Coordinate } from "@/shared/types/type";
 import { generateId } from "@/shared/utils/utils";
+import { desc } from "drizzle-orm";
 import { db } from "..";
 import { activity, coordinate } from "../schema";
 
@@ -100,7 +101,6 @@ export const seedActivity = async ({
         day.setDate(day.getDate() + 1)
     ) {
         const sessionCount = randomInt(sessionMinPerDay, sessionMaxPerDay);
-        const isImportedBatch = false;
 
         for (let i = 0; i < sessionCount; i++) {
             const type = Math.random() > 0.5 ? "walk" : "run";
@@ -157,8 +157,7 @@ export const seedActivity = async ({
                     steps,
                     type,
                     status: "completed",
-                    isImported: isImportedBatch,
-                    importedAt: isImportedBatch ? new Date(start) : null,
+                    source: "seed",
                     createdAt: start,
                     updatedAt: start,
                 })
@@ -179,17 +178,81 @@ export const seedActivity = async ({
     }
     console.log("[Seed] seeding complete");
 };
-seedActivity({
-    days: 30,
-    goal: 5000,
-    sessionMinPerDay: 1,
-    sessionMaxPerDay: 3,
-})
-    .then(() => {
-        console.log("🌱 Seed complete");
-        process.exit(0);
-    })
-    .catch((error) => {
-        console.error("❌ Seed failed:", error);
-        process.exit(1);
+
+export const seedWithRangeFromLastRecentActivityToNow = async ({
+    goal = 5000,
+    sessionMinPerDay = 1,
+    sessionMaxPerDay = 3,
+} = {}) => {
+    const latest = await db
+        .select()
+        .from(activity)
+        .orderBy(desc(activity.startTime))
+        .limit(1)
+        .get();
+
+    // No existing activities
+    if (!latest) {
+        console.log("[Seed] No activities found, seeding 30 days");
+
+        await seedActivity({
+            days: 30,
+            goal,
+            sessionMinPerDay,
+            sessionMaxPerDay,
+        });
+
+        return;
+    }
+
+    const lastDate = new Date(latest.startTime);
+    const now = new Date();
+
+    const diffMs = now.getTime() - lastDate.getTime();
+    const daysToSeed = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (daysToSeed <= 0) {
+        console.log("[Seed] Database already up to date");
+        return;
+    }
+
+    console.log(
+        `[Seed] Found latest activity on ${lastDate.toISOString()}, seeding ${daysToSeed} missing days`,
+    );
+
+    await seedActivity({
+        days: daysToSeed,
+        goal,
+        sessionMinPerDay,
+        sessionMaxPerDay,
     });
+};
+
+// seedActivity({
+//     days: 30,
+//     goal: 5000,
+//     sessionMinPerDay: 1,
+//     sessionMaxPerDay: 3,
+// })
+//     .then(() => {
+//         console.log("🌱 Seed complete");
+//         process.exit(0);
+//     })
+//     .catch((error) => {
+//         console.error("❌ Seed failed:", error);
+//         process.exit(1);
+//     });
+
+// seedWithRangeFromLastRecentActivityToNow({
+//     goal: 5000,
+//     sessionMinPerDay: 1,
+//     sessionMaxPerDay: 3,
+// })
+//     .then(() => {
+//         console.log("🌱 Seed complete");
+//         process.exit(0);
+//     })
+//     .catch((error) => {
+//         console.error("❌ Seed failed:", error);
+//         process.exit(1);
+//     });
