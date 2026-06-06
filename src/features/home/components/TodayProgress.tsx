@@ -5,11 +5,11 @@ import ActivityGroupDrawer, {
 import Card from "@/shared/components/ui/Card";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
+import { useFormatMetrics } from "@/shared/hooks/use-format-metrics";
 import { activityService } from "@/shared/services/storage/activity.service";
 import { cn } from "@/shared/utils/cn";
-import { computeStats } from "@/shared/utils/compute";
+import { computeMetrics } from "@/shared/utils/compute";
 import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
-import { formatStats } from "@/shared/utils/format";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useMemo, useRef } from "react";
@@ -55,14 +55,14 @@ export default function TodayProgress() {
         });
 
     const { distance, calories, duration, goal, pace, speed, steps } =
-        computeStats(activities);
+        computeMetrics(activities);
 
     const {
         distance: prevDistance,
         calories: prevCalories,
         duration: prevDuration,
         steps: prevSteps,
-    } = computeStats(previousActivities);
+    } = computeMetrics(previousActivities);
 
     const distanceKm = convertMtoKm(distance);
     const durationSec = convertMsToS(duration);
@@ -76,19 +76,19 @@ export default function TodayProgress() {
 
     const getChanges = (label: string) => {
         switch (label) {
-            case "Distance":
+            case "distance":
                 return distanceChange;
-            case "Duration":
+            case "duration":
                 return durationChange;
-            case "Calories":
+            case "calories":
                 return caloriesChange;
-            case "Steps":
+            case "steps":
                 return stepsChange;
             default:
                 return null;
         }
     };
-    const stats = formatStats({
+    const stats = useFormatMetrics({
         distance,
         duration,
         calories,
@@ -133,7 +133,7 @@ export default function TodayProgress() {
                         {isLoading || isPreviousLoading
                             ? Array.from({ length: 4 }).map((_, i) => (
                                   <Card
-                                      className="flex-1 min-w-[45%] gap-1 h-24"
+                                      className="flex-1 min-w-[45%] gap-1 h-20"
                                       key={i}
                                   />
                               ))
@@ -144,10 +144,10 @@ export default function TodayProgress() {
                                   >
                                       <ColView>
                                           <RowView className="justify-between">
-                                              <RowView className="items-center">
+                                              <RowView className="gap-1 items-center">
                                                   <Icon
                                                       name={stat.icon}
-                                                      size={11}
+                                                      size={12}
                                                       className="text-primary"
                                                   />
                                                   <Text className="text-xs text-muted-foreground">
@@ -160,7 +160,7 @@ export default function TodayProgress() {
                                                           {(() => {
                                                               const change =
                                                                   getChanges(
-                                                                      stat.label,
+                                                                      stat.key,
                                                                   );
                                                               if (!change)
                                                                   return null;
@@ -219,7 +219,7 @@ export default function TodayProgress() {
                                                   <Text
                                                       key={i}
                                                       className={cn(
-                                                          "text-3xl font-medium",
+                                                          "text-2xl font-medium",
                                                       )}
                                                   >
                                                       {v.value}

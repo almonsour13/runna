@@ -42,7 +42,8 @@ class NotificationService {
                 `[Notification] scheduleNotification → start: "${schedule.title}" (id: ${schedule.id})`,
             );
 
-            if (schedule.status !== "active") return;
+            if (schedule.status !== "active" || !schedule.notificationEnabled)
+                return;
 
             const repeatDays: number[] = schedule.repeatDays
                 ? JSON.parse(schedule.repeatDays)

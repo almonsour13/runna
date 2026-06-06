@@ -7,9 +7,7 @@ import {
 } from "../types/type";
 import {
     computeCalories,
-    computePace,
-    computeSpeed,
-    computeTotalDistance,
+    computeTotalDistance
 } from "../utils/compute";
 import { convertMsToS } from "../utils/convert";
 import { logger } from "../utils/logger";
@@ -19,6 +17,7 @@ import { stepCounterService } from "./sensor/step-counter.service";
 import { activityService } from "./storage/activity.service";
 import { coordinateService } from "./storage/coordinates.service";
 import { profileService } from "./storage/profile.service";
+import { settingsService } from "./storage/settings.service";
 import { StorageService } from "./storage/storage.service";
 
 export type DraftActivity = Omit<
@@ -42,8 +41,6 @@ type LiveStats = {
     steps: number;
 };
 
-// FIX: Added a cap so transitions cannot lock the service forever if an async
-// operation (e.g. stopLocationUpdatesAsync) hangs and never resolves.
 const TRANSITION_TIMEOUT_MS = 10_000;
 
 class RecordActivityService {
@@ -64,10 +61,6 @@ class RecordActivityService {
     // ======================
     // Transition guard
     // ======================
-
-    // FIX: Centralised transition guard with a timeout so a hung async
-    // operation can never permanently lock the service. Returns a cleanup
-    // function that clears the timeout and releases the flag.
     private acquireTransition(caller: string): () => void {
         if (this.isTransitioning) {
             throw new Error(
@@ -92,17 +85,11 @@ class RecordActivityService {
     // ======================
     // State reset
     // ======================
-
-    // FIX: Shared helper to wipe in-memory state and clear subscriber sets.
-    // Calling this in stop/discard/restore-error paths prevents stale
-    // callbacks accumulating across activity sessions.
     private resetState(): void {
         this.activity = null;
         this.coordinates = [];
-        // Clear subscriber sets so stale callbacks from a previous session
-        // do not fire into the next one.
-        this.durationCallbacks.clear();
-        this.statsCallbacks.clear();
+        // this.durationCallbacks.clear();
+        // this.statsCallbacks.clear();
     }
 
     // ======================
@@ -132,14 +119,14 @@ class RecordActivityService {
                 const duration = this.computeDuration();
                 this.durationCallbacks.forEach((cb) => cb(duration));
 
-                if (this.activity) {
-                    const distance = computeTotalDistance(this.coordinates);
-                    const pace = computePace(distance, convertMsToS(duration));
-                    const steps = this.activity.steps;
-                    this.statsCallbacks.forEach((cb) =>
-                        cb({ distance, pace, steps }),
-                    );
-                }
+                // if (this.activity) {
+                //     const distance = computeTotalDistance(this.coordinates);
+                //     const pace = computePace(distance, convertMsToS(duration));
+                //     const steps = this.activity.steps;
+                //     this.statsCallbacks.forEach((cb) =>
+                //         cb({ distance, pace, steps }),
+                //     );
+                // }
             } catch (error) {
                 logger.error("[ActivityService] Error in interval:", error);
             }
@@ -155,25 +142,8 @@ class RecordActivityService {
     // ======================
     // Step counter
     // ======================
-
-    // Starts the pedometer and registers a listener that:
-    //   1. Writes the latest count into this.activity.steps (in-memory) so
-    //      the live-stats interval always has the current value.
-    //   2. Persists the updated RecordActivity to activityStorage after each
-    //      step event so a crash mid-activity doesn't lose the step count.
-    //      On restart, restore() reads activityStorage and gets the last
-    //      persisted steps back automatically — no extra restore logic needed.
-    //
-    // stepCounterService.start() returns false (without throwing) when the
-    // hardware is unavailable — we log a warning and continue so the
-    // activity still works, just without step data.
     private async startStepCounter(): Promise<void> {
-        // Always clear any previous listener before registering a new one.
         this.stopStepCounter();
-        // Seed the offset with whatever is already on this.activity.steps.
-        // For a fresh activity that is 0. For a restored session it is the
-        // count that was persisted before the crash, so new steps accumulate
-        // on top rather than overwriting it.
         stepCounterService.seedSteps(this.activity?.steps ?? 0);
 
         const available = await stepCounterService.start();
@@ -188,15 +158,8 @@ class RecordActivityService {
         this.stepListener = stepCounterService.onStepUpdate((totalSteps) => {
             if (!this.activity) return;
 
-            // 1. Keep the in-memory state current so the interval callback
-            //    and stop() both read the real value without extra lookups.
             this.activity.steps = totalSteps;
 
-            // 2. Persist asynchronously so a crash between step events loses
-            //    at most one step update rather than all steps since start.
-            //    Fire-and-forget is intentional — a failed write is logged
-            //    but must not throw into the pedometer callback or disrupt
-            //    the active recording.
             this.activityStorage.set(this.activity).catch((error) => {
                 logger.error(
                     "[ActivityService] Failed to persist step count — steps may be lost on crash",
@@ -218,8 +181,6 @@ class RecordActivityService {
     }
 
     private stopStepCounter(): void {
-        // Unregister our callback first so no more updates arrive after
-        // stepCounterService.stop() tears down the OS subscription.
         if (this.stepListener) {
             this.stepListener();
             this.stepListener = null;
@@ -277,7 +238,6 @@ class RecordActivityService {
                     stack: (error as Error)?.stack,
                 },
             );
-            // Don't throw — allow activity to continue without location tracking.
         }
     }
 
@@ -300,9 +260,6 @@ class RecordActivityService {
     // Start
     // ======================
     async start(type: ActivityType | null): Promise<void> {
-        // FIX: Replaced inline isTransitioning flag manipulation with
-        // acquireTransition(), which also enforces a timeout so a hung
-        // async op can never permanently lock the service.
         const release = this.acquireTransition("start");
         logger.log("[ActivityService] start() called", { type });
 
@@ -330,8 +287,6 @@ class RecordActivityService {
                 type: this.activity.type,
             });
 
-            // ✅ Register listener BEFORE locationService.start() so the
-            // seeded coord emitted inside start() is captured immediately.
             await this.startLocationListener();
             await locationService.start();
 
@@ -350,9 +305,6 @@ class RecordActivityService {
             this.stopStepCounter();
             await this.stopLocationListener();
 
-            // FIX: Guard delete with a null check — if this.activity was
-            // never fully initialized the id would be undefined, and passing
-            // an empty string to delete is a silent no-op at best.
             if (this.activity?.id) {
                 await activityService.delete(this.activity.id);
             }
@@ -389,9 +341,6 @@ class RecordActivityService {
             this.stopInterval();
             this.stopStepCounter();
 
-            // NOTE: locationService.stop() tears down foreground/background
-            // tracking. stopLocationListener() removes our coord callback.
-            // Both are needed — stop() alone doesn't remove the callback.
             await locationService.stop();
             await this.stopLocationListener();
             await this.activityStorage.set(this.activity);
@@ -442,8 +391,6 @@ class RecordActivityService {
 
             this.activity.status = "active";
 
-            // ✅ Register listener BEFORE locationService.start() for the
-            // same reason as start() — seed coord must not be missed.
             await this.startLocationListener();
             await locationService.start();
             await this.startStepCounter();
@@ -488,11 +435,8 @@ class RecordActivityService {
             });
 
             const profile = await profileService.get();
-
-            // Reads the cumulative count kept in sync by the step
-            // counter callback. Zero if the pedometer was unavailable.
+            const settings = await settingsService.get();
             const finalSteps = this.activity.steps;
-
             const finalDuration = this.computeDuration();
             const finalCoordinates = this.coordinates;
             const startTime = new Date(this.activity.startTime);
@@ -500,11 +444,8 @@ class RecordActivityService {
 
             const distance = computeTotalDistance(finalCoordinates);
             const calories = computeCalories(distance, profile?.weight ?? 75);
-            const avgPace = computePace(distance, convertMsToS(finalDuration));
-            const avgSpeed = computeSpeed(
-                distance,
-                convertMsToS(finalDuration),
-            );
+            const avgPace = convertMsToS(finalDuration) / distance;
+            const avgSpeed = distance / convertMsToS(finalDuration);
 
             const newActivity: DraftActivity = {
                 id: this.activity.id,
@@ -515,7 +456,7 @@ class RecordActivityService {
                 calories,
                 avgPace,
                 avgSpeed,
-                goal: profile?.goal ?? 5000,
+                goal: settings?.preferences?.goal ?? 5000,
                 status: "completed",
                 type: this.activity.type ?? "run",
                 steps: finalSteps,
@@ -529,17 +470,9 @@ class RecordActivityService {
             this.stopStepCounter();
             await this.stopLocationListener();
 
-            // NOTE: locationService.stop() is intentionally not called here
-            // because the activity may have been paused before stop() was
-            // invoked — locationService tracking is already torn down at
-            // pause time. Calling stop() again on an idle locationService
-            // is harmless but would add noise to the logs.
-
             await activityService.update(this.activity.id, newActivity);
             await this.activityStorage.remove();
 
-            // FIX: Use resetState() instead of nulling fields individually,
-            // so subscriber sets are also cleared.
             this.resetState();
 
             logger.log("[ActivityService] Activity stopped", {
@@ -591,8 +524,6 @@ class RecordActivityService {
             });
             throw error;
         } finally {
-            // FIX: Use resetState() so subscriber sets are also cleared,
-            // matching the cleanup done in stop().
             this.resetState();
             release();
         }
@@ -606,11 +537,6 @@ class RecordActivityService {
         computedDuration: number;
         coordinates: RawCoordinate[];
     } | null> {
-        // NOTE: restore() is not guarded by acquireTransition() at its own
-        // level because it internally calls resume(), which acquires the
-        // guard itself. Wrapping the outer call too would deadlock.
-        // Callers should ensure restore() is not invoked concurrently with
-        // other transitions (it is only called once at app boot).
         logger.log("[ActivityService] restore() called");
 
         try {
@@ -641,7 +567,6 @@ class RecordActivityService {
                     { id: storedActivity.id },
                 );
 
-                // ✅ Force to paused so resume() guard doesn't early-return.
                 if (this.activity) {
                     this.activity.status = "paused";
                     this.activity.lastPauseTime =
@@ -649,7 +574,6 @@ class RecordActivityService {
                     await this.activityStorage.set(this.activity);
                 }
 
-                // ✅ Await resume so tracking is fully active before returning.
                 await this.resume();
             }
 
@@ -671,10 +595,6 @@ class RecordActivityService {
                 stack: (error as Error)?.stack,
             });
 
-            // FIX: Previously returned null while leaving this.activity
-            // partially initialized. Now resets state so the service is
-            // clean for a fresh start rather than being in a dirty state
-            // that the caller cannot detect.
             this.resetState();
             return null;
         }
@@ -683,11 +603,6 @@ class RecordActivityService {
     // ======================
     // Public subscription API
     // ======================
-
-    // NOTE: Subscribers are responsible for calling the returned unsubscribe
-    // function when their component unmounts. Failing to do so will leave
-    // stale callbacks in the sets until the next resetState() call (i.e.
-    // the next stop/discard/restore-error).
     onDurationUpdate(callback: (duration: number) => void): () => void {
         this.durationCallbacks.add(callback);
         return () => this.durationCallbacks.delete(callback);

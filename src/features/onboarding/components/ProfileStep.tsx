@@ -1,7 +1,6 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import AgeDrawer from "@/shared/components/drawer/AgeDrawer";
 import GenderDrawer from "@/shared/components/drawer/GenderDrawer";
-import GoalDrawer from "@/shared/components/drawer/GoalDrawer";
 import HeightDrawer from "@/shared/components/drawer/HeightDrawer";
 import WeightDrawer from "@/shared/components/drawer/WeightDrawer";
 import Card from "@/shared/components/ui/Card";
@@ -9,11 +8,11 @@ import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
 import { Profile } from "@/shared/types/type";
 import { formatCmToftIn } from "@/shared/utils/format";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Dimensions, TextInput, TouchableOpacity } from "react-native";
 
 const { width } = Dimensions.get("window");
-export default function ProfileSteps({
+export default function ProfileStep({
     profile,
     setProfile,
     step,
@@ -26,7 +25,6 @@ export default function ProfileSteps({
     const genderDrawerRef = useRef<DrawerHandle>(null);
     const heightDrawerRef = useRef<DrawerHandle>(null);
     const weightDrawerRef = useRef<DrawerHandle>(null);
-    const goalDrawerRef = useRef<DrawerHandle>(null);
 
     const handleChange = (key: keyof Profile, value: any) => {
         console.log(key, value);
@@ -37,6 +35,18 @@ export default function ProfileSteps({
             };
         });
     };
+
+    useEffect(() => {
+        if (__DEV__) {
+            setProfile({
+                name: "John Doe",
+                age: 25,
+                weight: 65,
+                height: 165,
+                gender: "male",
+            });
+        }
+    }, []);
 
     return (
         <>
@@ -125,21 +135,6 @@ export default function ProfileSteps({
                             </TouchableOpacity>
                         </ColView>
                     </RowView>
-
-                    <ColView>
-                        <Text>Goal</Text>
-                        <TouchableOpacity
-                            onPress={() => goalDrawerRef.current?.open()}
-                        >
-                            <Card className="h-16 justify-center">
-                                <Text>
-                                    {profile?.goal
-                                        ? `${profile.goal / 1000} km`
-                                        : "Select Goal"}
-                                </Text>
-                            </Card>
-                        </TouchableOpacity>
-                    </ColView>
                 </ColView>
             </ColView>
 
@@ -162,11 +157,6 @@ export default function ProfileSteps({
                 ref={weightDrawerRef}
                 value={profile?.weight}
                 onChange={(v) => handleChange("weight", v)}
-            />
-            <GoalDrawer
-                ref={goalDrawerRef}
-                value={profile?.goal}
-                onChange={(v) => handleChange("goal", v)}
             />
         </>
     );

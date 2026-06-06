@@ -2,9 +2,14 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
+import { useSettingsStore } from "@/shared/stores/use-settings-store";
 import { NavigationProp } from "@/shared/types/type";
-import { convertMtoKm } from "@/shared/utils/convert";
-import { formatDurationReadable, formatPace } from "@/shared/utils/format";
+import {
+    formatDistanceByUnit,
+    formatDurationReadable,
+    formatPaceByUnit,
+    formatSpeedByUnit,
+} from "@/shared/utils/format";
 import { useNavigation } from "@react-navigation/native";
 import { format } from "date-fns";
 import { useMemo } from "react";
@@ -13,43 +18,81 @@ import { useStatisticContext } from "../context/StatisticContext";
 
 export default function StatisticPersonalBests() {
     const navigation = useNavigation<NavigationProp>();
+    const preferences = useSettingsStore((s) => s.settings?.preferences);
+    const unit = preferences?.unit || "kilometers";
     const { activities, isLoading } = useStatisticContext();
 
-    const { longestDistance, longestDuration, mostCalories, bestPace } =
-        useMemo(() => {
-            if (!activities.length)
-                return {
-                    longestDistance: null,
-                    longestDuration: null,
-                    mostCalories: null,
-                    bestPace: null,
-                };
+    const {
+        longestDistance,
+        longestDuration,
+        mostCalories,
+        bestPace,
+        mostSteps,
+        fastestSpeed,
+    } = useMemo(() => {
+        if (!activities.length)
+            return {
+                longestDistance: null,
+                longestDuration: null,
+                mostCalories: null,
+                bestPace: null,
+            };
 
-            const longestDistance = activities.reduce((a, b) =>
-                a.distance > b.distance ? a : b,
-            );
-            const longestDuration = activities.reduce((a, b) =>
-                a.duration > b.duration ? a : b,
-            );
-            const mostCalories = activities.reduce((a, b) =>
-                a.calories > b.calories ? a : b,
-            );
-            const bestPace =
-                activities
-                    .filter((a) => (a.avgPace ?? 0) > 0)
-                    .reduce(
-                        (a, b) => (a.avgPace < b.avgPace ? a : b),
-                        activities[0],
-                    ) ?? null;
+        const longestDistance = activities.reduce((a, b) =>
+            a.distance > b.distance ? a : b,
+        );
+        const longestDuration = activities.reduce((a, b) =>
+            a.duration > b.duration ? a : b,
+        );
+        const mostCalories = activities.reduce((a, b) =>
+            a.calories > b.calories ? a : b,
+        );
+        const bestPace =
+            activities
+                .filter((a) => (a.avgPace ?? 0) > 0)
+                .reduce(
+                    (a, b) => (a.avgPace < b.avgPace ? a : b),
+                    activities[0],
+                ) ?? null;
 
-            return { longestDistance, longestDuration, mostCalories, bestPace };
-        }, [activities]);
-    if (!isLoading && (!longestDistance || !longestDuration || !mostCalories))
+        const mostSteps = activities.reduce((a, b) =>
+            a.steps > b.steps ? a : b,
+        );
+        const fastestSpeed = activities.reduce((a, b) =>
+            a.avgSpeed > b.avgSpeed ? a : b,
+        );
+
+        return {
+            longestDistance,
+            longestDuration,
+            mostCalories,
+            bestPace,
+            mostSteps,
+            fastestSpeed,
+        };
+    }, [activities]);
+    if (
+        !isLoading &&
+        (!longestDistance ||
+            !longestDuration ||
+            !mostCalories ||
+            !bestPace ||
+            !mostSteps ||
+            !fastestSpeed)
+    )
         return null;
 
     const formattedDuration = formatDurationReadable(
         longestDuration?.duration ?? 0,
     );
+    const formattedDistance = formatDistanceByUnit(
+        longestDistance?.distance ?? 0,
+        unit,
+        false,
+    );
+    const formattedPace = formatPaceByUnit(bestPace?.avgPace ?? 0, unit);
+    const formattedSpeed = formatSpeedByUnit(fastestSpeed?.avgSpeed ?? 0, unit);
+
     const stats = [
         {
             id: longestDistance?.id ?? "",
@@ -57,10 +100,8 @@ export default function StatisticPersonalBests() {
             label: "Longest Distance",
             value: [
                 {
-                    value: convertMtoKm(longestDistance?.distance ?? 0).toFixed(
-                        2,
-                    ),
-                    unit: "km",
+                    value: formattedDistance.value,
+                    unit: formattedDistance.unit,
                 },
             ],
             date: longestDistance?.createdAt ?? null,
@@ -103,27 +144,53 @@ export default function StatisticPersonalBests() {
             label: "Best Pace",
             value: [
                 {
-                    value: formatPace(bestPace?.avgPace ?? 0),
-                    unit: "min/km",
+                    value: formattedPace.value,
+                    unit: formattedPace.unit,
                 },
             ],
             date: bestPace?.createdAt ?? null,
             icon: "timer",
+        },
+        {
+            id: mostSteps?.id ?? "",
+            key: "steps",
+            label: "Most Steps",
+            value: [
+                {
+                    value: mostSteps?.steps.toLocaleString() ?? 0,
+                    unit: " ",
+                },
+            ],
+            date: mostSteps?.createdAt ?? null,
+            icon: "footsteps",
+        },
+        {
+            id: fastestSpeed?.id ?? "",
+            key: "speed",
+            label: "Fastest Speed",
+            value: [
+                {
+                    value: formattedSpeed.value,
+                    unit: formattedSpeed.unit,
+                },
+            ],
+            date: fastestSpeed?.createdAt ?? null,
+            icon: "speedometer",
         },
     ];
 
     return (
         <ColView className="px-4 gap-1">
             <Text className="text-lg font-medium">Personal Bests</Text>
-            <ColView className="gap-1">
+            <RowView className="gap-1 flex-wrap">
                 {isLoading
-                    ? Array.from({ length: 4 }).map((_, i) => (
-                          <Card key={i} className="h-20" />
+                    ? Array.from({ length: 6 }).map((_, i) => (
+                          <Card key={i} className="flex-1 h-28 min-w-[45%]" />
                       ))
                     : stats.map((stat) => (
                           <TouchableOpacity
                               key={stat.label}
-                              className=""
+                              className="flex-1 min-w-[45%]"
                               onPress={() =>
                                   navigation.navigate("ActivityDetails", {
                                       activityId: stat.id,
@@ -133,21 +200,36 @@ export default function StatisticPersonalBests() {
                               <Card>
                                   <RowView className="justify-between">
                                       <ColView>
-                                          <RowView className="gap-2 items-center">
+                                          <RowView className="gap-1 items-center">
                                               <Icon
                                                   name={stat.icon}
                                                   size={12}
                                                   className="text-primary"
                                               />
-                                              <Text className="text-sm text-muted-foreground">
+                                              <Text className="text-xs text-muted-foreground">
                                                   {stat.label}
                                               </Text>
                                           </RowView>
-                                          <RowView className="gap-2 items-center">
+                                          <RowView>
+                                              {stat.value.map((v, i) => (
+                                                  <Text
+                                                      key={i}
+                                                      className="text-2xl font-medium leading-none"
+                                                  >
+                                                      {v.value}
+                                                      {stat.key !==
+                                                          "duration" && " "}
+                                                      <Text className="text-lg font-medium">
+                                                          {v.unit}
+                                                      </Text>
+                                                  </Text>
+                                              ))}
+                                          </RowView>
+                                          <RowView className="gap-1 items-center">
                                               <Icon
                                                   name="calendar"
                                                   size={10}
-                                                  className="text-primary"
+                                                  className="text-muted-foreground"
                                               />
                                               <Text className="text-xs text-muted-foreground">
                                                   {stat.date
@@ -159,26 +241,11 @@ export default function StatisticPersonalBests() {
                                               </Text>
                                           </RowView>
                                       </ColView>
-                                      <RowView>
-                                          {stat.value.map((v, i) => (
-                                              <Text
-                                                  key={i}
-                                                  className="text-2xl font-medium leading-none"
-                                              >
-                                                  {v.value}
-                                                  {stat.key !== "duration" &&
-                                                      " "}
-                                                  <Text className="text-lg font-medium">
-                                                      {v.unit}
-                                                  </Text>
-                                              </Text>
-                                          ))}
-                                      </RowView>
                                   </RowView>
                               </Card>
                           </TouchableOpacity>
                       ))}
-            </ColView>
+            </RowView>
         </ColView>
     );
 }

@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import { View } from "react-native";
 import { useStatisticContext } from "../context/StatisticContext";
 
-export default function StatisticTypeBreakdown() {
+export default function StatisticTypeDistribution() {
     const { activities, isLoading } = useStatisticContext();
 
     const breakdown = useMemo(() => {
@@ -40,7 +40,9 @@ export default function StatisticTypeBreakdown() {
 
     return (
         <ColView className="px-4 gap-1">
-            <Text className="text-lg font-medium">Activity Types</Text>
+            <Text className="text-lg font-medium">
+                Activity Types Distribution
+            </Text>
             {isLoading ? (
                 <Card className="h-28" />
             ) : (

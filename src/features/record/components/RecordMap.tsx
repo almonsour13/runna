@@ -1,16 +1,17 @@
 // RecordMap.tsx - bare minimum test
 import { useMapStyle } from "@/shared/hooks/use-map-style";
 import { useRecordStore } from "@/shared/stores/use-record.store";
+import { cn } from "@/shared/utils/cn";
 import { Camera, Map } from "@maplibre/maplibre-react-native";
 import { useEffect, useMemo, useRef } from "react";
-import { Animated, Easing, View } from "react-native";
+import { View } from "react-native";
 import { useMapControlStore } from "../stores/use-map-control.store";
 import MapControls from "./map/MapControls";
 import MapRouteLayer from "./map/MapRouteLayer";
 import MapStartMarker from "./map/MapStartMarker";
 import MapUserTracker from "./map/MapUserTracker";
 
-const MAP_HEIGHT = 340;
+const MAP_HEIGHT = 440;
 const DURATION = 500;
 
 export default function RecordMap() {
@@ -31,36 +32,6 @@ export default function RecordMap() {
         () => coordinates[coordinates.length - 1] ?? previewCoordinate,
         [coordinates, previewCoordinate],
     );
-
-    const animatedHeight = useRef(new Animated.Value(0)).current;
-    const animatedOpacity = useRef(new Animated.Value(0)).current;
-    const isFirstRender = useRef(true);
-
-    useEffect(() => {
-        if (isFirstRender.current) {
-            animatedHeight.setValue(isMapExpanded ? MAP_HEIGHT : 0);
-            animatedOpacity.setValue(isMapExpanded ? 1 : 0);
-            isFirstRender.current = false;
-            return;
-        }
-
-        Animated.parallel([
-            Animated.timing(animatedHeight, {
-                toValue: isMapExpanded ? MAP_HEIGHT : 0,
-                duration: DURATION,
-                easing: isMapExpanded
-                    ? Easing.out(Easing.cubic)
-                    : Easing.in(Easing.cubic),
-                useNativeDriver: false,
-            }),
-            Animated.timing(animatedOpacity, {
-                toValue: isMapExpanded ? 1 : 0,
-                duration: isMapExpanded ? DURATION : DURATION * 0.6,
-                easing: Easing.out(Easing.quad),
-                useNativeDriver: false,
-            }),
-        ]).start();
-    }, [isMapExpanded]);
 
     useEffect(() => {
         if (!isMapReady || !currentLocation) return;
@@ -88,15 +59,16 @@ export default function RecordMap() {
             duration: 500,
         });
     }, [currentLocation, isFollowingUser, isMapExpanded, isMapReady]);
+
     return (
         <>
             <View
                 style={{
                     width: "100%",
-                    height: MAP_HEIGHT,
                     overflow: "hidden",
                     position: "relative",
                 }}
+                className={cn(isMapExpanded ? "flex-1" : "hidden")}
             >
                 <Map
                     mapStyle={mapStyle}

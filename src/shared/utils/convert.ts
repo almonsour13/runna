@@ -7,6 +7,9 @@ export function convertSToMs(durationS: number) {
 export const convertMtoKm = (m: number) => {
     return m / 1000;
 };
+export const convertMtoMiles = (m: number) => {
+    return m / 1609.34;
+};
 export const convertKmToM = (km: number) => {
     return km * 1000;
 };

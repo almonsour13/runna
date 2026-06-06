@@ -13,7 +13,6 @@ import { useRef, useState } from "react";
 import { TextInput, TouchableOpacity } from "react-native";
 import AgeDrawer from "../../shared/components/drawer/AgeDrawer";
 import GenderDrawer from "../../shared/components/drawer/GenderDrawer";
-import GoalDrawer from "../../shared/components/drawer/GoalDrawer";
 import HeightDrawer from "../../shared/components/drawer/HeightDrawer";
 import WeightDrawer from "../../shared/components/drawer/WeightDrawer";
 
@@ -30,7 +29,6 @@ export default function ProfileEditScreen() {
             gender: null,
             height: 0,
             weight: 0,
-            goal: 0,
         },
     );
 
@@ -38,7 +36,6 @@ export default function ProfileEditScreen() {
     const genderDrawerRef = useRef<DrawerHandle>(null);
     const heightDrawerRef = useRef<DrawerHandle>(null);
     const weightDrawerRef = useRef<DrawerHandle>(null);
-    const goalDrawerRef = useRef<DrawerHandle>(null);
 
     const handleChange = (key: keyof Profile, value: any) => {
         setNewProfile((prev) => {
@@ -88,7 +85,7 @@ export default function ProfileEditScreen() {
 
     return (
         <>
-            <ColView className="flex-1 gap-8">
+            <ColView className="flex-1 gap-0">
                 <RowView className="p-4 justify-between items-center">
                     <RowView className="gap-4 items-center">
                         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -176,21 +173,6 @@ export default function ProfileEditScreen() {
                             </TouchableOpacity>
                         </ColView>
                     </RowView>
-
-                    <ColView>
-                        <Text>Goal</Text>
-                        <TouchableOpacity
-                            onPress={() => goalDrawerRef.current?.open()}
-                        >
-                            <Card className="h-16 justify-center">
-                                <Text>
-                                    {newProfile?.goal
-                                        ? `${newProfile.goal / 1000} km`
-                                        : "Select Goal"}
-                                </Text>
-                            </Card>
-                        </TouchableOpacity>
-                    </ColView>
                 </ColView>
 
                 <ColView className="flex-1 justify-end p-4 pb-8">
@@ -228,11 +210,6 @@ export default function ProfileEditScreen() {
                 ref={weightDrawerRef}
                 value={newProfile?.weight}
                 onChange={(v) => handleChange("weight", v)}
-            />
-            <GoalDrawer
-                ref={goalDrawerRef}
-                value={newProfile?.goal}
-                onChange={(v) => handleChange("goal", v)}
             />
         </>
     );

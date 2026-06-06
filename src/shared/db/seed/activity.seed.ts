@@ -1,4 +1,5 @@
 import { Coordinate } from "@/shared/types/type";
+import { convertMsToS } from "@/shared/utils/convert";
 import { generateId } from "@/shared/utils/utils";
 import { desc } from "drizzle-orm";
 import { db } from "..";
@@ -75,16 +76,16 @@ function generateEarthCoordinates(
 
     return coordinates;
 }
+// ... (keep your geographic calculations and generateEarthCoordinates unchanged)
 
 export const seedActivity = async ({
     days = 10,
     goal = 5000,
     sessionMinPerDay = 2,
     sessionMaxPerDay = 3,
+    restDayChance = 0,
 }) => {
     const now = new Date();
-    await db.delete(coordinate).run();
-    await db.delete(activity).run();
 
     const startDate = new Date();
     startDate.setDate(now.getDate() - days);
@@ -100,6 +101,10 @@ export const seedActivity = async ({
         day <= endOfToday;
         day.setDate(day.getDate() + 1)
     ) {
+        if (Math.random() < restDayChance) {
+            continue;
+        }
+
         const sessionCount = randomInt(sessionMinPerDay, sessionMaxPerDay);
 
         for (let i = 0; i < sessionCount; i++) {
@@ -115,7 +120,7 @@ export const seedActivity = async ({
             const distance =
                 type === "run"
                     ? randomInt(6000, 18000)
-                    : randomInt(3000, 12000);
+                    : randomInt(3000, 12000); // meters
 
             const startLat = baseLat + random(-0.01, 0.01);
             const startLng = baseLng + random(-0.01, 0.01);
@@ -133,13 +138,22 @@ export const seedActivity = async ({
             const end = new Date(lastTs);
 
             const durationMs = lastTs - firstTs;
-            const durationSec = durationMs / 1000;
-            const distanceKm = distance / 1000;
-            const avgSpeed = distanceKm / (durationSec / 3600);
-            const avgPace = durationSec / 60 / distanceKm;
+            const durationSeconds = convertMsToS(durationMs);
+
+            // ==========================================
+            // 🚨 CALCULATE RAW METRIC SENSOR BASE UNITS
+            // ==========================================
+
+            // Raw Pace: seconds per meter (Time / Distance)
+            const avgPace = distance > 0 ? durationSeconds / distance : 0;
+
+            // Raw Speed: meters per second (Distance / Time)
+            const avgSpeed =
+                durationSeconds > 0 ? distance / durationSeconds : 0;
+
             const calories =
                 type === "run" ? distance * 0.063 : distance * 0.04;
-            const stepLength = type === "run" ? 0.75 : 0.65; // meters per step
+            const stepLength = type === "run" ? 0.75 : 0.65;
             const steps = Math.round(distance / stepLength);
 
             const [act] = await db
@@ -148,11 +162,11 @@ export const seedActivity = async ({
                     id: generateId(),
                     startTime: start,
                     endTime: end,
-                    duration: durationMs,
-                    distance,
+                    duration: durationMs, // total raw elapsed ms
+                    distance, // total raw meters
                     calories,
-                    avgPace,
-                    avgSpeed,
+                    avgPace, // saved raw as seconds/meter
+                    avgSpeed, // saved raw as meters/second
                     goal,
                     steps,
                     type,
@@ -178,7 +192,6 @@ export const seedActivity = async ({
     }
     console.log("[Seed] seeding complete");
 };
-
 export const seedWithRangeFromLastRecentActivityToNow = async ({
     goal = 5000,
     sessionMinPerDay = 1,
@@ -227,21 +240,43 @@ export const seedWithRangeFromLastRecentActivityToNow = async ({
         sessionMaxPerDay,
     });
 };
+// (async () => {
+//     // Supposing your schema has a "source" field on the activity table,
+//     // and a relation or foreign key linking coordinates to activities.
 
-// seedActivity({
-//     days: 30,
-//     goal: 5000,
-//     sessionMinPerDay: 1,
-//     sessionMaxPerDay: 3,
-// })
-//     .then(() => {
-//         console.log("🌱 Seed complete");
-//         process.exit(0);
+//     // 1. Delete coordinates linked to non-manual activities
+//     await db
+//         .delete(coordinate)
+//         .where(
+//             inArray(
+//                 coordinate.activityId,
+//                 db
+//                     .select({ id: activity.id })
+//                     .from(activity)
+//                     .where(ne(activity.source, "manual")),
+//             ),
+//         )
+//         .run();
+
+//     // 2. Delete the activities themselves, protecting manual entries
+//     await db.delete(activity).where(ne(activity.source, "manual")).run();
+
+//     seedActivity({
+//         days: 30,
+//         goal: 5000,
+//         sessionMinPerDay: 1,
+//         sessionMaxPerDay: 3,
+//         // restDayChance: 0.3,
 //     })
-//     .catch((error) => {
-//         console.error("❌ Seed failed:", error);
-//         process.exit(1);
-//     });
+//         .then(() => {
+//             console.log("🌱 Seed complete");
+//             process.exit(0);
+//         })
+//         .catch((error) => {
+//             console.error("❌ Seed failed:", error);
+//             process.exit(1);
+//         });
+// })();
 
 // seedWithRangeFromLastRecentActivityToNow({
 //     goal: 5000,

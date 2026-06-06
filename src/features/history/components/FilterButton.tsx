@@ -17,7 +17,12 @@ export default function FilterButton({
 }) {
     return (
         <TouchableOpacity onPress={onPress} {...props} className={className}>
-            <Card className={cn("py-2 px-3", active && "bg-primary")}>
+            <Card
+                className={cn(
+                    "h-10 justify-center items-center py-0 px-3",
+                    active && "bg-primary",
+                )}
+            >
                 <Text
                     className={cn(
                         "text-sm",

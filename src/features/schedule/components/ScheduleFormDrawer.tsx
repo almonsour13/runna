@@ -39,6 +39,7 @@ const EMPTY_SCHEDULE = (): Schedule => ({
     type: "",
     repeatDays: "[]",
     status: "active",
+    notificationEnabled: true,
     createdAt: new Date(),
     updatedAt: new Date(),
 });
@@ -88,6 +89,7 @@ const ScheduleFormDrawer = forwardRef<
                 goal: data.goal,
                 type: data.type,
                 repeatDays: data.repeatDays,
+                notificationEnabled: data.notificationEnabled,
                 status: data.status,
                 createdAt: data.createdAt,
                 updatedAt: data.updatedAt,
@@ -136,7 +138,8 @@ const ScheduleFormDrawer = forwardRef<
           schedule?.goal !== data?.goal ||
           schedule?.type !== data?.type ||
           schedule?.repeatDays !== data?.repeatDays ||
-          schedule?.status !== data?.status
+          schedule?.status !== data?.status ||
+          schedule?.notificationEnabled !== data?.notificationEnabled
         : !!(
               schedule?.title &&
               schedule?.time &&
@@ -144,7 +147,8 @@ const ScheduleFormDrawer = forwardRef<
               schedule?.type &&
               schedule?.repeatDays &&
               repeatDaysArray.length > 0 &&
-              schedule?.status
+              schedule?.status &&
+              schedule?.notificationEnabled
           );
 
     const handleSubmit = async () => {
@@ -268,6 +272,16 @@ const ScheduleFormDrawer = forwardRef<
                                         "status",
                                         v ? "active" : "inactive",
                                     )
+                                }
+                            />
+                        </RowView>
+                        <RowView className="justify-between items-center">
+                            <Text>Enable Notification</Text>
+                            <Switch
+                                thumbColor="#02a963"
+                                value={schedule?.notificationEnabled === true}
+                                onValueChange={(v) =>
+                                    handleChange("notificationEnabled", v)
                                 }
                             />
                         </RowView>

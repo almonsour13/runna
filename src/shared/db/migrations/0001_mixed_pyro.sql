@@ -1,0 +1,1 @@
+ALTER TABLE `schedule` ADD `notification_enabled` integer DEFAULT true NOT NULL;

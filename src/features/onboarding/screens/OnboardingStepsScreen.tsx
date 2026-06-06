@@ -3,8 +3,10 @@ import Text from "@/shared/components/ui/Text";
 import { useOnboardingContext } from "@/shared/context/OnboardingContext";
 import { onboardingService } from "@/shared/services/storage/oboarding.service";
 import { profileService } from "@/shared/services/storage/profile.service";
+import { settingsService } from "@/shared/services/storage/settings.service";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
-import { NavigationProp, Profile } from "@/shared/types/type";
+import { useSettingsStore } from "@/shared/stores/use-settings-store";
+import { NavigationProp, Preferences, Profile } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useRef, useState } from "react";
@@ -15,12 +17,13 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import FinishSteps from "../components/FinishSteps";
-import PermissionSteps from "../components/PermissionSteps";
-import ProfileSteps from "../components/ProfileSteps";
+import FinishStep from "../components/FinishStep";
+import PermissionStep from "../components/PermissionStep";
+import PreferencesStep from "../components/PreferencesStep";
+import ProfileStep from "../components/ProfileStep";
 
 const { width } = Dimensions.get("window");
-const ONBOARDING_STEPS = ["Profile", "Permission", "Finish"];
+const ONBOARDING_STEPS = ["Profile", "Preferences", "Permission", "Finish"];
 
 type PermissionStatus = "idle" | "granted" | "denied";
 export type Permissions = {
@@ -29,18 +32,23 @@ export type Permissions = {
     photos: PermissionStatus;
     sensor: PermissionStatus;
 };
+
 export default function OnboardingStepsScreen() {
     const navigation = useNavigation<NavigationProp>();
     const { setIsOnboarded } = useOnboardingContext();
     const [index, setIndex] = useState(0);
     const [isFinishing, setIsFinishing] = useState(false);
     const [profile, setProfile] = useState<Profile>({
-        name: "asdasdasdas",
-        age: 25,
-        weight: 65,
+        name: "",
+        age: 0,
+        weight: 0,
         height: 165,
-        gender: "male",
-        goal: 5000,
+        gender: null,
+    });
+    const [preferences, setPreferences] = useState<Preferences>({
+        theme: "system",
+        unit: "kilometers",
+        goal: 0,
     });
     const [permissions, setPermissions] = useState<Permissions>({
         location: "idle",
@@ -50,7 +58,7 @@ export default function OnboardingStepsScreen() {
     });
 
     const setNewProfile = useProfileStore((s) => s.setProfile);
-
+    const setSettings = useSettingsStore((s) => s.setSettings);
     const flatListRef = useRef<FlatList>(null);
     const isFirstStep = index === 0;
     const isLastStep = index === ONBOARDING_STEPS.length - 1;
@@ -66,14 +74,14 @@ export default function OnboardingStepsScreen() {
             flatListRef.current?.scrollToIndex({ index: index - 1 });
         }
     };
-
     const isProfileValid =
         profile.name !== "" &&
         profile.age > 0 &&
         profile.weight > 0 &&
         profile.height > 0 &&
-        profile.gender !== null &&
-        profile.goal > 0;
+        profile.gender !== null;
+
+    const isPreferencesValid = preferences.goal > 0;
 
     const arePermissionsGranted = Object.values(permissions).every(
         (status) => status === "granted",
@@ -81,27 +89,28 @@ export default function OnboardingStepsScreen() {
 
     const canProceedToNextStep =
         (index === 0 && isProfileValid) ||
-        (index === 1 && arePermissionsGranted) ||
-        index === 2;
+        (index === 1 && isPreferencesValid) ||
+        (index === 2 && arePermissionsGranted) ||
+        index === 3;
 
     const finish = async () => {
-        if (!canProceedToNextStep) return;
+        if (!canProceedToNextStep || isFinishing) return;
         setIsFinishing(true);
-        await profileService
-            .save(profile)
-            .then(() => {
-                setNewProfile(profile);
-                onboardingService.completeOnboarding().then(() => {
-                    setIsOnboarded(true);
-                });
-                setTimeout(() => {
-                    navigation.navigate("Main");
-                    setIsFinishing(false);
-                }, 300);
-            })
-            .catch((e) => {
-                console.error("Failed to save profile", e);
-            });
+        try {
+            await profileService.save(profile);
+            await settingsService.save({ preferences });
+            await onboardingService.completeOnboarding();
+
+            setNewProfile(profile);
+            setSettings({ preferences });
+            setIsOnboarded(true);
+
+            navigation.navigate("Main");
+        } catch (e) {
+            console.error("[Onboarding] Failed to finish:", e);
+        } finally {
+            setIsFinishing(false);
+        }
     };
     return (
         <ColView className="flex-1 gap-8">
@@ -169,22 +178,30 @@ export default function OnboardingStepsScreen() {
                         switch (item) {
                             case "Profile":
                                 return (
-                                    <ProfileSteps
+                                    <ProfileStep
                                         step={step}
                                         profile={profile}
                                         setProfile={setProfile}
                                     />
                                 );
+                            case "Preferences":
+                                return (
+                                    <PreferencesStep
+                                        preferences={preferences}
+                                        setPreferences={setPreferences}
+                                        step={step}
+                                    />
+                                );
                             case "Permission":
                                 return (
-                                    <PermissionSteps
+                                    <PermissionStep
                                         step={step}
                                         permissions={permissions}
                                         setPermissions={setPermissions}
                                     />
                                 );
                             case "Finish":
-                                return <FinishSteps />;
+                                return <FinishStep />;
                             default:
                                 return null;
                         }
@@ -192,7 +209,7 @@ export default function OnboardingStepsScreen() {
                 />
             </View>
 
-            <RowView className="px-4 pb-12 gap-4">
+            <RowView className="px-4 pb-12">
                 {!isFirstStep ? (
                     <TouchableOpacity
                         onPress={prevStep}

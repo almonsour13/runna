@@ -1,13 +1,7 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Text from "@/shared/components/ui/Text";
 import { Coordinate } from "@/shared/types/type";
-import {
-    ActivityIndicator,
-    RefreshControl,
-    ScrollView,
-    View,
-} from "react-native";
-import ActivityDetailsEmptyState from "../components/ActivityDetailsEmptyState";
+import { RefreshControl, ScrollView } from "react-native";
 import ActivityDetailsHeader from "../components/ActivityDetailsHeader";
 import ActivityDetailsMap from "../components/ActivityDetailsMap";
 import ActivitySummary from "../components/ActivityDetailsSummary";
@@ -21,8 +15,7 @@ export type KmSplits = {
 }[];
 
 export default function ActivityDetailsScreen() {
-    const { activity, coordinates, isLoading, isRefreshing, refetch } =
-        useActivityDetailsContext();
+    const { isRefreshing, refetch } = useActivityDetailsContext();
     return (
         <ScrollView
             contentContainerStyle={{ flexGrow: 1 }}
@@ -30,24 +23,16 @@ export default function ActivityDetailsScreen() {
                 <RefreshControl refreshing={isRefreshing} onRefresh={refetch} />
             }
         >
-            {isLoading ? (
-                <View className="flex-1 items-center justify-center py-20">
-                    <ActivityIndicator size="large" />
-                </View>
-            ) : activity && coordinates.length > 0 ? (
-                <ColView className="relative flex-1 gap-0">
-                    <ActivityDetailsHeader />
-                    <ActivityDetailsMap />
-                    <ActivitySummary />
-                    <ColView className="hidden">
-                        <RowView className="px-4">
-                            <Text className="text-base">Media</Text>
-                        </RowView>
-                    </ColView>
+            <ColView className="relative flex-1 gap-0">
+                <ActivityDetailsHeader />
+                <ActivityDetailsMap />
+                <ActivitySummary />
+                <ColView className="hidden">
+                    <RowView className="px-4">
+                        <Text className="text-base">Media</Text>
+                    </RowView>
                 </ColView>
-            ) : (
-                <ActivityDetailsEmptyState />
-            )}
+            </ColView>
         </ScrollView>
     );
 }

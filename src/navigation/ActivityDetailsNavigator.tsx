@@ -1,6 +1,6 @@
 import ActivityDetailsProvider from "@/features/ActivityDetails/context/ActivityDetailsContext";
 import ActivityDetailsScreen from "@/features/ActivityDetails/screens/ActivityDetailsScreen";
-import ActivityDetailsShareScreen from "@/features/ActivityDetails/screens/ActivityDetailsShareScreen";
+import ActivityDetailsShareCardScreen from "@/features/ActivityDetails/screens/ActivityDetailsShareCardScreen";
 import SafeScreen from "@/shared/components/SafeScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
@@ -23,8 +23,8 @@ export default function ActivityDetailsNavigator() {
                         component={ActivityDetailsScreen}
                     />
                     <Stack.Screen
-                        name="ActivityDetailsShareScreen"
-                        component={ActivityDetailsShareScreen}
+                        name="ActivityDetailsShareCardScreen"
+                        component={ActivityDetailsShareCardScreen}
                     />
                 </Stack.Navigator>
             </SafeScreen>

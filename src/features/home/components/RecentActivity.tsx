@@ -7,7 +7,7 @@ import { activityService } from "@/shared/services/storage/activity.service";
 import { NavigationProp } from "@/shared/types/type";
 import { useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 
 export default function RecentActivities() {
     const navigation = useNavigation<NavigationProp>();
@@ -51,12 +51,14 @@ export default function RecentActivities() {
                     ))}
                 </ColView>
             ) : !hasActivities ? (
-                <ColView className="px-4 py-8 items-center gap-2">
-                    <Icon
-                        name="footsteps-outline"
-                        size={40}
-                        className="text-muted-foreground opacity-40"
-                    />
+                <ColView className="py-8 justify-center items-center gap-2">
+                    <View className="w-16 h-16 rounded-full bg-muted items-center justify-center">
+                        <Icon
+                            name="footsteps-outline"
+                            size={24}
+                            className="text-muted-foreground"
+                        />
+                    </View>
                     <Text className="text-base font-medium">
                         No activities yet
                     </Text>

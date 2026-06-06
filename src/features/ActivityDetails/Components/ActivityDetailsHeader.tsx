@@ -36,19 +36,6 @@ export default function ActivityDetailsHeader() {
                     <RowView className="gap-4">
                         <TouchableOpacity
                             onPress={() =>
-                                navigation.navigate(
-                                    "ActivityDetailsShareScreen" as never,
-                                )
-                            }
-                        >
-                            <Icon
-                                name="share-social"
-                                size={20}
-                                className="text-foreground"
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() =>
                                 activityActionDrawerRef.current?.openWithActivityId(
                                     activity.id,
                                 )
@@ -66,7 +53,9 @@ export default function ActivityDetailsHeader() {
             <ActivityActionDrawer
                 ref={activityActionDrawerRef}
                 hide_action={["view details"]}
-                onClose={() => navigation.goBack()}
+                onClose={(action) => {
+                    navigation.goBack();
+                }}
             />
         </>
     );

@@ -6,10 +6,11 @@ import ActivityGroupDrawer, {
 import Card from "@/shared/components/ui/Card";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
+import { useFormatMetrics } from "@/shared/hooks/use-format-metrics";
 import { activityService } from "@/shared/services/storage/activity.service";
 import { cn } from "@/shared/utils/cn";
-import { computeStats } from "@/shared/utils/compute";
-import { formatStats } from "@/shared/utils/format";
+import { computeMetrics } from "@/shared/utils/compute";
+import { convertMtoKm } from "@/shared/utils/convert";
 import { useQuery } from "@tanstack/react-query";
 import { addDays, format, isToday, startOfWeek } from "date-fns";
 import { useMemo, useRef } from "react";
@@ -17,29 +18,19 @@ import { TouchableOpacity, View } from "react-native";
 
 export default function WeekProgress() {
     const activityGrouperDrawer = useRef<ActivityGroupDrawerHandle>(null);
-    const today = useMemo(() => new Date(), []);
-    const weekStartDate = useMemo(
-        () => startOfWeek(today, { weekStartsOn: 0 }),
-        [today],
-    );
-    const weekEndDate = useMemo(
-        () => addDays(weekStartDate, 6),
-        [weekStartDate],
-    );
 
-    const {
-        data: activities = [],
-        isLoading,
-        error,
-    } = useQuery({
+    const { today, weekStartDate, weekEndDate } = useMemo(() => {
+        const today = new Date();
+        const weekStartDate = startOfWeek(today, { weekStartsOn: 0 });
+        const weekEndDate = addDays(weekStartDate, 6);
+        weekEndDate.setHours(23, 59, 59, 999);
+        return { today, weekStartDate, weekEndDate };
+    }, []);
+
+    const { data: activities = [], isLoading } = useQuery({
         queryKey: ["home", "week"],
-        queryFn: async () => {
-            const data = await activityService.getByDateRange(
-                weekStartDate,
-                weekEndDate,
-            );
-            return data;
-        },
+        queryFn: () =>
+            activityService.getByDateRange(weekStartDate, weekEndDate),
         staleTime: 0,
     });
 
@@ -53,15 +44,12 @@ export default function WeekProgress() {
             activityByWeekDay.get(dateKey)!.push(activity);
         });
 
-        const weekStartDate = startOfWeek(today, { weekStartsOn: 0 });
-
         return Array.from({ length: 7 }).map((_, index) => {
             const date = addDays(weekStartDate, index);
             const dateKey = date.toDateString();
             const dayActivities = activityByWeekDay.get(dateKey) ?? [];
-
-            const { distance, duration, calories } =
-                computeStats(dayActivities);
+            const { distance, duration, calories, steps } =
+                computeMetrics(dayActivities);
 
             return {
                 date,
@@ -69,117 +57,175 @@ export default function WeekProgress() {
                 totalDayDistance: distance,
                 totalDayDuration: duration,
                 totalDayCalories: calories,
+                totalDaySteps: steps,
                 isFuture: date > today,
                 isToday: isToday(date),
                 count: dayActivities.length,
             };
         });
-    }, [activities]);
+    }, [activities, weekStartDate, today]);
 
-    const activeDays = weekDays.filter((d) => d.count > 0).length;
+    const {
+        totalWeekDistance,
+        totalWeekDuration,
+        totalWeekCalories,
+        totalWeekSteps,
+        maxDayDistance,
+        activeDays,
+        bestDay,
+    } = useMemo(() => {
+        const totalWeekDistance = weekDays.reduce(
+            (s, d) => s + d.totalDayDistance,
+            0,
+        );
+        const totalWeekDuration = weekDays.reduce(
+            (s, d) => s + d.totalDayDuration,
+            0,
+        );
+        const totalWeekCalories = weekDays.reduce(
+            (s, d) => s + d.totalDayCalories,
+            0,
+        );
+        const totalWeekSteps = weekDays.reduce(
+            (s, d) => s + d.totalDaySteps,
+            0,
+        );
 
-    const totalWeekDistance = weekDays.reduce(
-        (sum, day) => sum + day.totalDayDistance,
-        0,
-    );
+        const maxDist = Math.max(...weekDays.map((d) => d.totalDayDistance), 0);
+        const maxDayDistance = maxDist === 0 ? 1 : maxDist;
 
-    const totalWeekDuration = weekDays.reduce(
-        (sum, day) => sum + day.totalDayDuration,
-        0,
-    );
-    const totalWeekCalories = weekDays.reduce(
-        (sum, day) => sum + day.totalDayCalories,
-        0,
-    );
+        const activeDays = weekDays.filter(
+            (d) => !d.isFuture && d.count > 0,
+        ).length;
 
-    const stats = formatStats({
+        const bestDay = weekDays.reduce(
+            (best, d) =>
+                d.totalDayDistance > (best?.totalDayDistance ?? 0) ? d : best,
+            null as (typeof weekDays)[0] | null,
+        );
+
+        return {
+            totalWeekDistance,
+            totalWeekDuration,
+            totalWeekCalories,
+            totalWeekSteps,
+            maxDayDistance,
+            activeDays,
+            bestDay,
+        };
+    }, [weekDays]);
+
+    const stats = useFormatMetrics({
         distance: totalWeekDistance,
         duration: totalWeekDuration,
         calories: totalWeekCalories,
+        steps: totalWeekSteps,
     });
+
+    const elapsedDays = weekDays.filter((d) => !d.isFuture).length;
+    const distance = stats[0];
+    const dateRangeLabel =
+        weekDays.length === 7
+            ? `${format(weekDays[0].date, "MMM d")} – ${format(weekDays[6].date, "MMM d")}`
+            : null;
 
     return (
         <>
             <View className="px-4">
                 {isLoading ? (
-                    <Card className="h-48" />
+                    <ColView className="gap-1">
+                        <Card className="h-52" />
+                        <RowView className="gap-1">
+                            {Array.from({ length: 3 }).map((_, i) => (
+                                <Card key={i} className="h-20 flex-1" />
+                            ))}
+                        </RowView>
+                    </ColView>
                 ) : (
-                    <Card className="">
-                        <ColView className="gap-4">
-                            <ColView className="gap-4">
-                                <RowView className="justify-between">
+                    <ColView className="gap-1">
+                        <Card>
+                            <ColView className="gap-2">
+                                {/* Header */}
+                                <RowView className="justify-between items-center">
                                     <Text className="text-base font-medium">
                                         This Week Progress
                                     </Text>
-                                    {weekDays.length === 7 && (
+                                    {dateRangeLabel && (
                                         <Text className="text-sm text-muted-foreground">
-                                            {format(weekDays[0].date, "MMM d")}{" "}
-                                            –{" "}
-                                            {format(weekDays[6].date, "MMM d")}
+                                            {dateRangeLabel}
                                         </Text>
                                     )}
                                 </RowView>
-                                <RowView className="justify-between items-center">
-                                    {stats.map((stat, i) => {
-                                        if ("border" in stat) {
-                                            return (
-                                                <Divider
+
+                                <RowView className="justify-between items-end">
+                                    <ColView className="gap-0.5">
+                                        <RowView>
+                                            {distance?.value.map((v, i) => (
+                                                <Text
                                                     key={i}
-                                                    direction="vertical"
-                                                />
-                                            );
-                                        }
-                                        return (
-                                            <ColView
-                                                key={stat.label}
-                                                className={cn("")}
-                                            >
-                                                <RowView className="">
-                                                    <Icon
-                                                        name={stat.icon}
-                                                        size={11}
-                                                        className="text-primary"
-                                                    />
-                                                    <Text className="text-xs text-muted-foreground">
-                                                        {stat.label}
+                                                    className="text-3xl font-medium"
+                                                >
+                                                    {v.value}
+                                                    {distance.key !==
+                                                        "duration" && " "}
+                                                    <Text className="text-xl font-medium">
+                                                        {v.unit}
                                                     </Text>
-                                                </RowView>
-                                                <RowView>
-                                                    {stat.value.map((v, i) => (
-                                                        <Text
-                                                            key={i}
-                                                            className={cn(
-                                                                "text-3xl font-medium",
-                                                            )}
-                                                        >
-                                                            {v.value}
-                                                            {stat.key !==
-                                                                "duration" &&
-                                                                " "}
-                                                            <Text className="text-xl font-medium">
-                                                                {v.unit}
-                                                            </Text>
-                                                        </Text>
-                                                    ))}
-                                                </RowView>
-                                            </ColView>
-                                        );
-                                    })}
+                                                </Text>
+                                            ))}
+                                        </RowView>
+                                        <Text className="text-xs capitalize text-muted-foreground">
+                                            Total distance this week
+                                        </Text>
+                                    </ColView>
+
+                                    {/* Active days + best day */}
+                                    <ColView className="items-end gap-0.5">
+                                        <RowView className="items-center gap-1">
+                                            <Icon
+                                                name="flame"
+                                                size={12}
+                                                className="text-primary"
+                                            />
+                                            <Text className="text-sm font-medium text-primary capitalize">
+                                                {activeDays} / {elapsedDays}{" "}
+                                                days active
+                                            </Text>
+                                        </RowView>
+                                        {bestDay &&
+                                            bestDay.totalDayDistance > 0 && (
+                                                <Text className="text-xs text-muted-foreground">
+                                                    Best:{" "}
+                                                    {format(
+                                                        bestDay.date,
+                                                        "EEE",
+                                                    )}{" "}
+                                                    ·{" "}
+                                                    {convertMtoKm(
+                                                        bestDay.totalDayDistance,
+                                                    ).toFixed(1)}{" "}
+                                                    km
+                                                </Text>
+                                            )}
+                                    </ColView>
                                 </RowView>
-                            </ColView>
-                            <RowView className="gap-2">
-                                <RowView className="flex-1 items-end gap-1">
+
+                                {/* Bar chart */}
+                                <RowView className="items-end gap-1">
                                     {weekDays.map((day, i) => {
-                                        const maxDayDistance = Math.max(
-                                            ...weekDays.map(
-                                                (d) => d.totalDayDistance,
-                                            ),
-                                            1,
-                                        );
-                                        const totalDayPct =
-                                            (day.totalDayDistance /
-                                                maxDayDistance) *
-                                            100;
+                                        const hasDistance =
+                                            day.totalDayDistance > 0;
+                                        const pct = hasDistance
+                                            ? Math.max(
+                                                  (day.totalDayDistance /
+                                                      maxDayDistance) *
+                                                      100,
+                                                  8,
+                                              )
+                                            : 0;
+                                        const kmLabel = convertMtoKm(
+                                            day.totalDayDistance,
+                                        ).toFixed(1);
 
                                         return (
                                             <TouchableOpacity
@@ -192,20 +238,34 @@ export default function WeekProgress() {
                                                     )
                                                 }
                                             >
-                                                <Card className="h-12 w-full justify-end bg-muted rounded overflow-hidden p-0 border-0">
-                                                    {!day.isFuture && (
-                                                        <View
-                                                            style={{
-                                                                height: `${totalDayPct}%`,
-                                                            }}
-                                                            className={cn(
-                                                                "rounded",
-                                                                day.isToday
-                                                                    ? "bg-primary"
-                                                                    : "bg-primary/20",
-                                                            )}
-                                                        />
-                                                    )}
+                                                <Card className="h-16 w-full justify-end bg-muted rounded overflow-hidden p-0 border-0">
+                                                    {!day.isFuture &&
+                                                        hasDistance && (
+                                                            <ColView className="h-full justify-end items-center gap-1">
+                                                                <Text
+                                                                    className={cn(
+                                                                        "hidden text-[9px] font-semibold leading-none ",
+                                                                        day.isToday
+                                                                            ? "text-foreground font-bold"
+                                                                            : "text-muted-foreground",
+                                                                    )}
+                                                                >
+                                                                    {kmLabel}{" "}
+                                                                    {day.date.getDate()}
+                                                                </Text>
+                                                                <View
+                                                                    style={{
+                                                                        height: `${pct}%`,
+                                                                    }}
+                                                                    className={cn(
+                                                                        "w-full rounded items-center justify-start pt-0.5",
+                                                                        day.isToday
+                                                                            ? "bg-primary"
+                                                                            : "bg-primary/30",
+                                                                    )}
+                                                                />
+                                                            </ColView>
+                                                        )}
                                                 </Card>
                                                 <Text
                                                     className={cn(
@@ -221,9 +281,49 @@ export default function WeekProgress() {
                                         );
                                     })}
                                 </RowView>
-                            </RowView>
-                        </ColView>
-                    </Card>
+                            </ColView>
+                        </Card>
+                        <RowView className="justify-between items-center gap-1">
+                            {stats.slice(1).map((stat, i) => {
+                                if ("border" in stat) {
+                                    return (
+                                        <Divider key={i} direction="vertical" />
+                                    );
+                                }
+                                return (
+                                    <Card key={stat.label} className="flex-1">
+                                        <ColView className="flex-1 justify-center gap-1">
+                                            <RowView className="gap-1 items-center">
+                                                <Icon
+                                                    name={stat.icon}
+                                                    size={12}
+                                                    className="text-primary"
+                                                />
+                                                <Text className="text-xs text-muted-foreground">
+                                                    {stat.label}
+                                                </Text>
+                                            </RowView>
+                                            <RowView>
+                                                {stat.value.map((v, i) => (
+                                                    <Text
+                                                        key={i}
+                                                        className="text-xl font-medium"
+                                                    >
+                                                        {v.value}
+                                                        {stat.key !==
+                                                            "duration" && " "}
+                                                        <Text className="text-base font-medium">
+                                                            {v.unit}
+                                                        </Text>
+                                                    </Text>
+                                                ))}
+                                            </RowView>
+                                        </ColView>
+                                    </Card>
+                                );
+                            })}
+                        </RowView>
+                    </ColView>
                 )}
             </View>
             <ActivityGroupDrawer ref={activityGrouperDrawer} />

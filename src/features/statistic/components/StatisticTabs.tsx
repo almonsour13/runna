@@ -10,42 +10,35 @@ export default function StatisticTabs() {
     const { activeTab, setActiveTab, offset, setOffset, rangeLabel } =
         useStatisticContext();
 
-    const handleSelectTab = (tab: (typeof TABS)[number]) => {
-        setActiveTab(tab);
-        setOffset(0);
-    };
-
     const isPrevDisabled = activeTab === "All Time";
     const isNextDisabled = activeTab === "All Time" || offset === 0;
 
     return (
         <ColView className="px-4 gap-2">
             <RowView className="gap-1">
-                {TABS.map((tab) => {
-                    return (
-                        <TouchableOpacity
-                            key={tab}
-                            onPress={() => handleSelectTab(tab)}
-                            className="flex-1"
+                {TABS.map((tab) => (
+                    <TouchableOpacity
+                        key={tab}
+                        onPress={() => setActiveTab(tab)}
+                        className="flex-1"
+                    >
+                        <Card
+                            className={cn(
+                                "items-center justify-center p-2 h-10",
+                                activeTab === tab && "bg-primary",
+                            )}
                         >
-                            <Card
+                            <Text
                                 className={cn(
-                                    "items-center justify-center p-2",
-                                    activeTab === tab && "bg-primary",
+                                    "text-base",
+                                    activeTab === tab && "text-white",
                                 )}
                             >
-                                <Text
-                                    className={cn(
-                                        "text-sm",
-                                        activeTab === tab && "text-white",
-                                    )}
-                                >
-                                    {tab}
-                                </Text>
-                            </Card>
-                        </TouchableOpacity>
-                    );
-                })}
+                                {tab}
+                            </Text>
+                        </Card>
+                    </TouchableOpacity>
+                ))}
             </RowView>
             {activeTab !== "All Time" && (
                 <RowView className="gap-2 justify-between items-center">
@@ -55,11 +48,11 @@ export default function StatisticTabs() {
                     >
                         <Card
                             className={cn(
-                                "items-center justify-center p-2",
+                                "items-center justify-center p-0 h-10 aspect-square",
                                 isPrevDisabled && "opacity-75",
                             )}
                         >
-                            <Icon name="chevron-back" size={20} />
+                            <Icon name="chevron-back" size={24} />
                         </Card>
                     </TouchableOpacity>
                     <Text className="text-lg font-medium">{rangeLabel}</Text>
@@ -69,11 +62,11 @@ export default function StatisticTabs() {
                     >
                         <Card
                             className={cn(
-                                "items-center justify-center p-2",
+                                "items-center justify-center p-0 h-10 aspect-square",
                                 isNextDisabled && "opacity-50",
                             )}
                         >
-                            <Icon name="chevron-forward" size={20} />
+                            <Icon name="chevron-forward" size={24} />
                         </Card>
                     </TouchableOpacity>
                 </RowView>

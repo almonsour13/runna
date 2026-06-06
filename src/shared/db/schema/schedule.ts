@@ -8,6 +8,11 @@ export const schedule = sqliteTable("schedule", {
     goal: real("goal").notNull(),
     type: text("type").notNull(),
     repeatDays: text("repeat_days").default("[]"),
+    notificationEnabled: integer("notification_enabled", {
+        mode: "boolean",
+    })
+        .default(true)
+        .notNull(),
 
     status: text("status").default("active").notNull(),
 

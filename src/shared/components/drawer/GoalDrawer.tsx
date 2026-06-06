@@ -1,7 +1,9 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import Drawer, { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
+import { useSettingsStore } from "@/shared/stores/use-settings-store";
 import { cn } from "@/shared/utils/cn";
+import { formatDistanceByUnit } from "@/shared/utils/format";
 import {
     forwardRef,
     useEffect,
@@ -23,29 +25,33 @@ interface Props {
 
 const ITEM_HEIGHT = 56;
 const VISIBLE_ITEMS = 5;
-const RECOMMENDED_KM = 5;
+const RECOMMENDED = 5000;
 
 const GoalDrawer = forwardRef<DrawerHandle, Props>(
     ({ value, onChange }, ref) => {
         const drawerRef = useRef<DrawerHandle>(null);
+        const settings = useSettingsStore((s) => s.settings);
+        const preferences = settings.preferences;
+        const unit = preferences?.unit;
 
         useImperativeHandle(ref, () => ({
             open: () => drawerRef.current?.open(),
             close: () => drawerRef.current?.close(),
         }));
 
-        const minGoal = 1;
-        const maxGoal = 100;
-        const interval = 1;
+        const minGoal = 1000;
+        const maxGoal = 100000;
+        const interval = 500;
+
         const goals = Array.from(
             { length: (maxGoal - minGoal) / interval + 1 },
             (_, i) => minGoal + i * interval,
         );
 
         const toKm = (meters: number) => Math.round(meters / 1000);
-        const defaultKm = value != null ? toKm(value) : RECOMMENDED_KM;
+        const defaultV = value != null ? value : RECOMMENDED;
 
-        const [selectedGoal, setSelectedGoal] = useState(defaultKm);
+        const [selectedGoal, setSelectedGoal] = useState(defaultV);
 
         useEffect(() => {
             if (value != null) setSelectedGoal(toKm(value));
@@ -53,7 +59,7 @@ const GoalDrawer = forwardRef<DrawerHandle, Props>(
 
         const initialIndex = Math.max(
             0,
-            Math.min((defaultKm - minGoal) / interval, goals.length - 1),
+            Math.min((defaultV - minGoal) / interval, goals.length - 1),
         );
 
         const onScrollEnd = (
@@ -64,7 +70,7 @@ const GoalDrawer = forwardRef<DrawerHandle, Props>(
             const selectedKm =
                 goals[Math.max(0, Math.min(index, goals.length - 1))];
             setSelectedGoal(selectedKm);
-            onChange(selectedKm * 1000);
+            onChange(selectedKm);
         };
 
         return (
@@ -98,7 +104,13 @@ const GoalDrawer = forwardRef<DrawerHandle, Props>(
                             }}
                             renderItem={({ item }) => {
                                 const isSelected = item === selectedGoal;
-                                const isRecommended = item === RECOMMENDED_KM;
+                                const isRecommended = item === RECOMMENDED;
+
+                                const displayedValue = formatDistanceByUnit(
+                                    item,
+                                    unit,
+                                    false,
+                                );
                                 return (
                                     <View
                                         style={{ height: ITEM_HEIGHT }}
@@ -110,12 +122,12 @@ const GoalDrawer = forwardRef<DrawerHandle, Props>(
                                                     "text-foreground text-2xl",
                                                 )}
                                             >
-                                                {item}
+                                                {displayedValue.value}
                                             </Text>
                                             <Text
                                                 className={cn("text-sm pb-1")}
                                             >
-                                                km
+                                                {displayedValue.unit}
                                             </Text>
                                         </RowView>
                                         {isRecommended && (

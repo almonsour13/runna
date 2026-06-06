@@ -1,0 +1,20 @@
+import { LocationAccuracy } from "expo-location";
+
+export const GPS_CONFIG = {
+    LOCATION_TIME_INTERVAL_MS: 5000,
+    LOCATION_ACCURACY: LocationAccuracy.High,
+    DISTANCE_INTERVAL_METERS: 5,
+};
+
+export const GPS_BACKGROUND_TRACKING_CONFIG = {
+    DEFERRED_UPDATES_INTERVAL: 5000,
+    DEFERRED_UPDATES_DISTANCE: 5,
+};
+
+export const GPS_FILTER_CONFIG = {
+    WARMUP_READINGS: 3,
+    MAX_ACCURACY_METERS: 15,
+    MAX_SPEED_MS: 10,
+    MIN_DISTANCE_METERS: 2,
+    MAX_DISTANCE_METERS: 40,
+};

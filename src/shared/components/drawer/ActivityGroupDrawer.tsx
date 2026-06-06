@@ -1,7 +1,8 @@
+import { useFormatMetrics } from "@/shared/hooks/use-format-metrics";
 import { activityService } from "@/shared/services/storage/activity.service";
 import { cn } from "@/shared/utils/cn";
-import { computeStats } from "@/shared/utils/compute";
-import { formatRelativeDateLabel, formatStats } from "@/shared/utils/format";
+import { computeMetrics } from "@/shared/utils/compute";
+import { formatRelativeDateLabel } from "@/shared/utils/format";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
@@ -58,8 +59,8 @@ const ActivityGroupDrawer = forwardRef<
             .join(" • ");
 
     const { distance, calories, duration, goal, pace, speed, steps } =
-        computeStats(activities);
-    const stats = formatStats({
+        computeMetrics(activities);
+    const stats = useFormatMetrics({
         distance,
         duration,
         calories,
@@ -92,12 +93,14 @@ const ActivityGroupDrawer = forwardRef<
                                     {dateLabel}
                                 </Text>
                             </RowView>
-                            <Text className="text-base text-primary font-medium">
-                                {activities.length}{" "}
-                                {activities.length === 1
-                                    ? "Activity"
-                                    : "Activities"}
-                            </Text>
+                            {!isLoading && (
+                                <Text className="text-base text-primary font-medium">
+                                    {activities.length}{" "}
+                                    {activities.length === 1
+                                        ? "Activity"
+                                        : "Activities"}
+                                </Text>
+                            )}
                         </RowView>
 
                         <RowView className="flex-wrap gap-1">
@@ -117,7 +120,7 @@ const ActivityGroupDrawer = forwardRef<
                                           )}
                                       >
                                           <ColView>
-                                              <RowView>
+                                              <RowView className="items-center gap-1">
                                                   <Icon
                                                       name={stat.icon}
                                                       size={11}
@@ -132,7 +135,7 @@ const ActivityGroupDrawer = forwardRef<
                                                       <Text
                                                           key={i}
                                                           className={cn(
-                                                              "text-3xl font-medium",
+                                                              "text-2xl font-medium",
                                                           )}
                                                       >
                                                           {v.value}
@@ -157,7 +160,7 @@ const ActivityGroupDrawer = forwardRef<
                                     ? Array.from({ length: 3 }).map((_, i) => (
                                           <Card
                                               key={i}
-                                              className="h-22 bg-muted"
+                                              className="h-20 bg-muted"
                                           />
                                       ))
                                     : activities.map((activity) => (
@@ -165,6 +168,9 @@ const ActivityGroupDrawer = forwardRef<
                                               key={activity.id}
                                               activity={activity}
                                               className="bg-muted"
+                                              onPress={() =>
+                                                  drawerRef.current?.close()
+                                              }
                                           />
                                       ))}
                             </ColView>

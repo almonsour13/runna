@@ -23,7 +23,7 @@ export type RootStackParamList = {
     };
     ActivityDetails: {
         activityId: string;
-        screen?: "ActivityDetailsScreen" | "ActivityDetailsShareScreen";
+        screen?: "ActivityDetailsScreen" | "ActivityDetailsShareCardScreen";
     };
     Profile: {
         screen?: "ProfileScreen" | "ProfileEdit";
@@ -35,7 +35,7 @@ export type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export type ThemeMode = "light" | "dark" | "system";
 
-export type UnitMode = "metric" | "imperial";
+export type UnitMode = "kilometers" | "miles";
 
 export type Gender = "male" | "female" | null;
 
@@ -57,7 +57,6 @@ export type Profile = {
     age: number;
     height: number;
     weight: number;
-    goal: number;
     createdAt?: string;
     updatedAt?: string;
 };
@@ -65,6 +64,7 @@ export type Profile = {
 export type Preferences = {
     theme: ThemeMode;
     unit: UnitMode;
+    goal: number;
 };
 
 export type Settings = {

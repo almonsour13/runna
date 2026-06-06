@@ -1,7 +1,5 @@
 import { create } from "zustand";
-import { Settings, ThemeMode } from "../types/type";
-
-export type UnitMode = "metric" | "imperial";
+import { Settings, ThemeMode, UnitMode } from "../types/type";
 
 type SettingsStore = {
     settings: Settings;
@@ -13,12 +11,14 @@ type SettingsStore = {
     setTheme: (theme: ThemeMode) => void;
 
     setUnit: (unit: UnitMode) => void;
+    setGoal: (goal: number) => void;
 };
 
 const defaultSettings: Settings = {
     preferences: {
         theme: "system",
-        unit: "metric",
+        unit: "kilometers",
+        goal: 0,
     },
 };
 
@@ -67,6 +67,16 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
                 preferences: {
                     ...state.settings.preferences,
                     unit,
+                },
+            },
+        })),
+    setGoal: (goal) =>
+        set((state) => ({
+            settings: {
+                ...state.settings,
+                preferences: {
+                    ...state.settings.preferences,
+                    goal,
                 },
             },
         })),

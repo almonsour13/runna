@@ -4,154 +4,163 @@ import Card from "@/shared/components/ui/Card";
 import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
+import { settingsService } from "@/shared/services/storage/settings.service";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
 import { useRecordStore } from "@/shared/stores/use-record.store";
+import { useSettingsStore } from "@/shared/stores/use-settings-store";
 import { cn } from "@/shared/utils/cn";
-import {
-    computeCalories,
-    computePace,
-    computeTotalDistance,
-} from "@/shared/utils/compute";
-import { convertMsToS, convertMtoKm } from "@/shared/utils/convert";
+import { computeCalories, computeTotalDistance } from "@/shared/utils/compute";
+import { convertMsToS } from "@/shared/utils/convert";
 import {
     formatCalories,
-    formatDuration,
+    formatDistanceByUnit,
     formatDurationHHMMSS,
-    formatPace,
+    formatPaceByUnit,
 } from "@/shared/utils/format";
 import { useMemo, useRef, useState } from "react";
 import { TouchableOpacity } from "react-native";
+import { useMapControlStore } from "../stores/use-map-control.store";
 
 export default function RecordSummary() {
     const profile = useProfileStore((s) => s.profile);
-    const goal = profile?.goal || 0;
-    const setField = useProfileStore((s) => s.setField);
+    const preferences = useSettingsStore((s) => s.settings.preferences);
+    const goal = preferences?.goal || 0;
+    const unit = preferences?.unit;
+    const setGoal = useSettingsStore((s) => s.setGoal);
     const duration = useRecordStore((s) => s.duration);
     const steps = useRecordStore((s) => s.steps);
     const coordinates = useRecordStore((s) => s.coordinates);
+    const isMapExpanded = useMapControlStore((s) => s.isMapExpanded);
+    const isMapReady = useMapControlStore((s) => s.isMapReady);
+    const setIsMapExpanded = useMapControlStore((s) => s.setIsMapExpanded);
     const goalDrawerRef = useRef<DrawerHandle>(null);
 
     const [selectedActiveStat, setSelectedActiveStat] = useState("Duration");
 
     const { stats } = useMemo(() => {
         const distance = computeTotalDistance(coordinates);
-        const distanceKm = convertMtoKm(distance);
+        const formattedDistance = formatDistanceByUnit(
+            distance,
+            unit,
+            false,
+            2,
+            2,
+        );
         const calories = formatCalories(
             computeCalories(distance, profile?.weight ?? 70),
         );
         const durationSec = convertMsToS(duration);
-        const pace =
-            distanceKm > 0.01
-                ? formatPace(computePace(distance, durationSec))
-                : "00:00";
+        const pace = formatPaceByUnit(durationSec / distance, unit);
         const stats = [
             {
                 label: "Duration",
-                value:
-                    selectedActiveStat !== "Duration"
-                        ? formatDuration(duration)
-                        : formatDurationHHMMSS(duration),
-                icon: "timer-outline" as const,
-                unit: "min",
+                // value:
+                //     selectedActiveStat === "Duration"
+                //         ? formatDurationHHMMSS(duration)
+                //         : formatDuration(duration),
+                value: formatDurationHHMMSS(duration),
+                icon: "timer" as const,
+                unit: "",
+                visible: true,
             },
             {
                 label: "Distance",
-                value: distanceKm.toFixed(2).padStart(2, "0"),
-                unit: "km",
-                icon: "location-outline" as const,
+                value: formattedDistance.value,
+                unit: formattedDistance.unit,
+                icon: "location" as const,
+                visible: true,
             },
             {
                 label: "Calories",
                 value: calories,
                 unit: "kcal",
-                icon: "flame-outline" as const,
+                icon: "flame" as const,
                 color: "text-orange-500",
+                visible: true,
             },
             {
                 label: "Pace",
-                value: pace,
-                unit: "/km",
-                icon: "timer-outline" as const,
+                value: pace.value,
+                unit: pace.unit,
+                icon: "timer" as const,
+                visible: true,
             },
             {
                 label: "Steps",
                 value: steps,
                 icon: "footsteps" as const,
+                visible: false,
             },
         ];
         return { stats };
     }, [coordinates, duration, profile?.weight, steps, selectedActiveStat]);
 
     const activeStat = stats.find((s) => s.label === selectedActiveStat);
-    const updatedStats = stats.filter((s) => s.label !== selectedActiveStat);
+    const updatedStats = stats.filter(
+        (s) => s.visible && s.label !== selectedActiveStat,
+    );
     return (
         <>
             <ColView
-                className={cn("flex-1 px-4 gap-4 justify-center items-center")}
+                className={cn(
+                    "px-4 gap-4 justify-center",
+                    !isMapExpanded && "flex-1",
+                )}
             >
-                <RowView className="gap-4 items-center">
-                    <TouchableOpacity
-                        onPress={() => goalDrawerRef.current?.open()}
-                    >
-                        <Card className="px-3 py-1.5">
-                            <RowView className="gap-1.5">
-                                <Icon
-                                    name="flag"
-                                    size={12}
-                                    className="text-primary"
-                                />
-                                <Text className="text-xs ">
-                                    {convertMtoKm(goal)} km
-                                </Text>
-                            </RowView>
-                        </Card>
-                    </TouchableOpacity>
-                </RowView>
-                <ColView className="items-center">
-                    <Text className="text-6xl font-bold">
-                        {activeStat?.value}
-                    </Text>
-                    <RowView className="items-center">
-                        <Icon
-                            name={activeStat?.icon}
-                            size={12}
-                            className="hidden text-primary"
-                        />
-                        <Text className="text-xs text-muted-foreground">
-                            {activeStat?.label} {/* ✅ Fix 2: dynamic label */}
+                <RowView className="justify-center items-start">
+                    <ColView className="">
+                        <RowView className="gap-1 items-center">
+                            <Icon
+                                name={activeStat?.icon}
+                                size={12}
+                                className="text-primary"
+                            />
+                            <Text className="text-xs text-muted-foreground">
+                                {activeStat?.label}{" "}
+                                {activeStat?.unit && (
+                                    <Text className=" text-xs font-medium text-muted-foreground">
+                                        ({activeStat.unit})
+                                    </Text>
+                                )}
+                            </Text>
+                        </RowView>
+                        <Text className="text-6xl font-bold">
+                            {activeStat?.value}
                         </Text>
-                    </RowView>
-                </ColView>
-                <RowView className="justify-between">
+                    </ColView>
+                </RowView>
+                <RowView className="justify-between gap-1">
                     {updatedStats.map((stat, i) => (
                         <TouchableOpacity
                             key={i}
                             onPress={() => setSelectedActiveStat(stat.label)}
-                            className="flex-1 justify-center items-center"
+                            className=""
                         >
-                            <ColView className="items-center">
-                                <RowView className="items-end">
-                                    <Text className="text-2xl leading-4 font-medium ">
-                                        {stat.value}
-                                    </Text>
-                                </RowView>
-                                <RowView className="items-center">
-                                    <Icon
-                                        name={stat.icon}
-                                        size={12}
-                                        className="hidden text-primary"
-                                    />
-                                    <Text className="text-xs text-muted-foreground">
-                                        {stat.label}
-                                        {stat.unit && (
-                                            <Text className=" text-xs font-medium text-muted-foreground">
-                                                {" "}
-                                                ({stat.unit})
-                                            </Text>
-                                        )}
-                                    </Text>
-                                </RowView>
-                            </ColView>
+                            <Card className={cn("bg-transparent p-0")}>
+                                <ColView className="">
+                                    <RowView className="gap-1 items-center">
+                                        <Icon
+                                            name={stat.icon}
+                                            size={12}
+                                            className="text-primary"
+                                        />
+                                        <Text className="text-xs text-muted-foreground">
+                                            {stat.label}
+                                            {stat.unit && (
+                                                <Text className=" text-xs font-medium text-muted-foreground">
+                                                    {" "}
+                                                    ({stat.unit})
+                                                </Text>
+                                            )}
+                                        </Text>
+                                    </RowView>
+                                    <RowView className="items-end">
+                                        <Text className="text-3xl leading-4 font-medium ">
+                                            {stat.value}
+                                        </Text>
+                                    </RowView>
+                                </ColView>
+                            </Card>
                         </TouchableOpacity>
                     ))}
                 </RowView>
@@ -160,8 +169,11 @@ export default function RecordSummary() {
             <GoalDrawer
                 ref={goalDrawerRef}
                 value={goal}
-                onChange={(v) => {
-                    setField("goal", v);
+                onChange={async (v) => {
+                    setGoal(v);
+                    await settingsService.save({
+                        preferences: { ...preferences, goal: v },
+                    });
                 }}
             />
         </>

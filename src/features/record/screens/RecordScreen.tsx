@@ -1,16 +1,14 @@
-import { ColView, RowView } from "@/shared/components/CustomView";
+import { ColView } from "@/shared/components/CustomView";
 import RecordController from "../components/RecordController";
 import RecordHeader from "../components/RecordHeader";
 import RecordSummary from "../components/RecordSummary";
 
 import SafeScreen from "@/shared/components/SafeScreen";
-import Card from "@/shared/components/ui/Card";
-import Text from "@/shared/components/ui/Text";
 import { useRecordStore } from "@/shared/stores/use-record.store";
 import { RootStackParamList } from "@/shared/types/type";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useEffect } from "react";
-import { TouchableOpacity } from "react-native";
+import RecordMap from "../components/RecordMap";
 import { useRecordPreviewTracking } from "../hooks/use-record-preview-tracking";
 import { useMapControlStore } from "../stores/use-map-control.store";
 
@@ -35,26 +33,11 @@ export default function RecordScreen() {
         <SafeScreen>
             <ColView className="relative flex-1 gap-0">
                 <RecordHeader />
-                <ColView className="relative flex-1">
-                    {/* <RecordMap /> */}
+                <ColView className="relative flex-1 gap-4">
+                    <RecordMap />
                     <RecordSummary />
-                    {isMapReady && (
-                        <RowView className="p-4 justify-center items-center">
-                            <TouchableOpacity
-                                onPress={() => setIsMapExpanded(!isMapExpanded)}
-                            >
-                                <Card className="h-8 items-center justify-center py-1.5 px-3">
-                                    <Text className="text-xs">
-                                        {isMapExpanded
-                                            ? "Hide Map"
-                                            : "Show Map"}
-                                    </Text>
-                                </Card>
-                            </TouchableOpacity>
-                        </RowView>
-                    )}
+                    <RecordController />
                 </ColView>
-                <RecordController />
             </ColView>
         </SafeScreen>
     );

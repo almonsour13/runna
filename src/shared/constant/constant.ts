@@ -1,28 +1,4 @@
-import { LocationAccuracy } from "expo-location";
 import { ActivityType } from "../types/type";
-
-export const GPS_CONFIG = {
-    LOCATION_GEOCODE_INTERVAL_MS: 15000,
-    LOCATION_TIME_INTERVAL_MS: 1000,
-    LOCATION_ACCURACY: LocationAccuracy.BestForNavigation,
-    DISTANCE_INTERVAL_METERS: 2,
-};
-
-export const GPS_BACKGROUND_TRACKING_CONFIG = {
-    DEFERRED_UPDATES_INTERVAL: 3000,
-    DEFERRED_UPDATES_DISTANCE: 5,
-};
-
-export const GPS_FILTER_CONFIG = {
-    MAX_ACCURACY_METERS: 25,
-    MAX_SPEED_MS: 12,
-    MIN_DISTANCE_METERS: 2,
-    MAX_DISTANCE_METERS: 50,
-};
-export const MIN_ACCURACY_METERS = 15;
-export const MIN_DISTANCE_METERS = 5;
-export const MAX_SPEED_MPS = 10;
-export const WARMUP_READINGS = 5;
 
 export const PREFIX = "@runna/test";
 
@@ -36,17 +12,28 @@ export const STORAGE_KEYS = {
 
 export const ACTIVITY_BACKGROUND_TASK = "ACTIVITY_BACKGROUND_TASK";
 
-export const ICON_COLORS: Record<string, string> = {
-    location: "#3b82f6",
-    navigate: "#3b82f6",
-    navigation: "#3b82f6",
-    time: "#64748b",
-    timer: "#64748b",
+export const ICON_TAILWIND_COLORS: Record<string, string> = {
+    // 🏃‍♂️ Distance
+    location: "text-emerald-500",
+    navigate: "text-emerald-500",
+    navigation: "text-emerald-500",
 
-    flame: "#f97316",
-    "stats-chart": "#8b5cf6",
-    speedometer: "#475569",
-    speed: "#475569",
+    // ⏱️ Duration
+    time: "text-amber-500",
+
+    // ⏱️ Pace
+    timer: "text-indigo-500",
+
+    // 🔥 Calories
+    flame: "text-rose-500",
+
+    // 👟 Steps
+    "stats-chart": "text-sky-500",
+    footsteps: "text-sky-500",
+
+    // ⚡ Speed
+    speedometer: "text-violet-500",
+    speed: "text-violet-500",
 };
 
 export const ACTIVITY_TYPE = ["walk", "run"] as const;

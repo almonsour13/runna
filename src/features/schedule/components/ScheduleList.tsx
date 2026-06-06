@@ -29,7 +29,7 @@ export default function ScheduleList() {
     const hasSchedules = schedules.length > 0;
     return (
         <>
-            <ColView>
+            <ColView className="flex-1 ">
                 <RowView className="px-4 justify-between items-end">
                     <Text className="text-lg font-medium">
                         Manage your Schedules
@@ -49,12 +49,12 @@ export default function ScheduleList() {
                             ))}
                         </>
                     ) : !hasSchedules ? (
-                        <ColView className="flex-1 py-16 justify-center items-center gap-2">
-                            <View className="w-14 h-14 rounded-full bg-muted/50 items-center justify-center">
+                        <ColView className="flex-1 py-8 justify-center items-center gap-2">
+                            <View className="w-16 h-16 rounded-full bg-muted items-center justify-center">
                                 <Icon
                                     name="calendar-outline"
                                     size={24}
-                                    className="text-primary"
+                                    className="text-muted-foreground"
                                 />
                             </View>
                             <Text className="text-base font-medium">
@@ -74,6 +74,7 @@ export default function ScheduleList() {
                                 goal,
                                 time,
                                 repeatDays,
+                                notificationEnabled,
                                 status,
                             } = schedule;
                             const repeatDaysArray = repeatDays
@@ -99,7 +100,7 @@ export default function ScheduleList() {
                                     <Card className="relative overflow-hidden">
                                         <ColView className="">
                                             <RowView className="justify-between items-center">
-                                                <Text className="flex-1 text-base text-wrap font-medium">
+                                                <Text className="flex-1 text-lg text-wrap font-medium">
                                                     {label}
                                                 </Text>
                                                 <RowView className="items-center gap-2">
@@ -123,6 +124,19 @@ export default function ScheduleList() {
                                                     >
                                                         {status}
                                                     </Text>
+                                                    <Icon
+                                                        name={
+                                                            notificationEnabled
+                                                                ? "notifications"
+                                                                : "notifications-off"
+                                                        }
+                                                        size={16}
+                                                        className={cn(
+                                                            notificationEnabled
+                                                                ? "text-primary"
+                                                                : "text-muted-foreground",
+                                                        )}
+                                                    />
                                                 </RowView>
                                             </RowView>
                                             {description && (
@@ -130,7 +144,7 @@ export default function ScheduleList() {
                                                     {description}
                                                 </Text>
                                             )}
-                                            <Divider />
+                                            <Divider className="" />
                                             <RowView className="justify-between items-center">
                                                 <RowView className="">
                                                     <RowView className="items-center gap-1">

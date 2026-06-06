@@ -3,11 +3,11 @@ import Card from "@/shared/components/ui/Card";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { ACTIVITY_TYPE_COLOR } from "@/shared/constant/constant";
+import { useFormatMetrics } from "@/shared/hooks/use-format-metrics";
+import { useUnit } from "@/shared/hooks/use-unit";
 import { ActivityType } from "@/shared/types/type";
-import { convertMtoKm } from "@/shared/utils/convert";
-import { formatRelativeDateLabel, formatStats } from "@/shared/utils/format";
+import { formatRelativeDateLabel } from "@/shared/utils/format";
 import { format } from "date-fns";
-import { useMemo } from "react";
 import { View } from "react-native";
 import { useActivityDetailsContext } from "../context/ActivityDetailsContext";
 
@@ -15,31 +15,26 @@ export default function ActivityDetailsSummary() {
     const { activity } = useActivityDetailsContext();
 
     if (!activity) return null;
-
-    const { distance, duration, calories, pace, speed, steps, goal } =
-        useMemo(() => {
-            const distance = activity?.distance ?? 0;
-            const duration = activity?.duration ?? 0;
-            const calories = activity?.calories ?? 0;
-            const pace = activity?.avgPace ?? 0;
-            const speed = activity?.avgSpeed ?? 0;
-            const steps = activity?.steps ?? 0;
-            const goal = activity?.goal ?? 0;
-            return {
-                distance,
-                duration,
-                calories,
-                pace,
-                speed,
-                steps,
-                goal,
-            };
-        }, [activity]);
+    const {
+        id,
+        startTime,
+        endTime,
+        distance,
+        calories,
+        duration,
+        avgPace,
+        avgSpeed,
+        steps,
+        goal,
+        type,
+        source,
+        coordinates,
+    } = activity;
 
     const pct = (distance / goal) * 100 || 0;
     const barPct = Math.min(pct, 100);
-    const distanceKm = convertMtoKm(distance);
-    const goalKm = convertMtoKm(goal);
+    const formattedDistance = useUnit(distance);
+    const formattedGoal = useUnit(goal);
     const isGoalMet = distance >= goal;
     const isGoalExceeded = pct > 100;
 
@@ -59,15 +54,15 @@ export default function ActivityDetailsSummary() {
             format(activity.startTime, "h:mm a"),
             activity.endTime && format(activity.endTime, "h:mm a"),
         ].join(" - ");
-    const stats = formatStats({
+    const stats = useFormatMetrics({
         distance,
         duration,
         calories,
-        pace,
-        speed,
+        pace: avgPace,
+        speed: avgSpeed,
         steps,
     });
-
+    const isImported = activity.source === "imported";
     return (
         <ColView className="p-4 gap-4 ">
             <RowView className="justify-between items-start">
@@ -78,7 +73,7 @@ export default function ActivityDetailsSummary() {
                     </Text>
                 </ColView>
                 <RowView>
-                    {activity.isImported && (
+                    {isImported && (
                         <Text className="capitalize text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                             Imported
                         </Text>
@@ -120,18 +115,22 @@ export default function ActivityDetailsSummary() {
                     />
                 </View>
                 <RowView className="justify-between">
-                    <RowView className="items-center">
-                        <Icon name="navigate" size={12} />
+                    <RowView className="items-center gap-1">
+                        <Icon
+                            name="navigate"
+                            size={12}
+                            className="text-primary"
+                        />
                         <Text className="text-sm">
-                            {distanceKm.toFixed(1)} km
+                            {formattedDistance.value}
                         </Text>
                     </RowView>
                     <Text className="text-sm text-primary">
                         {pct.toFixed(1)} %
                     </Text>
-                    <RowView className="items-center">
-                        <Icon name="flag" size={12} />
-                        <Text className="text-sm">{goalKm.toFixed(1)} km</Text>
+                    <RowView className="items-center gap-1">
+                        <Icon name="flag" size={12} className="text-primary" />
+                        <Text className="text-sm">{formattedGoal.value}</Text>
                     </RowView>
                 </RowView>
             </ColView>
@@ -148,7 +147,7 @@ export default function ActivityDetailsSummary() {
                                 className="flex-1 min-w-[30%]"
                             >
                                 <ColView>
-                                    <RowView className="items-center">
+                                    <RowView className="items-center gap-1">
                                         <Icon
                                             name={stat.icon}
                                             size={11}

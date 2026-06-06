@@ -9,7 +9,7 @@ import { Activity } from "@/shared/types/type";
 import { cn } from "@/shared/utils/cn";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
-import { FlatList, TouchableOpacity } from "react-native";
+import { FlatList, TouchableOpacity, View } from "react-native";
 import FilterButton from "../components/FilterButton";
 import HistoryHeader from "../components/HistoryHeader";
 
@@ -58,6 +58,7 @@ export default function HistoryScreen() {
         });
 
     const activities = data?.pages.flatMap((page) => page) ?? [];
+    const hasActivities = activities.length > 0;
 
     const handleLoadMore = useCallback(() => {
         if (isFetchingNextPage || !hasNextPage) return;
@@ -92,7 +93,10 @@ export default function HistoryScreen() {
                 data={activities}
                 onEndReached={handleLoadMore}
                 keyExtractor={(item) => item.id.toString()}
-                contentContainerClassName="gap-1 pb-28"
+                contentContainerClassName={cn(
+                    "gap-1 pb-28",
+                    !hasActivities && "flex-1",
+                )}
                 showsVerticalScrollIndicator={false}
                 onEndReachedThreshold={0.5}
                 maxToRenderPerBatch={10}
@@ -124,11 +128,21 @@ export default function HistoryScreen() {
                             ))}
                         </ColView>
                     ) : (
-                        <RowView className="justify-center py-8">
-                            <Text className="text-muted-foreground">
-                                No activity history
+                        <ColView className="flex-1 py-8 justify-center items-center gap-2">
+                            <View className="w-16 h-16 rounded-full bg-muted items-center justify-center">
+                                <Icon
+                                    name="footsteps-outline"
+                                    size={24}
+                                    className="text-muted-foreground"
+                                />
+                            </View>
+                            <Text className="text-base font-medium">
+                                No activities yet
                             </Text>
-                        </RowView>
+                            <Text className="text-sm text-muted-foreground text-center">
+                                Complete your first run to see it here
+                            </Text>
+                        </ColView>
                     )
                 }
                 renderItem={({ item }) => (

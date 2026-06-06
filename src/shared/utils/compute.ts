@@ -1,6 +1,6 @@
 import { Activity, Coordinate, RawCoordinate } from "../types/type";
 
-export const computeStats = (activities: Activity[]) => {
+export const computeMetrics = (activities: Activity[]) => {
     const distance = activities.reduce(
         (sum, activity) => sum + activity.distance,
         0,

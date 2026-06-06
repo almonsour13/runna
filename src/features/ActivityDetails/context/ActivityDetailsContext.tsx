@@ -11,6 +11,8 @@ import React, {
     useMemo,
     useState,
 } from "react";
+import { ActivityIndicator, View } from "react-native";
+import ActivityDetailsEmptyState from "../components/ActivityDetailsEmptyState";
 
 export type KmSplits = {
     km: number;
@@ -91,7 +93,15 @@ export default function ActivityDetailsProvider({
 
     return (
         <ActivityDetailsContext.Provider value={value}>
-            {children}
+            {isLoading ? (
+                <View className="flex-1 items-center justify-center py-20">
+                    <ActivityIndicator size="large" />
+                </View>
+            ) : activity && coordinates.length > 0 ? (
+                children
+            ) : (
+                <ActivityDetailsEmptyState />
+            )}
         </ActivityDetailsContext.Provider>
     );
 }

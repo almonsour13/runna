@@ -2,30 +2,24 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import Card from "@/shared/components/ui/Card";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
+import { useFormatMetrics } from "@/shared/hooks/use-format-metrics";
 import { cn } from "@/shared/utils/cn";
-import { formatStats } from "@/shared/utils/format";
-import { useMemo } from "react";
+import { computeMetrics } from "@/shared/utils/compute";
 import { useStatisticContext } from "../context/StatisticContext";
 
 export default function StatisticSummary() {
     const { activities, isLoading } = useStatisticContext();
 
-    const { distance, duration, calories, steps } = useMemo(
-        () => ({
-            distance: activities.reduce((acc, a) => acc + a.distance, 0),
-            duration: activities.reduce((acc, a) => acc + a.duration, 0),
-            calories: activities.reduce((acc, a) => acc + a.calories, 0),
-            steps: activities.reduce((acc, a) => acc + a.steps, 0),
-        }),
-        [activities],
-    );
+    const { distance, calories, duration, goal, pace, speed, steps } =
+        computeMetrics(activities);
 
-    const stats = formatStats({
+    const stats = useFormatMetrics({
         distance,
         duration,
         calories,
         steps,
     });
+
     return (
         <ColView className="px-4 gap-2">
             <Text className="text-lg font-medium">Summary</Text>
@@ -34,14 +28,14 @@ export default function StatisticSummary() {
                     {isLoading
                         ? Array.from({ length: 4 }).map((_, i) => (
                               <Card
-                                  className="flex-1 min-w-[45%] gap-1 h-24"
+                                  className="flex-1 min-w-[45%] gap-1 h-20"
                                   key={i}
                               />
                           ))
                         : stats.map((stat) => (
                               <Card
-                                  className="flex-1 min-w-[45%]"
                                   key={stat.label}
+                                  className="flex-1 min-w-[45%]"
                               >
                                   {isLoading ? (
                                       <ColView className="gap-1">
@@ -54,7 +48,7 @@ export default function StatisticSummary() {
                                           <RowView className="gap-1 items-center">
                                               <Icon
                                                   name={stat.icon}
-                                                  size={11}
+                                                  size={12}
                                                   className="text-primary"
                                               />
                                               <Text className="text-xs text-muted-foreground">
@@ -66,7 +60,7 @@ export default function StatisticSummary() {
                                                   <Text
                                                       key={i}
                                                       className={cn(
-                                                          "text-3xl font-medium",
+                                                          "text-2xl font-medium",
                                                       )}
                                                   >
                                                       {v.value}

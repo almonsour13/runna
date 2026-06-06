@@ -6,14 +6,13 @@ import { format, isToday, isYesterday } from "date-fns";
 import { useRef } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { ACTIVITY_TYPE_COLOR } from "../constant/constant";
+import { useFormatMetrics } from "../hooks/use-format-metrics";
 import {
     ActivityType,
     ActivityWithCoordinates,
     NavigationProp,
 } from "../types/type";
 import { cn } from "../utils/cn";
-import { convertMtoKm } from "../utils/convert";
-import { formatStats } from "../utils/format";
 import { simplifyCoordinates } from "../utils/simplify-coordinates";
 import ActivityActionDrawer, {
     ActivityActionDrawerHandle,
@@ -24,9 +23,11 @@ import VectorRouteMap from "./VectorRouteMap";
 export default function ActivityCard({
     activity,
     className,
+    onPress,
 }: {
     activity: ActivityWithCoordinates;
     className?: string;
+    onPress?: () => void;
 }) {
     const navigation = useNavigation<NavigationProp>();
     const activityActionDrawerRef = useRef<ActivityActionDrawerHandle>(null);
@@ -42,7 +43,7 @@ export default function ActivityCard({
         steps,
         goal,
         type,
-        isImported,
+        source,
         coordinates,
     } = activity;
 
@@ -58,8 +59,6 @@ export default function ActivityCard({
         endTime ? format(endTime, "p") : "Ongoing",
     ].join(" • ");
 
-    const distanceKm = convertMtoKm(distance);
-    const goalKm = convertMtoKm(goal);
     const pct = (distance / goal) * 100;
 
     const isGoalMet = pct >= 100;
@@ -69,31 +68,32 @@ export default function ActivityCard({
         false,
     );
 
-    const stats = formatStats({
+    const stats = useFormatMetrics({
         distance,
         duration,
         calories,
         steps,
     });
 
+    const isImported = source === "import";
+
     return (
         <>
             <TouchableOpacity
-                onPress={() =>
-                    navigation.navigate("ActivityDetails", {
-                        activityId: id,
-                    })
-                }
-                onLongPress={() =>
-                    activityActionDrawerRef.current?.openWithActivityId(id)
-                }
+                onPress={() => {
+                    onPress?.();
+                    navigation.navigate("ActivityDetails", { activityId: id });
+                }}
+                onLongPress={() => {
+                    activityActionDrawerRef.current?.openWithActivityId(id);
+                }}
             >
                 <Card key={activity.id} className={cn("", className)}>
                     <RowView className="gap-4">
                         <View className="h-12 aspect-square justify-center items-center rounded">
-                            {simplifiedCoordinates && (
+                            {coordinates && (
                                 <VectorRouteMap
-                                    coordinates={simplifiedCoordinates}
+                                    coordinates={coordinates}
                                     strokeWidth={2}
                                     size={120}
                                 />
@@ -105,13 +105,13 @@ export default function ActivityCard({
                                     {timeRange}
                                 </Text>
                                 <RowView>
-                                    {activity.isImported && (
+                                    {isImported && (
                                         <Text className="capitalize text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                                             Imported
                                         </Text>
                                     )}
                                     <Text
-                                        className="capitalize text-xs font-medium"
+                                        className="capitalize text-xs font-medium text-primary bg-muted px-1.5 py-0.5 rounded"
                                         style={{
                                             color: ACTIVITY_TYPE_COLOR[
                                                 type as ActivityType
@@ -129,7 +129,11 @@ export default function ActivityCard({
                                             key={stat.label}
                                             className="items-center gap-1"
                                         >
-                                            <Icon name={stat.icon} size={12} />
+                                            <Icon
+                                                name={stat.icon}
+                                                size={12}
+                                                className="text-primary"
+                                            />
                                             {stat.value.map((v, i) => (
                                                 <Text
                                                     key={i}
@@ -163,7 +167,12 @@ export default function ActivityCard({
                     </RowView>
                 </Card>
             </TouchableOpacity>
-            <ActivityActionDrawer ref={activityActionDrawerRef} />
+            <ActivityActionDrawer
+                ref={activityActionDrawerRef}
+                onClose={() => {
+                    onPress?.();
+                }}
+            />
         </>
     );
 }

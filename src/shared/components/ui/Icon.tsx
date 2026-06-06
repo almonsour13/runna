@@ -19,7 +19,7 @@ export default function Icon({
         <Ionicons
             name={name}
             size={size}
-            className={cn("text-primary", className)}
+            className={cn("text-foreground", className)}
             color={color}
             provider={provider}
         />

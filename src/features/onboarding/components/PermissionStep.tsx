@@ -6,7 +6,7 @@ import { cn } from "@/shared/utils/cn";
 import * as Location from "expo-location";
 import * as MediaLibrary from "expo-media-library";
 import * as Notifications from "expo-notifications";
-import { Accelerometer } from "expo-sensors";
+import { Accelerometer, Pedometer } from "expo-sensors";
 import { useEffect } from "react";
 import { Dimensions, TouchableOpacity, View } from "react-native";
 import { Permissions } from "../screens/OnboardingStepsScreen";
@@ -33,7 +33,7 @@ function StatusIcon({ status }: { status: PermissionStatus }) {
     );
 }
 
-export default function PermissionSteps({
+export default function PermissionStep({
     step,
     permissions,
     setPermissions,
@@ -44,14 +44,24 @@ export default function PermissionSteps({
 }) {
     useEffect(() => {
         async function requestAllPermissions() {
-            const [location, notifications, photos, sensor] = await Promise.all(
-                [
-                    Location.requestForegroundPermissionsAsync(),
-                    Notifications.requestPermissionsAsync(),
-                    MediaLibrary.requestPermissionsAsync(),
+            const [
+                location,
+                notifications,
+                photos,
+                [accelerometer, pedometer],
+            ] = await Promise.all([
+                Location.requestForegroundPermissionsAsync(),
+                Notifications.requestPermissionsAsync(),
+                MediaLibrary.requestPermissionsAsync(),
+                Promise.all([
                     Accelerometer.requestPermissionsAsync(),
-                ],
-            );
+                    Pedometer.requestPermissionsAsync(),
+                ]),
+            ]);
+
+            const sensorGranted = accelerometer.granted || pedometer.granted;
+            const sensorCanAskAgain =
+                accelerometer.canAskAgain || pedometer.canAskAgain;
 
             setPermissions({
                 location: location.granted
@@ -69,14 +79,17 @@ export default function PermissionSteps({
                     : photos.canAskAgain
                       ? "idle"
                       : "denied",
-                sensor: sensor.granted
+                sensor: sensorGranted
                     ? "granted"
-                    : sensor.canAskAgain
+                    : sensorCanAskAgain
                       ? "idle"
                       : "denied",
             });
         }
-        if (step === "Permission") {
+        if (
+            step === "Permission" &&
+            Object.values(permissions).some((status) => status === "idle")
+        ) {
             requestAllPermissions();
             console.log("Requesting permissions...");
         }
@@ -148,16 +161,17 @@ export default function PermissionSteps({
             icon: "footsteps",
             status: permissions.sensor,
             onRequest: async () => {
-                const { status } =
-                    await Accelerometer.requestPermissionsAsync();
+                const [accel, pedo] = await Promise.all([
+                    Accelerometer.requestPermissionsAsync(),
+                    Pedometer.requestPermissionsAsync(),
+                ]);
+                const granted =
+                    accel.status === "granted" || pedo.status === "granted";
+                const denied =
+                    accel.status === "denied" && pedo.status === "denied";
                 setPermissions((prev) => ({
                     ...prev,
-                    sensor:
-                        status === "granted"
-                            ? "granted"
-                            : status === "denied"
-                              ? "denied"
-                              : "idle",
+                    sensor: granted ? "granted" : denied ? "denied" : "idle",
                 }));
             },
             visible: true,

@@ -74,6 +74,7 @@ class ActivityService {
                     lt(activity.createdAt, endOfDay),
                     eq(activity.status, "completed"),
                 ),
+                orderBy: desc(activity.createdAt),
             });
 
             logger.log("[ActivityStorage] getByDate → success");

@@ -51,7 +51,7 @@ export default function ThemeScreen() {
     };
 
     return (
-        <ColView className="flex-1 ">
+        <ColView className="flex-1 gap-0">
             <RowView className="p-4">
                 <RowView className="gap-4 items-center">
                     <TouchableOpacity onPress={() => navigation.goBack()}>

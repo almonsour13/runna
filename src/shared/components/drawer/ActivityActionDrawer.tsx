@@ -1,4 +1,5 @@
 import { useActivityMutations } from "@/shared/hooks/use-activity-mutation";
+import { exportActivityById } from "@/shared/services/activity-export-import.service";
 import { NavigationProp } from "@/shared/types/type";
 import { useNavigation } from "@react-navigation/native";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
@@ -15,7 +16,7 @@ const ActivityActionDrawer = forwardRef<
     ActivityActionDrawerHandle,
     {
         hide_action?: string[];
-        onClose?: () => void;
+        onClose?: (action?: string) => void;
     }
 >(({ hide_action, onClose }, ref) => {
     const navigation = useNavigation<NavigationProp>();
@@ -25,7 +26,10 @@ const ActivityActionDrawer = forwardRef<
 
     useImperativeHandle(ref, () => ({
         open: () => drawerRef.current?.open(),
-        close: () => drawerRef.current?.close(),
+        close: () => {
+            onClose?.();
+            drawerRef.current?.close();
+        },
         openWithActivityId: (id: string) => {
             setActivityId(id);
             drawerRef.current?.open();
@@ -45,11 +49,11 @@ const ActivityActionDrawer = forwardRef<
             visible: true,
         },
         {
-            label: "Share",
+            label: "Share Card",
             icon: "share-social",
             onPress: async () => {
                 navigation.navigate("ActivityDetails", {
-                    screen: "ActivityDetailsShareScreen",
+                    screen: "ActivityDetailsShareCardScreen",
                     activityId,
                 });
                 drawerRef.current?.close();
@@ -57,10 +61,12 @@ const ActivityActionDrawer = forwardRef<
             visible: true,
         },
         {
-            label: "Export",
+            label: "Export (Json)",
             icon: "download",
-            onPress: async () => {},
-            visible: true,
+            onPress: async () => {
+                await exportActivityById({ id: activityId });
+            },
+            visible: __DEV__,
         },
         {
             label: "Delete",
