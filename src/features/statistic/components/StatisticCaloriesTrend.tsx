@@ -132,10 +132,7 @@ export default function StatisticCaloriesTrend() {
                                                         height: `${pct}%`,
                                                     }}
                                                     className={cn(
-                                                        "rounded",
-                                                        d.isToday
-                                                            ? "bg-amber-500"
-                                                            : "bg-amber-500/30",
+                                                        "rounded bg-amber-500",
                                                     )}
                                                 />
                                             )}

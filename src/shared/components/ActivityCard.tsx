@@ -55,8 +55,10 @@ export default function ActivityCard({
 
     const timeRange = [
         date,
-        format(startTime, "p"),
-        endTime ? format(endTime, "p") : "Ongoing",
+        [
+            format(startTime, "p"),
+            endTime ? format(endTime, "p") : "Ongoing",
+        ].join(" - "),
     ].join(" • ");
 
     const pct = (distance / goal) * 100;

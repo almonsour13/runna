@@ -147,10 +147,7 @@ export default function StatisticDistanceTrend() {
                                                             height: `${pct}%`,
                                                         }}
                                                         className={cn(
-                                                            "rounded",
-                                                            d.isToday
-                                                                ? "bg-primary"
-                                                                : "bg-primary/20",
+                                                            "rounded bg-primary",
                                                         )}
                                                     />
                                                 )}

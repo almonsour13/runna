@@ -4,11 +4,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export class StorageService {
     private key: string;
-    private profile: string;
 
     constructor(key: string) {
         this.key = key;
-        this.profile = process.env.PROFILE || "";
     }
 
     async get() {

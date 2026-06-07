@@ -2,7 +2,10 @@ import { ColView } from "@/shared/components/CustomView";
 import MapStyleDrawer from "@/shared/components/drawer/MapStyleDrawer";
 import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Icon from "@/shared/components/ui/Icon";
+import { useMapStyle } from "@/shared/hooks/use-map-style";
+import { settingsService } from "@/shared/services/storage/settings.service";
 import { useRecordStore } from "@/shared/stores/use-record.store";
+import { useSettingsStore } from "@/shared/stores/use-settings-store";
 import { cn } from "@/shared/utils/cn";
 import { Camera } from "@maplibre/maplibre-react-native";
 import { useCallback, useMemo, useRef } from "react";
@@ -15,8 +18,9 @@ type Props = {
 
 export default function MapControls({ cameraRef }: Props) {
     const mapStyleDrawerRef = useRef<DrawerHandle>(null);
-    const mapStyleIndex = useMapControlStore((s) => s.mapStyleIndex);
-    const setMapStyleIndex = useMapControlStore((s) => s.setMapStyleIndex);
+    const preferences = useSettingsStore((s) => s.settings.preferences);
+    const setMapStyle = useSettingsStore((s) => s.setMapStyle);
+    const mapStyle = useMapStyle(preferences.mapStyle);
 
     const isFollowingUser = useMapControlStore((s) => s.isFollowingUser);
     const setIsFollowingUser = useMapControlStore((s) => s.setIsFollowingUser);
@@ -141,9 +145,12 @@ export default function MapControls({ cameraRef }: Props) {
                 )}
             </ColView>
             <MapStyleDrawer
-                value={mapStyleIndex}
-                onChange={(styleIndex) => {
-                    setMapStyleIndex(styleIndex);
+                value={mapStyle}
+                onChange={async (v) => {
+                    setMapStyle(v);
+                    await settingsService.save({
+                        preferences: { ...preferences, ["mapStyle"]: v },
+                    });
                 }}
                 ref={mapStyleDrawerRef}
             />

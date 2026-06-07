@@ -5,6 +5,8 @@ import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { useMapStyle } from "@/shared/hooks/use-map-style";
+import { settingsService } from "@/shared/services/storage/settings.service";
+import { useSettingsStore } from "@/shared/stores/use-settings-store";
 import { cn } from "@/shared/utils/cn";
 import {
     Camera,
@@ -22,11 +24,12 @@ export default function ActivityDetailsMap() {
     const { coordinates, kmSplits } = useActivityDetailsContext();
     const cameraRef = useRef<React.ElementRef<typeof Camera> | null>(null);
     const mapStyleDrawerRef = useRef<DrawerHandle>(null);
-    const [selectedStyleIndex, setSelectedStyleIndex] = useState(0);
+    const preferences = useSettingsStore((s) => s.settings.preferences);
+    const setMapStyle = useSettingsStore((s) => s.setMapStyle);
+    const mapStyle = useMapStyle(preferences.mapStyle);
 
     const [isMapReady, setIsMapReady] = useState(false);
     const [isKmMarkersVisible, setIsKmMarkersVisible] = useState(false);
-    const mapStyle = useMapStyle(selectedStyleIndex);
 
     const geoJson = useMemo(
         (): GeoJSON.Feature<GeoJSON.LineString> => ({
@@ -217,9 +220,12 @@ export default function ActivityDetailsMap() {
                 </RowView>
             </View>
             <MapStyleDrawer
-                value={selectedStyleIndex}
-                onChange={(styleIndex) => {
-                    setSelectedStyleIndex(styleIndex);
+                value={mapStyle}
+                onChange={async (v) => {
+                    setMapStyle(v);
+                    await settingsService.save({
+                        preferences: { ...preferences, ["mapStyle"]: v },
+                    });
                 }}
                 ref={mapStyleDrawerRef}
             />

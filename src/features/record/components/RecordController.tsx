@@ -1,10 +1,12 @@
 import { useRecordController } from "@/features/record/hooks/use-record-controller";
 import { ColView, RowView } from "@/shared/components/CustomView";
+import GoalDrawer from "@/shared/components/drawer/GoalDrawer";
 import Card from "@/shared/components/ui/Card";
 import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { useUnit } from "@/shared/hooks/use-unit";
+import { settingsService } from "@/shared/services/storage/settings.service";
 import { useRecordStore } from "@/shared/stores/use-record.store";
 import { useSettingsStore } from "@/shared/stores/use-settings-store";
 import { cn } from "@/shared/utils/cn";
@@ -23,6 +25,7 @@ export default function RecordController() {
     );
     const preferences = useSettingsStore((s) => s.settings.preferences);
     const goal = preferences?.goal || 0;
+    const setGoal = useSettingsStore((s) => s.setGoal);
     const unit = preferences?.unit;
     const isMapExpanded = useMapControlStore((s) => s.isMapExpanded);
     const setIsMapExpanded = useMapControlStore((s) => s.setIsMapExpanded);
@@ -67,7 +70,7 @@ export default function RecordController() {
     };
     const mainIcon = isActive ? "pause" : isPaused ? "play" : "play";
     const isDisable = isIdle || isActive;
-    const opacity = isDisable && "opacity-25";
+    const opacity = isDisable && "opacity-50";
 
     return (
         <ColView className="px-4 pb-4">
@@ -138,6 +141,7 @@ export default function RecordController() {
                         className={cn(
                             "relative h-16 gap-0 bg-primary  items-center justify-center",
                             !currentLocation && "opacity-50",
+                            isActive && "bg-destructive",
                         )}
                     >
                         {!currentLocation ? (
@@ -167,7 +171,7 @@ export default function RecordController() {
                     onPress={stop}
                     className={cn(opacity, "flex-1")}
                 >
-                    <Card className="h-18 gap-0 bg-card items-center justify-center">
+                    <Card className="h-16 gap-0 bg-card items-center justify-center">
                         <Icon
                             name="checkmark"
                             size={28}
@@ -179,6 +183,17 @@ export default function RecordController() {
                     </Card>
                 </TouchableOpacity>
             </RowView>
+
+            <GoalDrawer
+                ref={goalDrawerRef}
+                value={goal}
+                onChange={async (v) => {
+                    setGoal(v);
+                    await settingsService.save({
+                        preferences: { ...preferences, goal: v },
+                    });
+                }}
+            />
         </ColView>
     );
 }

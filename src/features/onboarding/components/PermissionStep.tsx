@@ -214,7 +214,7 @@ export default function PermissionStep({
                                             <Icon
                                                 name={icon as any}
                                                 size={20}
-                                                className="text-foreground"
+                                                className="text-primary"
                                             />
                                         </View>
                                         <ColView className="flex-1 gap-0.5">

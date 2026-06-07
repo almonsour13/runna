@@ -1,6 +1,7 @@
 // RecordMap.tsx - bare minimum test
 import { useMapStyle } from "@/shared/hooks/use-map-style";
 import { useRecordStore } from "@/shared/stores/use-record.store";
+import { useSettingsStore } from "@/shared/stores/use-settings-store";
 import { cn } from "@/shared/utils/cn";
 import { Camera, Map } from "@maplibre/maplibre-react-native";
 import { useEffect, useMemo, useRef } from "react";
@@ -15,8 +16,8 @@ const MAP_HEIGHT = 440;
 const DURATION = 500;
 
 export default function RecordMap() {
-    const mapStyleIndex = useMapControlStore((s) => s.mapStyleIndex);
-    const mapStyle = useMapStyle(mapStyleIndex);
+    const preferences = useSettingsStore((s) => s.settings.preferences);
+    const mapStyle = useMapStyle(preferences.mapStyle);
     const cameraRef = useRef<React.ElementRef<typeof Camera> | null>(null);
     const coordinates = useRecordStore((s) => s.coordinates);
     const previewCoordinate = useRecordStore((s) => s.previewCoordinate);

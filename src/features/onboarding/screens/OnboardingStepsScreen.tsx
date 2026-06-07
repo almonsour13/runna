@@ -1,4 +1,5 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
+import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { useOnboardingContext } from "@/shared/context/OnboardingContext";
 import { onboardingService } from "@/shared/services/storage/oboarding.service";
@@ -49,6 +50,7 @@ export default function OnboardingStepsScreen() {
         theme: "system",
         unit: "kilometers",
         goal: 0,
+        mapStyle: "Streets",
     });
     const [permissions, setPermissions] = useState<Permissions>({
         location: "idle",
@@ -104,8 +106,9 @@ export default function OnboardingStepsScreen() {
             setNewProfile(profile);
             setSettings({ preferences });
             setIsOnboarded(true);
-
-            navigation.navigate("Main");
+            setTimeout(() => {
+                navigation.navigate("Home");
+            }, 200);
         } catch (e) {
             console.error("[Onboarding] Failed to finish:", e);
         } finally {
@@ -211,13 +214,12 @@ export default function OnboardingStepsScreen() {
 
             <RowView className="px-4 pb-12">
                 {!isFirstStep ? (
-                    <TouchableOpacity
-                        onPress={prevStep}
-                        className="h-16 flex-1 rounded-full justify-center items-center bg-muted"
-                    >
-                        <Text className="text-foreground font-medium">
-                            Back
-                        </Text>
+                    <TouchableOpacity onPress={prevStep} className="flex-1">
+                        <Card className="h-16 justify-center items-center bg-muted ">
+                            <Text className="text-foreground text-lg  font-medium">
+                                Back
+                            </Text>
+                        </Card>
                     </TouchableOpacity>
                 ) : (
                     <View className="flex-1" />
@@ -226,17 +228,19 @@ export default function OnboardingStepsScreen() {
                     onPress={isLastStep ? finish : nextStep}
                     disabled={!canProceedToNextStep}
                     className={cn(
-                        "h-16 flex-1 rounded-full justify-center items-center bg-primary",
+                        "flex-1",
                         (!canProceedToNextStep || isFinishing) && "opacity-50",
                     )}
                 >
-                    <Text className="text-white font-medium">
-                        {isFinishing
-                            ? "Finishing..."
-                            : isLastStep
-                              ? "Finish"
-                              : "Next"}
-                    </Text>
+                    <Card className="h-16 justify-center items-center bg-primary ">
+                        <Text className="text-white text-lg font-medium">
+                            {isFinishing
+                                ? "Finishing..."
+                                : isLastStep
+                                  ? "Finish"
+                                  : "Next"}
+                        </Text>
+                    </Card>
                 </TouchableOpacity>
             </RowView>
         </ColView>

@@ -1,14 +1,12 @@
 import { create } from "zustand";
 
 type MapControlStore = {
-    mapStyleIndex: number;
     isMapReady: boolean;
     isMapExpanded: boolean;
     isFollowingUser: boolean;
     is3D: boolean;
     pitch: number;
 
-    setMapStyleIndex: (index: number) => void;
     setIsMapReady: (value: boolean) => void;
     setIsMapExpanded: (value: boolean) => void;
     toggleMapExpanded: () => void;
@@ -18,7 +16,6 @@ type MapControlStore = {
 };
 
 const INITIAL_VALUE = {
-    mapStyleIndex: 0,
     isMapReady: false,
     isMapExpanded: false,
     isFollowingUser: true,
@@ -28,7 +25,6 @@ const INITIAL_VALUE = {
 
 export const useMapControlStore = create<MapControlStore>((set) => ({
     ...INITIAL_VALUE,
-    setMapStyleIndex: (value) => set({ mapStyleIndex: value }),
     setIsMapReady: (value) => set({ isMapReady: value }),
     setIsMapExpanded: (value) => set({ isMapExpanded: value }),
     toggleMapExpanded: () =>

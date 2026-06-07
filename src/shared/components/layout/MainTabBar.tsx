@@ -47,7 +47,7 @@ function MainTabBar({ state, navigation }: { state: any; navigation: any }) {
                             >
                                 <Card
                                     className={cn(
-                                        "h-16 aspect-square bg-muted justify-center items-center",
+                                        "h-16 aspect-square bg-card justify-center items-center border border-border",
                                         isActive && "",
                                     )}
                                 >

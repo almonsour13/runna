@@ -38,3 +38,5 @@ export const MAP_STYLES = [
 //         },
 //     },
 // ];
+
+export type MapStyleName = (typeof MAP_STYLES)[number]["name"];

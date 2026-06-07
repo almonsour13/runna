@@ -29,13 +29,13 @@ export default function RecordButton() {
             <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => {
-                    // if (isIdle) {
-                    //     activityTypeDrawer.current?.open();
-                    // } else {
-                    navigation.navigate("Record", {
-                        type: "run",
-                    });
-                    // }
+                    if (isIdle && !__DEV__) {
+                        activityTypeDrawer.current?.open();
+                    } else {
+                        navigation.navigate("Record", {
+                            type: "run",
+                        });
+                    }
                 }}
             >
                 <Card

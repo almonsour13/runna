@@ -1,12 +1,10 @@
 import { ColView } from "@/shared/components/CustomView";
+import Card from "@/shared/components/ui/Card";
 import Text from "@/shared/components/ui/Text";
 import { NavigationProp } from "@/shared/types/type";
 import { useNavigation } from "@react-navigation/native";
-import { Dimensions, Image, TouchableOpacity, View } from "react-native";
-
 import Constants from "expo-constants";
-
-const { width: SW, height: SH } = Dimensions.get("window");
+import { Image, TouchableOpacity, View } from "react-native";
 
 const config = Constants.expoConfig;
 const AppName = config?.name;
@@ -21,7 +19,7 @@ export default function OnboardingIntroScreen() {
                     <ColView className="justify-center items-center">
                         <Image
                             source={require("../../../../assets/images/splash-icon.png")}
-                            style={{ width: 140, height: 140 }}
+                            style={{ width: 120, height: 120 }}
                             resizeMode="contain"
                         />
                     </ColView>
@@ -38,14 +36,17 @@ export default function OnboardingIntroScreen() {
             </ColView>
             <View className="px-4 pb-12">
                 <TouchableOpacity
-                    className="h-16 rounded-full justify-center items-center bg-primary "
                     onPress={() =>
                         navigation.navigate("Onboarding", {
                             screen: "OnboardingSteps",
                         })
                     }
                 >
-                    <Text className="text-white font-medium">Get Started</Text>
+                    <Card className="h-16 justify-center items-center bg-primary ">
+                        <Text className="text-white text-lg font-medium">
+                            Get Started
+                        </Text>
+                    </Card>
                 </TouchableOpacity>
             </View>
         </ColView>

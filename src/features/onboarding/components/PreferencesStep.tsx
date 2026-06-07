@@ -5,7 +5,7 @@ import Card from "@/shared/components/ui/Card";
 import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
 import { Preferences } from "@/shared/types/type";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Dimensions, TouchableOpacity } from "react-native";
 
 const { width } = Dimensions.get("window");
@@ -30,6 +30,14 @@ export default function PreferencesStep({
             };
         });
     };
+    useEffect(() => {
+        if (__DEV__) {
+            setPreferences({
+                ...preferences,
+                goal: 5000,
+            });
+        }
+    }, []);
 
     return (
         <>

@@ -1,10 +1,7 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
-import GoalDrawer from "@/shared/components/drawer/GoalDrawer";
 import Card from "@/shared/components/ui/Card";
-import { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
-import { settingsService } from "@/shared/services/storage/settings.service";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
 import { useRecordStore } from "@/shared/stores/use-record.store";
 import { useSettingsStore } from "@/shared/stores/use-settings-store";
@@ -17,23 +14,19 @@ import {
     formatDurationHHMMSS,
     formatPaceByUnit,
 } from "@/shared/utils/format";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { useMapControlStore } from "../stores/use-map-control.store";
 
 export default function RecordSummary() {
     const profile = useProfileStore((s) => s.profile);
     const preferences = useSettingsStore((s) => s.settings.preferences);
-    const goal = preferences?.goal || 0;
     const unit = preferences?.unit;
-    const setGoal = useSettingsStore((s) => s.setGoal);
     const duration = useRecordStore((s) => s.duration);
     const steps = useRecordStore((s) => s.steps);
     const coordinates = useRecordStore((s) => s.coordinates);
     const isMapExpanded = useMapControlStore((s) => s.isMapExpanded);
     const isMapReady = useMapControlStore((s) => s.isMapReady);
-    const setIsMapExpanded = useMapControlStore((s) => s.setIsMapExpanded);
-    const goalDrawerRef = useRef<DrawerHandle>(null);
 
     const [selectedActiveStat, setSelectedActiveStat] = useState("Duration");
 
@@ -165,17 +158,6 @@ export default function RecordSummary() {
                     ))}
                 </RowView>
             </ColView>
-
-            <GoalDrawer
-                ref={goalDrawerRef}
-                value={goal}
-                onChange={async (v) => {
-                    setGoal(v);
-                    await settingsService.save({
-                        preferences: { ...preferences, goal: v },
-                    });
-                }}
-            />
         </>
     );
 }

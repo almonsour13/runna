@@ -1,5 +1,6 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
 import GoalDrawer from "@/shared/components/drawer/GoalDrawer";
+import MapStyleDrawer from "@/shared/components/drawer/MapStyleDrawer";
 import UnitDrawer from "@/shared/components/drawer/UnitDrawer";
 import Card from "@/shared/components/ui/Card";
 import { DrawerHandle } from "@/shared/components/ui/Drawer";
@@ -20,7 +21,13 @@ import { formatCmToftIn } from "@/shared/utils/format";
 import { useNavigation } from "@react-navigation/native";
 import Constants from "expo-constants";
 import { useRef } from "react";
-import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
+import {
+    Alert,
+    ScrollView,
+    Switch,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 const version = Constants.expoConfig?.version;
 export default function SettingsScreen() {
@@ -28,15 +35,11 @@ export default function SettingsScreen() {
     const profile = useProfileStore((s) => s.profile);
     const settings = useSettingsStore((s) => s.settings);
     const preferences = settings.preferences;
-    const setGoal = useSettingsStore((s) => s.setGoal);
-    const setUnit = useSettingsStore((s) => s.setUnit);
+    const mapStyle = preferences.mapStyle;
+    const updatePreferences = useSettingsStore((s) => s.updatePreferences);
 
     const handleChange = async (key: keyof Preferences, value: any) => {
-        if (key === "goal") {
-            setGoal(value);
-        } else if (key === "unit") {
-            setUnit(value);
-        }
+        updatePreferences({ [key]: value });
         await settingsService.save({
             preferences: { ...preferences, [key]: value },
         });
@@ -45,6 +48,7 @@ export default function SettingsScreen() {
     const { setIsOnboarded } = useOnboardingContext();
     const goalDrawerRef = useRef<DrawerHandle>(null);
     const unitDrawerRef = useRef<DrawerHandle>(null);
+    const mapStyleDrawerRef = useRef<DrawerHandle>(null);
 
     const sections = [
         {
@@ -110,8 +114,34 @@ export default function SettingsScreen() {
                     danger: false,
                     visible: true,
                 },
+                {
+                    label: "Map Style",
+                    description: "Choose map appearance",
+                    icon: "map",
+                    value: mapStyle ?? "Streets",
+                    type: "nav",
+                    onPress: () => mapStyleDrawerRef.current?.open(),
+                    danger: false,
+                    visible: true,
+                },
             ],
             visible: true,
+        },
+        {
+            title: "Notifications",
+            items: [
+                {
+                    label: "Goal Reached",
+                    description: "Notify when distance goal is achieved",
+                    icon: "trophy",
+                    value: false,
+                    type: "toggle",
+                    onPress: () => {},
+                    danger: false,
+                    visible: __DEV__,
+                },
+            ],
+            visible: __DEV__,
         },
 
         {
@@ -120,7 +150,7 @@ export default function SettingsScreen() {
                 {
                     label: "Export Data (Json)",
                     description: "Download all your activity data as a file",
-                    icon: "download-outline" as const,
+                    icon: "download" as const,
                     value: undefined,
                     onPress: async () => await exportAllActivities(),
                     type: "action",
@@ -130,17 +160,17 @@ export default function SettingsScreen() {
                 {
                     label: "Import Data",
                     description: "Restore your data from a backup file",
-                    icon: "cloud-upload-outline" as const,
+                    icon: "cloud-upload" as const,
                     value: undefined,
                     onPress: () => console.log("import data"),
                     type: "action",
                     danger: false,
-                    visible: false,
+                    visible: __DEV__,
                 },
                 {
                     label: "Clear Activity Data",
                     description: "Permanently delete all recorded sessions",
-                    icon: "trash-outline" as const,
+                    icon: "trash" as const,
                     value: undefined,
                     onPress: async () => {
                         Alert.alert(
@@ -166,7 +196,7 @@ export default function SettingsScreen() {
                 {
                     label: "Reset All Data",
                     description: "Wipe profile, settings, and activity history",
-                    icon: "nuclear-outline" as const,
+                    icon: "nuclear" as const,
                     value: undefined,
                     onPress: async () => {
                         Alert.alert(
@@ -236,6 +266,8 @@ export default function SettingsScreen() {
                                                 .map((item, it) => {
                                                     const isDanger =
                                                         item.danger === true;
+                                                    const isToggle =
+                                                        item.type === "toggle";
                                                     return (
                                                         <TouchableOpacity
                                                             key={it}
@@ -273,19 +305,28 @@ export default function SettingsScreen() {
                                                                                     item.label
                                                                                 }
                                                                             </Text>
-                                                                            <Text className="text-xs text-muted-foreground">
+                                                                            <Text className="text-xs text-muted-foreground capitalize">
                                                                                 {
                                                                                     item.description
                                                                                 }
                                                                             </Text>
                                                                         </ColView>
                                                                     </RowView>
-                                                                    {item.type ===
-                                                                        "nav" && (
+                                                                    {isToggle ? (
+                                                                        <Switch
+                                                                            value={
+                                                                                item.value as boolean
+                                                                            }
+                                                                            onValueChange={() =>
+                                                                                item.onPress()
+                                                                            }
+                                                                        />
+                                                                    ) : item.type ===
+                                                                      "nav" ? (
                                                                         <RowView className="items-center">
                                                                             <Text className="text-xs text-primary capitalize">
                                                                                 {
-                                                                                    item.value
+                                                                                    item.value as string
                                                                                 }
                                                                             </Text>
                                                                             <Icon
@@ -296,7 +337,7 @@ export default function SettingsScreen() {
                                                                                 className="text-muted-foreground"
                                                                             />
                                                                         </RowView>
-                                                                    )}
+                                                                    ) : null}
                                                                 </RowView>
                                                             </Card>
                                                         </TouchableOpacity>
@@ -307,7 +348,7 @@ export default function SettingsScreen() {
                                 );
                             })}
                     </ColView>
-                    <RowView className="items-center justify-center pb-8">
+                    <RowView className="items-center justify-center py-8 pb-4">
                         <Text className="text-xs text-muted-foreground">
                             Version {version}
                         </Text>
@@ -323,6 +364,14 @@ export default function SettingsScreen() {
                 ref={unitDrawerRef}
                 value={preferences?.unit}
                 onChange={(v) => handleChange("unit", v)} // ✅ fixed key
+            />
+
+            <MapStyleDrawer
+                value={mapStyle}
+                onChange={(v) => {
+                    handleChange("mapStyle", v);
+                }}
+                ref={mapStyleDrawerRef}
             />
         </>
     );

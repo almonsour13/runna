@@ -121,16 +121,16 @@ export default function ActivityDetailsSummary() {
                             size={12}
                             className="text-primary"
                         />
-                        <Text className="text-sm">
+                        <Text className="text-xs">
                             {formattedDistance.value}
                         </Text>
                     </RowView>
-                    <Text className="text-sm text-primary">
+                    <Text className="text-xs text-primary">
                         {pct.toFixed(1)} %
                     </Text>
                     <RowView className="items-center gap-1">
                         <Icon name="flag" size={12} className="text-primary" />
-                        <Text className="text-sm">{formattedGoal.value}</Text>
+                        <Text className="text-xs">{formattedGoal.value}</Text>
                     </RowView>
                 </RowView>
             </ColView>
@@ -150,7 +150,7 @@ export default function ActivityDetailsSummary() {
                                     <RowView className="items-center gap-1">
                                         <Icon
                                             name={stat.icon}
-                                            size={11}
+                                            size={12}
                                             className="text-primary"
                                         />
                                         <Text className="text-xs text-muted-foreground">

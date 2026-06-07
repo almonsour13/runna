@@ -1,5 +1,6 @@
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { ACTIVITY_TYPE } from "../constant/constant";
+import { MapStyleName } from "../constant/map";
 import { activity, coordinate } from "../db/schema";
 import { schedule } from "../db/schema/schedule";
 
@@ -65,6 +66,7 @@ export type Preferences = {
     theme: ThemeMode;
     unit: UnitMode;
     goal: number;
+    mapStyle: MapStyleName;
 };
 
 export type Settings = {

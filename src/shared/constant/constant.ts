@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
     record: `${PREFIX}:record`,
     profile: `${PREFIX}:profile`,
     settings: `${PREFIX}:settings`,
+    welcome: `${PREFIX}:welcome`,
 };
 
 export const ACTIVITY_BACKGROUND_TASK = "ACTIVITY_BACKGROUND_TASK";

@@ -2,7 +2,6 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import Drawer, { DrawerHandle } from "@/shared/components/ui/Drawer";
 import Text from "@/shared/components/ui/Text";
 import { MAP_STYLES } from "@/shared/constant/map";
-import { useMapStyle } from "@/shared/hooks/use-map-style";
 import { useTheme } from "@/shared/hooks/use-theme";
 import { cn } from "@/shared/utils/cn";
 import { Map } from "@maplibre/maplibre-react-native";
@@ -11,8 +10,8 @@ import { TouchableOpacity, View } from "react-native";
 import Icon from "../ui/Icon";
 
 interface Props {
-    value?: number | null;
-    onChange: (styleIndex: number) => void;
+    value?: string | null;
+    onChange: (value: string) => void;
 }
 
 const MapStyleDrawer = forwardRef<DrawerHandle, Props>(
@@ -39,9 +38,9 @@ const MapStyleDrawer = forwardRef<DrawerHandle, Props>(
                     {/* Style Options */}
                     <ColView className="gap-0">
                         {MAP_STYLES.map((mapStyle, index) => {
-                            const isSelected = value === index;
-
-                            const style = useMapStyle(index);
+                            const isSelected = value === mapStyle.name;
+                            const name = mapStyle.name;
+                            const style = mapStyle.style;
                             return (
                                 <TouchableOpacity
                                     key={index}
@@ -50,7 +49,7 @@ const MapStyleDrawer = forwardRef<DrawerHandle, Props>(
                                         isSelected && "bg-muted",
                                     )}
                                     onPress={() => {
-                                        onChange(index);
+                                        onChange(name);
                                         drawerRef.current?.close();
                                     }}
                                 >
