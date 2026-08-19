@@ -1,11 +1,9 @@
 import { ColView, RowView } from "@/shared/components/CustomView";
-import Icon from "@/shared/components/ui/Icon";
 import Text from "@/shared/components/ui/Text";
 import { useProfileStore } from "@/shared/stores/use-profile.store";
 import { NavigationProp } from "@/shared/types/type";
 import { useNavigation } from "@react-navigation/native";
 import { useMemo } from "react";
-import { TouchableOpacity } from "react-native";
 
 const PHRASES = {
     morning: [
@@ -63,15 +61,13 @@ export default function HomeHeader() {
                     {randomPhrase}
                 </Text>
             </ColView>
-            <TouchableOpacity onPress={() => navigation.navigate("Schedule")}>
-                {/* <Card className="h-10 w-10 p-0 items-center justify-center"> */}
+            {/* <TouchableOpacity onPress={() => navigation.navigate("Schedule")}>
                 <Icon
                     name="calendar-outline"
                     size={24}
                     className="text-foreground"
                 />
-                {/* </Card> */}
-            </TouchableOpacity>
+            </TouchableOpacity> */}
         </RowView>
     );
 }
