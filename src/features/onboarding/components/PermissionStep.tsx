@@ -153,7 +153,7 @@ export default function PermissionStep({
                               : "idle",
                 }));
             },
-            visible: false,
+            visible: true,
         },
         {
             name: "Motion & Sensors",
