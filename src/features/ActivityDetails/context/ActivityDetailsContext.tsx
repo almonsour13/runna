@@ -12,7 +12,7 @@ import React, {
     useState,
 } from "react";
 import { ActivityIndicator, View } from "react-native";
-import ActivityDetailsEmptyState from "../components/ActivityDetailsEmptyState";
+import ActivityDetailsEmptyState from "../Components/ActivityDetailsEmptyState";
 
 export type KmSplits = {
     km: number;

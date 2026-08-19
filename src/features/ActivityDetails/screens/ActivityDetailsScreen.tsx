@@ -2,9 +2,9 @@ import { ColView, RowView } from "@/shared/components/CustomView";
 import Text from "@/shared/components/ui/Text";
 import { Coordinate } from "@/shared/types/type";
 import { RefreshControl, ScrollView } from "react-native";
-import ActivityDetailsHeader from "../components/ActivityDetailsHeader";
-import ActivityDetailsMap from "../components/ActivityDetailsMap";
-import ActivitySummary from "../components/ActivityDetailsSummary";
+import ActivityDetailsHeader from "../Components/ActivityDetailsHeader";
+import ActivityDetailsMap from "../Components/ActivityDetailsMap";
+import ActivityDetailsSummary from "../Components/ActivityDetailsSummary";
 import { useActivityDetailsContext } from "../context/ActivityDetailsContext";
 
 export type KmSplits = {
@@ -26,7 +26,7 @@ export default function ActivityDetailsScreen() {
             <ColView className="relative flex-1 gap-0">
                 <ActivityDetailsHeader />
                 <ActivityDetailsMap />
-                <ActivitySummary />
+                <ActivityDetailsSummary />
                 <ColView className="hidden">
                     <RowView className="px-4">
                         <Text className="text-base">Media</Text>
